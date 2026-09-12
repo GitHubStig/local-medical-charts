@@ -7,7 +7,7 @@
  *                     byte where the PDF stores it in a real image format
  *
  * Usage:
- *   deno run --allow-read --allow-write src/pdf-to-images.ts --input chart.pdf --output wip
+ *   deno run --allow-read --allow-write src/pdf-to-images.ts --input chart.pdf --output "2. images"
  *   deno task extract chart.pdf --embedded
  */
 import { parseArgs } from "@std/cli/parse-args";
@@ -26,7 +26,7 @@ USAGE:
 
 OPTIONS:
   -i, --input   <file>    Input .pdf file (may also be given positionally)
-  -o, --output  <dir>     Output directory (default: wip)
+  -o, --output  <dir>     Output directory (default: 2. images/)
   -p, --prefix  <name>    Output file prefix (default: input file's base name)
   -e, --embedded          Extract each page's embedded image instead of
                           rasterizing the page — lossless, and the original
@@ -71,7 +71,7 @@ async function main() {
       f: "force",
       h: "help",
     },
-    default: { output: "wip", dpi: "150", format: "png", quality: "90" },
+    default: { output: "2. images", dpi: "150", format: "png", quality: "90" },
   });
 
   if (flags.help) {
