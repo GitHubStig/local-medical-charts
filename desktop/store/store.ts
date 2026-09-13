@@ -12,84 +12,31 @@ import { createHash } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import { dirname } from "@std/path";
 import type { CatalogIndex } from "../../src/catalog.ts";
-import type { Report, Test } from "../../src/schema.ts";
+import type { Report } from "../../src/schema.ts";
 import { SCHEMA_VERSION } from "../../src/schema.ts";
 import { upgradeReport } from "../../src/upgrade.ts";
-import { migrateDatabase } from "./db-migrations.ts";
+import { patientIdentity, resultsFromReport } from "../report-data.ts";
+import { normalizeSettings, type Settings } from "../settings.ts";
+import type {
+  AddReportResult,
+  PatientSummary,
+  ReportSummary,
+  StoredResult,
+  UpgradeSummary,
+} from "../types.ts";
+import { assertExpectedTables, migrateDatabase } from "./db-migrations.ts";
+
+export { patientIdentity };
+export type {
+  AddReportResult,
+  PatientSummary,
+  ReportSummary,
+  StoredResult,
+  UpgradeSummary,
+};
 
 export class StoreError extends Error {
   override name = "StoreError";
-}
-
-export type PatientSummary = {
-  id: number;
-  name: string | null;
-  idNumber: string | null;
-  dateOfBirth: string | null;
-  sex: string | null;
-  reportCount: number;
-  failedReportCount: number;
-  firstCollectedAt: string | null;
-  lastCollectedAt: string | null;
-};
-
-export type ReportSummary = {
-  id: number;
-  patientId: number;
-  fileName: string;
-  collectedAt: string | null;
-  providerName: string | null;
-  status: "ok" | "failed";
-  error: string | null;
-  schemaVersion: number;
-  catalogHash: string;
-  importedAt: string;
-  upgradedAt: string;
-};
-
-export type StoredResult = {
-  reportId: number;
-  position: number;
-  analyte: string | null;
-  specimen: string | null;
-  name: string;
-  collectedAt: string | null;
-  resultKind: "numeric" | "comparator" | "text";
-  value: number | null;
-  op: string | null;
-  text: string | null;
-  unit: string | null;
-  standardValue: number | null;
-  standardOp: string | null;
-  standardUnit: string | null;
-  range: Test["range"];
-  flag: string | null;
-  flagSource: string | null;
-  page: number;
-};
-
-export type AddReportResult =
-  | { status: "added"; reportId: number; patientId: number }
-  | { status: "duplicate"; reportId: number; patientId: number };
-
-export type UpgradeSummary = {
-  checked: number;
-  upgraded: number;
-  failed: { reportId: number; fileName: string; error: string }[];
-};
-
-/**
- * The key reports are grouped under. The ID number is preferred; spaces,
- * dashes and case are ignored so the same ID printed differently still matches.
- */
-export function patientIdentity(patient: Report["patient"]): string | null {
-  const id = patient.idNumber?.toUpperCase().replace(/[^A-Z0-9]/g, "");
-  if (id) return `id:${id}`;
-  const name = patient.name?.toUpperCase().replace(/\s+/g, " ").trim();
-  if (name && patient.dateOfBirthIso) {
-    return `name:${name}|${patient.dateOfBirthIso}`;
-  }
-  return null;
 }
 
 function contentHash(json: unknown): string {
@@ -117,6 +64,7 @@ export class ReportStore {
     if (path !== ":memory:") db.exec("PRAGMA journal_mode = WAL");
     try {
       migrateDatabase(db);
+      assertExpectedTables(db);
     } catch (err) {
       db.close();
       throw err;
@@ -405,7 +353,34 @@ export class ReportStore {
     });
   }
 
-  /** Removes every patient, report and result. */
+  /** The app's settings, with defaults for anything never set. */
+  getSettings(): Settings {
+    const rows = this.#db
+      .prepare("SELECT key, value_json FROM settings")
+      .all() as Row[];
+    return normalizeSettings(
+      Object.fromEntries(
+        rows.map((r) => [String(r.key), JSON.parse(String(r.value_json))]),
+      ),
+    );
+  }
+
+  /** Saves the given settings (already validated) and returns them all. */
+  updateSettings(patch: Partial<Settings>, now = new Date()): Settings {
+    const at = now.toISOString();
+    this.#transaction(() => {
+      const upsert = this.#db.prepare(
+        `INSERT INTO settings (key, value_json, updated_at) VALUES (?, ?, ?)
+         ON CONFLICT (key) DO UPDATE SET value_json = excluded.value_json, updated_at = excluded.updated_at`,
+      );
+      for (const [key, value] of Object.entries(patch)) {
+        upsert.run(key, JSON.stringify(value), at);
+      }
+    });
+    return this.getSettings();
+  }
+
+  /** Removes every patient, report and result. Settings are kept. */
   clearAll(): void {
     this.#transaction(() => {
       this.#db.exec(
@@ -423,30 +398,29 @@ export class ReportStore {
          range_json, flag, flag_source, page
        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
-    report.tests.forEach((test, position) => {
-      const result = test.result;
+    for (const r of resultsFromReport(reportId, report)) {
       insert.run(
         reportId,
         patientId,
-        position,
-        test.analyte,
-        test.specimen,
-        test.name,
-        report.collectedAt,
-        result.kind,
-        result.kind === "text" ? null : result.value,
-        result.kind === "comparator" ? result.op : null,
-        result.kind === "text" ? result.text : null,
-        test.unit,
-        test.standard?.value ?? null,
-        test.standard?.op ?? null,
-        test.standard?.unit ?? null,
-        test.range ? JSON.stringify(test.range) : null,
-        test.flag,
-        test.flagSource,
-        test.page,
+        r.position,
+        r.analyte,
+        r.specimen,
+        r.name,
+        r.collectedAt,
+        r.resultKind,
+        r.value,
+        r.op,
+        r.text,
+        r.unit,
+        r.standardValue,
+        r.standardOp,
+        r.standardUnit,
+        r.range ? JSON.stringify(r.range) : null,
+        r.flag,
+        r.flagSource,
+        r.page,
       );
-    });
+    }
   }
 
   /**

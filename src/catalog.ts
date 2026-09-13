@@ -161,11 +161,38 @@ export function lookup(
   };
 }
 
+/**
+ * Validates and indexes catalog JSON. The hash is taken over the JSON content,
+ * not the file's text, so the CLI (reading the file) and the desktop app
+ * (importing it as a module) record the same hash for the same catalog.
+ */
+export async function catalogFromJson(
+  json: unknown,
+  source = "catalog",
+): Promise<CatalogIndex> {
+  const parsed = CatalogSchema.safeParse(json);
+  if (!parsed.success) {
+    const issues = parsed.error.issues
+      .slice(0, 5)
+      .map((issue) => `${issue.path.map(String).join(".")}: ${issue.message}`)
+      .join("; ");
+    throw new Error(`${source} is invalid: ${issues}`);
+  }
+
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(JSON.stringify(json)),
+  );
+  return indexCatalog(
+    parsed.data,
+    encodeHex(new Uint8Array(digest)).slice(0, 12),
+  );
+}
+
 export async function loadCatalog(
   path = DEFAULT_CATALOG,
 ): Promise<CatalogIndex> {
   const text = await Deno.readTextFile(path);
-
   let json: unknown;
   try {
     json = JSON.parse(text);
@@ -176,24 +203,7 @@ export async function loadCatalog(
       }`,
     );
   }
-
-  const parsed = CatalogSchema.safeParse(json);
-  if (!parsed.success) {
-    const issues = parsed.error.issues
-      .slice(0, 5)
-      .map((issue) => `${issue.path.map(String).join(".")}: ${issue.message}`)
-      .join("; ");
-    throw new Error(`catalog ${path} is invalid: ${issues}`);
-  }
-
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(text),
-  );
-  return indexCatalog(
-    parsed.data,
-    encodeHex(new Uint8Array(digest)).slice(0, 12),
-  );
+  return await catalogFromJson(json, `catalog ${path}`);
 }
 
 /** One analyte per block, arrays inline, so the file stays easy to edit by hand. */

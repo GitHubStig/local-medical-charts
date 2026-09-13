@@ -23,8 +23,23 @@ deno task test    # pipeline tests
 | `deno task map`                | Suggest catalog matches for test names the catalog doesn't know               |
 | `deno task upgrade`            | Upgrade stored reports to the current schema version and catalog              |
 | `deno task dev` / `build`      | Run the app in a browser, or build it                                         |
-| `deno task desktop`            | Build the app and open it in its desktop window                               |
+| `deno task desktop`            | Build the app and open it in its desktop window (database in `.data/`)        |
 | `deno task test`               | Run the tests                                                                 |
+
+## Versions during development
+
+Until the app is complete, everything stays at **version 1**: the report JSON
+format (`SCHEMA_VERSION` in `src/schema.ts`) and the database
+(`desktop/store/db-migrations.ts`). Change them in place instead of adding
+migrations, then reset local data:
+
+- **Database changed:** delete `.data/` and relaunch `deno task desktop`. An
+  out-of-date development database stops with an error saying so.
+- **Report format changed:** regenerate reports with
+  `deno task ocr --merge-only` (or run the OCR again if page files changed),
+  then re-import them.
+
+Migrations start from version 2, after release.
 
 ## Dependencies and supply-chain safety
 

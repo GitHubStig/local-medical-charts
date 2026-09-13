@@ -1,12 +1,18 @@
 /**
- * Desktop entrypoint: opens the window, exposes bindings to the page, and
- * serves the built Vue app.
+ * Desktop entrypoint: opens the report database, upgrades stored reports,
+ * exposes the bindings to the page, and serves the built Vue app.
  *
  *   deno task desktop    build the app, then open it in a desktop window
  */
 import { serveDir } from "@std/http/file-server";
 import { join } from "@std/path";
-import type { DesktopBindings } from "./contract.ts";
+import catalogJson from "../src/analytes.json" with { type: "json" };
+import { catalogFromJson } from "../src/catalog.ts";
+import { SCHEMA_VERSION } from "../src/schema.ts";
+import { createBindings, unavailableBindings } from "./bindings.ts";
+import type { DesktopBindings, StartupStatus } from "./contract.ts";
+import { databasePath } from "./store/paths.ts";
+import { ReportStore } from "./store/store.ts";
 
 /**
  * Where the built app lives. A packaged app embeds it next to this module; a
@@ -34,14 +40,39 @@ const win = new Deno.BrowserWindow<DesktopBindings>({
   height: 900,
 });
 
-// Bindings always return a Promise, even when the work is synchronous.
-win.bind("ping", (message) =>
-  Promise.resolve({
-    message: `pong: ${message}`,
-    deno: Deno.version.deno,
-    platform: Deno.build.os,
-    receivedAt: new Date().toISOString(),
-  }));
+// Imported as a module, so the catalog is part of the app rather than a file
+// looked up at runtime. Same content hash as the CLI's loadCatalog().
+const catalog = await catalogFromJson(catalogJson, "src/analytes.json");
+const dbPath = databasePath(Deno.build.os, Deno.env);
+
+let bindings: DesktopBindings;
+try {
+  const store = ReportStore.open(dbPath);
+  const startup: StartupStatus = {
+    ok: true,
+    databasePath: dbPath,
+    schemaVersion: SCHEMA_VERSION,
+    catalogHash: catalog.hash,
+    upgrade: store.upgradeAll(catalog),
+  };
+  bindings = createBindings({ store, catalog, startup });
+} catch (err) {
+  // Keep the window usable so the page can explain what went wrong.
+  bindings = unavailableBindings({
+    ok: false,
+    databasePath: dbPath,
+    error: err instanceof Error ? err.message : String(err),
+  });
+}
+
+win.bind("getStartupStatus", bindings.getStartupStatus);
+win.bind("listPatients", bindings.listPatients);
+win.bind("getDashboard", bindings.getDashboard);
+win.bind("importReports", bindings.importReports);
+win.bind("deleteReport", bindings.deleteReport);
+win.bind("clearAll", bindings.clearAll);
+win.bind("getSettings", bindings.getSettings);
+win.bind("updateSettings", bindings.updateSettings);
 
 const dist = findAppDist();
 

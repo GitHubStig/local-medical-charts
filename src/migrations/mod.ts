@@ -1,8 +1,13 @@
 /**
  * Report format migrations.
  *
- * Every page file and merged report carries `schemaVersion`. When the format
- * changes in a way that breaks previously written JSON:
+ * Every page file and merged report carries `schemaVersion`.
+ *
+ * DURING DEVELOPMENT the format stays at version 1: change the Zod schemas in
+ * place, then regenerate local reports (`deno task ocr --merge-only`, or re-OCR
+ * if page files changed). The steps below apply once the app is released.
+ *
+ * When the format changes in a way that breaks previously written JSON:
  *
  *   1. bump SCHEMA_VERSION in src/schema.ts and change the Zod schemas;
  *   2. add `NNN-short-name.ts` in this folder exporting a Migration from the
