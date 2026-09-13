@@ -9,6 +9,7 @@ import {
 } from "../../../src/analyte-groups.ts";
 import type { Dashboard, StoredResult } from "../../../desktop/contract.ts";
 import { ANALYTES } from "./analytes.ts";
+import { type Flag, toFlag } from "./flags.ts";
 import { monthSpan, monthYear } from "./format.ts";
 
 export const UNMATCHED_GROUP = "Not in the catalog";
@@ -23,7 +24,7 @@ export type TestCardData = {
   unit: string | null;
   latest: {
     display: string;
-    flag: "H" | "L" | "A" | null;
+    flag: Flag | null;
     collectedAt: string | null;
   };
   /** "+0.6 since Oct 2025", or null when there's nothing to compare. */
@@ -82,7 +83,7 @@ function factor(result: StoredResult): number {
   return 1;
 }
 
-function rangeLabel(result: StoredResult): string | null {
+export function rangeLabel(result: StoredResult): string | null {
   const range = result.range;
   if (!range) return null;
   const f = factor(result);
@@ -119,31 +120,71 @@ function change(
   return `${delta > 0 ? "+" : "−"}${number.format(Math.abs(delta))}${suffix}`;
 }
 
-const byDate = (a: StoredResult, b: StoredResult) =>
+/** Oldest first; results without a date sort before dated ones. */
+export const byDate = (a: StoredResult, b: StoredResult) =>
   (a.collectedAt ?? "").localeCompare(b.collectedAt ?? "") ||
   a.reportId - b.reportId || a.position - b.position;
 
-export function buildTestGrid(dashboard: Dashboard): TestGrid {
+export const GROUP_ORDER: readonly GridGroupName[] = [
+  ...ANALYTE_GROUPS,
+  UNMATCHED_GROUP,
+];
+
+/** One series per test: by catalog analyte, or by printed name and unit when unmatched. */
+export function seriesByKey(
+  results: readonly StoredResult[],
+): Map<string, StoredResult[]> {
   const series = new Map<string, StoredResult[]>();
-  for (const result of dashboard.results) {
+  for (const result of results) {
     const key = result.analyte ??
       `unmatched:${result.name.toLowerCase()}|${result.unit ?? ""}`;
     series.set(key, [...(series.get(key) ?? []), result]);
   }
+  return series;
+}
+
+/** Tests whose results are only ever words go in the text results table, not the grid. */
+export const isTextOnly = (results: readonly StoredResult[]) =>
+  results.every((r) => r.resultKind === "text");
+
+/** A test's catalog name, group, order and search text, from its readings (oldest first). */
+export function describeTest(readings: readonly StoredResult[]) {
+  const latest = readings[readings.length - 1];
+  const info = latest.analyte ? ANALYTES.get(latest.analyte) : undefined;
+  const name = info?.name ?? latest.name;
+  const group: GridGroupName = info?.group ?? UNMATCHED_GROUP;
+  const printedNames = [...new Set(readings.map((r) => r.name))];
+  return {
+    latest,
+    info,
+    name,
+    group,
+    order: info?.order ?? Number.MAX_SAFE_INTEGER,
+    searchText: [name, group, ...printedNames, ...(info?.aliases ?? [])]
+      .join(" ").toLowerCase(),
+  };
+}
+
+/** Whether every word of the query appears in the search text. */
+export function matchesQuery(searchText: string, query: string): boolean {
+  return query.toLowerCase().split(/\s+/).filter(Boolean)
+    .every((word) => searchText.includes(word));
+}
+
+export function buildTestGrid(dashboard: Dashboard): TestGrid {
+  const series = seriesByKey(dashboard.results);
 
   const cards: TestCardData[] = [];
   let textOnlyCount = 0;
   for (const [key, results] of series) {
-    if (results.every((r) => r.resultKind === "text")) {
+    if (isTextOnly(results)) {
       textOnlyCount++;
       continue;
     }
     const readings = [...results].sort(byDate);
-    const latest = readings[readings.length - 1];
-    const info = latest.analyte ? ANALYTES.get(latest.analyte) : undefined;
-    const printedNames = [...new Set(readings.map((r) => r.name))];
-    const name = info?.name ?? latest.name;
-    const group: GridGroupName = info?.group ?? UNMATCHED_GROUP;
+    const { latest, info, name, group, order, searchText } = describeTest(
+      readings,
+    );
 
     cards.push({
       key,
@@ -152,21 +193,19 @@ export function buildTestGrid(dashboard: Dashboard): TestGrid {
       unit: (info ? info.unit : latest.unit) || null,
       latest: {
         display: display(latest),
-        flag: latest.flag as TestCardData["latest"]["flag"],
+        flag: toFlag(latest.flag),
         collectedAt: latest.collectedAt,
       },
       change: change(latest, readings[readings.length - 2]),
       readingCount: readings.length,
       span: monthSpan(readings[0].collectedAt, latest.collectedAt),
       range: rangeLabel(latest),
-      order: info?.order ?? Number.MAX_SAFE_INTEGER,
-      searchText: [name, group, ...printedNames, ...(info?.aliases ?? [])]
-        .join(" ").toLowerCase(),
+      order,
+      searchText,
     });
   }
 
-  const groupOrder = [...ANALYTE_GROUPS, UNMATCHED_GROUP] as GridGroupName[];
-  const groups = groupOrder.flatMap((groupName): TestGroupData[] => {
+  const groups = GROUP_ORDER.flatMap((groupName): TestGroupData[] => {
     const inGroup = cards
       .filter((c) => c.group === groupName)
       .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
@@ -187,11 +226,10 @@ export function filterTestGrid(
   groups: readonly TestGroupData[],
   filters: { query: string; flaggedOnly: boolean },
 ): TestGroupData[] {
-  const words = filters.query.toLowerCase().split(/\s+/).filter(Boolean);
   return groups.flatMap((group) => {
     const cards = group.cards.filter((card) =>
       (!filters.flaggedOnly || card.latest.flag !== null) &&
-      words.every((word) => card.searchText.includes(word))
+      matchesQuery(card.searchText, filters.query)
     );
     return cards.length
       ? [{

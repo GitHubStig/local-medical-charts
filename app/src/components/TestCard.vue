@@ -1,15 +1,10 @@
 <script setup lang="ts">
 import type { TestCardData } from "../lib/test-grid.ts";
 import { plural } from "../lib/format.ts";
+import { FLAGS } from "../lib/flags.ts";
 import FlagPill from "./FlagPill.vue";
 
 defineProps<{ card: TestCardData }>();
-
-const FLAGS = {
-  H: { label: "High", kind: "high" },
-  L: { label: "Low", kind: "low" },
-  A: { label: "Abnormal", kind: "abnormal" },
-} as const;
 </script>
 
 <template>
