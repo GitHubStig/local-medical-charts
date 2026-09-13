@@ -4,6 +4,7 @@ import { computed, ref } from "vue";
 import ImportResults from "../components/ImportResults.vue";
 import PatientSummary from "../components/PatientSummary.vue";
 import ReportsSection from "../components/ReportsSection.vue";
+import TestGrid from "../components/TestGrid.vue";
 import TopBar from "../components/TopBar.vue";
 import { useLibrary } from "../composables/useLibrary.ts";
 import { patientOverview } from "../lib/dashboard.ts";
@@ -73,7 +74,7 @@ const { isOverDropZone } = useDropZone(page, {
           :reports="current.reports"
           @remove="confirmRemove"
         />
-        <p class="text-sm text-muted">Charts for each test are on their way.</p>
+        <TestGrid :dashboard="current" />
       </template>
     </main>
 

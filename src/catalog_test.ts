@@ -145,6 +145,7 @@ Deno.test("the catalog rejects a name that could match two analytes", () => {
         id: "a",
         name: "A",
         specimen: "blood",
+        group: "Other",
         unit: "mmol/L",
         aliases: ["X"],
         units: { "mmol/L": 1 },
@@ -153,6 +154,7 @@ Deno.test("the catalog rejects a name that could match two analytes", () => {
         id: "b",
         name: "B",
         specimen: "blood",
+        group: "Other",
         unit: "mmol/L",
         aliases: ["x"],
         units: { "mmol/L": 1 },
@@ -169,6 +171,7 @@ Deno.test("the catalog requires each analyte's own unit at factor 1", () => {
         id: "a",
         name: "A",
         specimen: "blood",
+        group: "Other",
         unit: "g/dL",
         aliases: ["A"],
         units: { "g/L": 0.1 },
@@ -194,4 +197,14 @@ Deno.test("the catalog hash depends on content, not formatting", async () => {
   const changed = structuredClone(index.catalog);
   changed.analytes[0].aliases.push("Another Name");
   assertEquals((await catalogFromJson(changed)).hash !== fromFile.hash, true);
+});
+
+Deno.test("every analyte sits in a dashboard group, and urine tests under Urinalysis", () => {
+  for (const analyte of index.catalog.analytes) {
+    if (analyte.specimen === "urine") {
+      assertEquals(analyte.group, "Urinalysis", analyte.id);
+    } else {
+      assertEquals(analyte.group === "Urinalysis", false, analyte.id);
+    }
+  }
 });

@@ -12,6 +12,7 @@ import { z } from "@zod/zod";
 import { encodeHex } from "@std/encoding/hex";
 import { fromFileUrl } from "@std/path";
 import { type Specimen, SpecimenSchema } from "./schema.ts";
+import { ANALYTE_GROUPS } from "./analyte-groups.ts";
 import { unitKey } from "./units.ts";
 
 export const DEFAULT_CATALOG = fromFileUrl(
@@ -23,6 +24,8 @@ export const AnalyteSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
   name: z.string(),
   specimen: SpecimenSchema,
+  /** The dashboard section the test appears under. */
+  group: z.enum(ANALYTE_GROUPS),
   /** Unit results are converted into for charting; "" when dimensionless. */
   unit: z.string(),
   /** Printed names that mean this analyte, in any spelling or case. */
@@ -214,7 +217,7 @@ export function formatCatalog(catalog: Catalog): string {
       "    {",
       `      "id": ${json(a.id)}, "name": ${json(a.name)}, "specimen": ${
         json(a.specimen)
-      }, "unit": ${json(a.unit)},`,
+      }, "group": ${json(a.group)}, "unit": ${json(a.unit)},`,
       `      "aliases": [${a.aliases.map((alias) => json(alias)).join(", ")}],`,
       `      "units": { ${
         Object.entries(a.units)
