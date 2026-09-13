@@ -3,8 +3,10 @@ import { computed } from "vue";
 import type { Dashboard } from "../../../desktop/contract.ts";
 import { plural } from "../lib/format.ts";
 import { buildTestGrid, filterTestGrid } from "../lib/test-grid.ts";
+import { buildTextResults, filterTextRows } from "../lib/text-results.ts";
 import { useTestFilters } from "../composables/useTestFilters.ts";
 import TestCard from "./TestCard.vue";
+import TextResults from "./TextResults.vue";
 import Icon from "./Icon.vue";
 
 const props = defineProps<{ dashboard: Dashboard }>();
@@ -15,6 +17,13 @@ const { query, flaggedOnly, clear } = useTestFilters();
 const grid = computed(() => buildTestGrid(props.dashboard));
 const shown = computed(() =>
   filterTestGrid(grid.value.groups, {
+    query: query.value,
+    flaggedOnly: flaggedOnly.value,
+  })
+);
+const text = computed(() => buildTextResults(props.dashboard));
+const shownRows = computed(() =>
+  filterTextRows(text.value.rows, {
     query: query.value,
     flaggedOnly: flaggedOnly.value,
   })
@@ -68,7 +77,7 @@ const totalCards = computed(() =>
       </span>
     </div>
 
-    <p v-if="shown.length === 0" class="flex flex-wrap items-center gap-2 text-sm text-ink-2">
+    <p v-if="shown.length === 0 && shownRows.length === 0" class="flex flex-wrap items-center gap-2 text-sm text-ink-2">
       No tests match{{ query ? ` “${query}”` : "" }}{{ flaggedOnly ? " among flagged results" : "" }}.
       <button
         type="button"
@@ -96,5 +105,7 @@ const totalCards = computed(() =>
         <TestCard v-for="card in group.cards" :key="card.key" :card="card" />
       </div>
     </section>
+
+    <TextResults v-if="shownRows.length" :columns="text.columns" :rows="shownRows" />
   </section>
 </template>
