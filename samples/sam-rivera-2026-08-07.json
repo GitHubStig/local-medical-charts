@@ -1,0 +1,572 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "report": "sam-rivera-2026-08-07",
+    "images": [
+      "sam-rivera-2026-08-07-1.jpg"
+    ],
+    "pages": 1,
+    "model": "sample-data",
+    "promptHash": "sample-data",
+    "catalogHash": "64724459590c",
+    "extractedAt": "2026-08-08T21:14:00.000Z",
+    "mergedAt": "2026-08-08T21:20:00.000Z"
+  },
+  "provider": {
+    "name": "Northside Pathology",
+    "address": "8 Alder Lane, Brookfield",
+    "phone": "(02) 5550 0148",
+    "website": "northside-pathology.example"
+  },
+  "patient": {
+    "name": "SAM RIVERA",
+    "idNumber": "T7654907M",
+    "dateOfBirth": "14-02-1990",
+    "sex": "MALE",
+    "age": "36Y",
+    "dateOfBirthIso": "1990-02-14"
+  },
+  "doctor": {
+    "name": "DR PRIYA NAIR",
+    "clinic": "RIVERSIDE FAMILY CLINIC"
+  },
+  "dates": {
+    "collected": null,
+    "received": "07/08/2026 08:40:00",
+    "requested": null,
+    "reported": "08/08/2026 16:05:00"
+  },
+  "collectedAt": "2026-08-07T08:40:00",
+  "collectedAtSource": "received",
+  "reportedAt": "2026-08-08T16:05:00",
+  "headerFields": [
+    {
+      "label": "R/N",
+      "value": "0000112"
+    },
+    {
+      "label": "VN/AN",
+      "value": "NP260807"
+    }
+  ],
+  "specimenNotes": [
+    "Comment: Fasting"
+  ],
+  "interpretation": [],
+  "tests": [
+    {
+      "analyte": "haemoglobin",
+      "analyteName": "Haemoglobin",
+      "specimen": "blood",
+      "name": "Haemoglobin",
+      "nameZh": null,
+      "headings": [
+        "Full Blood Count"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 14.8
+      },
+      "unit": "g/dL",
+      "range": {
+        "kind": "between",
+        "min": 11.5,
+        "max": 16
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 14.8,
+        "unit": "g/dL"
+      },
+      "printed": {
+        "value": "14.8",
+        "unit": "g/dL",
+        "referenceText": "11.5 - 16.0",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "wbc",
+      "analyteName": "White cell count",
+      "specimen": "blood",
+      "name": "Total WBC",
+      "nameZh": null,
+      "headings": [
+        "Full Blood Count"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 7.9
+      },
+      "unit": "x10^9/L",
+      "range": {
+        "kind": "between",
+        "min": 4,
+        "max": 11
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 7.9,
+        "unit": "x10^9/L"
+      },
+      "printed": {
+        "value": "7.9",
+        "unit": "x10^9/L",
+        "referenceText": "4.0 - 11.0",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "platelets",
+      "analyteName": "Platelet count",
+      "specimen": "blood",
+      "name": "Platelet Count",
+      "nameZh": null,
+      "headings": [
+        "Full Blood Count"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 212
+      },
+      "unit": "x10^9/L",
+      "range": {
+        "kind": "between",
+        "min": 150,
+        "max": 400
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 212,
+        "unit": "x10^9/L"
+      },
+      "printed": {
+        "value": "212",
+        "unit": "x10^9/L",
+        "referenceText": "150 - 400",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "neutrophils_pct",
+      "analyteName": "Neutrophils (%)",
+      "specimen": "blood",
+      "name": "Neutrophils",
+      "nameZh": null,
+      "headings": [
+        "Full Blood Count"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 62
+      },
+      "unit": "%",
+      "range": {
+        "kind": "between",
+        "min": 40,
+        "max": 75
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 62,
+        "unit": "%"
+      },
+      "printed": {
+        "value": "62",
+        "unit": "%",
+        "referenceText": "40 - 75",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "neutrophils_abs",
+      "analyteName": "Neutrophils (absolute)",
+      "specimen": "blood",
+      "name": "Neutrophils",
+      "nameZh": null,
+      "headings": [
+        "Full Blood Count"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 5.1
+      },
+      "unit": "x10^9/L",
+      "range": {
+        "kind": "between",
+        "min": 2,
+        "max": 7.5
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 5.1,
+        "unit": "x10^9/L"
+      },
+      "printed": {
+        "value": "5.1",
+        "unit": "x10^9/L",
+        "referenceText": "2.0 - 7.5",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "total_cholesterol",
+      "analyteName": "Total cholesterol",
+      "specimen": "blood",
+      "name": "Total Cholesterol",
+      "nameZh": null,
+      "headings": [
+        "Lipid Profile"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 4.6
+      },
+      "unit": "mmol/L",
+      "range": {
+        "kind": "below",
+        "limit": 5.2,
+        "inclusive": false
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 4.6,
+        "unit": "mmol/L"
+      },
+      "printed": {
+        "value": "4.6",
+        "unit": "mmol/L",
+        "referenceText": "< 5.2",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "ldl_c",
+      "analyteName": "LDL cholesterol",
+      "specimen": "blood",
+      "name": "LDL-Cholesterol",
+      "nameZh": null,
+      "headings": [
+        "Lipid Profile"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 2.7
+      },
+      "unit": "mmol/L",
+      "range": {
+        "kind": "below",
+        "limit": 3.4,
+        "inclusive": false
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 2.7,
+        "unit": "mmol/L"
+      },
+      "printed": {
+        "value": "2.7",
+        "unit": "mmol/L",
+        "referenceText": "< 3.4",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "hdl_c",
+      "analyteName": "HDL cholesterol",
+      "specimen": "blood",
+      "name": "HDL-Cholesterol",
+      "nameZh": null,
+      "headings": [
+        "Lipid Profile"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 1.1
+      },
+      "unit": "mmol/L",
+      "range": {
+        "kind": "above",
+        "limit": 1,
+        "inclusive": false
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 1.1,
+        "unit": "mmol/L"
+      },
+      "printed": {
+        "value": "1.1",
+        "unit": "mmol/L",
+        "referenceText": "> 1.0",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "triglycerides",
+      "analyteName": "Triglycerides",
+      "specimen": "blood",
+      "name": "Triglycerides",
+      "nameZh": null,
+      "headings": [
+        "Lipid Profile"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 2.1
+      },
+      "unit": "mmol/L",
+      "range": {
+        "kind": "below",
+        "limit": 1.7,
+        "inclusive": false
+      },
+      "flag": "H",
+      "flagSource": "printed",
+      "standard": {
+        "op": null,
+        "value": 2.1,
+        "unit": "mmol/L"
+      },
+      "printed": {
+        "value": "2.1",
+        "unit": "mmol/L",
+        "referenceText": "< 1.7",
+        "marker": "H"
+      },
+      "notes": [],
+      "page": 1
+    }
+  ],
+  "unmapped": [],
+  "warnings": [
+    "no collection date printed; charting by the received date"
+  ],
+  "pages": [
+    {
+      "model": "sample-data",
+      "promptHash": "sample-data",
+      "extractedAt": "2026-08-08T21:14:00.000Z",
+      "extraction": {
+        "page": 1,
+        "pageCount": 1,
+        "provider": {
+          "name": "Northside Pathology",
+          "address": "8 Alder Lane, Brookfield",
+          "phone": "(02) 5550 0148",
+          "website": "northside-pathology.example"
+        },
+        "patient": {
+          "name": "SAM RIVERA",
+          "idNumber": "T7654907M",
+          "dateOfBirth": "14-02-1990",
+          "sex": "MALE",
+          "age": "36Y"
+        },
+        "doctor": {
+          "name": "DR PRIYA NAIR",
+          "clinic": "RIVERSIDE FAMILY CLINIC"
+        },
+        "dates": {
+          "collected": null,
+          "received": "07/08/2026 08:40:00",
+          "requested": null,
+          "reported": "08/08/2026 16:05:00"
+        },
+        "headerFields": [
+          {
+            "label": "R/N",
+            "value": "0000112"
+          },
+          {
+            "label": "VN/AN",
+            "value": "NP260807"
+          }
+        ],
+        "tests": [
+          {
+            "headings": [
+              "Full Blood Count"
+            ],
+            "specimen": "blood",
+            "name": "Haemoglobin",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "14.8",
+                "unit": "g/dL",
+                "referenceText": "11.5 - 16.0",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "Full Blood Count"
+            ],
+            "specimen": "blood",
+            "name": "Total WBC",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "7.9",
+                "unit": "x10^9/L",
+                "referenceText": "4.0 - 11.0",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "Full Blood Count"
+            ],
+            "specimen": "blood",
+            "name": "Platelet Count",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "212",
+                "unit": "x10^9/L",
+                "referenceText": "150 - 400",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "Full Blood Count"
+            ],
+            "specimen": "blood",
+            "name": "Neutrophils",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "62",
+                "unit": "%",
+                "referenceText": "40 - 75",
+                "marker": null
+              },
+              {
+                "value": "5.1",
+                "unit": "x10^9/L",
+                "referenceText": "2.0 - 7.5",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "Lipid Profile"
+            ],
+            "specimen": "blood",
+            "name": "Total Cholesterol",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "4.6",
+                "unit": "mmol/L",
+                "referenceText": "< 5.2",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "Lipid Profile"
+            ],
+            "specimen": "blood",
+            "name": "LDL-Cholesterol",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "2.7",
+                "unit": "mmol/L",
+                "referenceText": "< 3.4",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "Lipid Profile"
+            ],
+            "specimen": "blood",
+            "name": "HDL-Cholesterol",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "1.1",
+                "unit": "mmol/L",
+                "referenceText": "> 1.0",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "Lipid Profile"
+            ],
+            "specimen": "blood",
+            "name": "Triglycerides",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "2.1",
+                "unit": "mmol/L",
+                "referenceText": "< 1.7",
+                "marker": "H"
+              }
+            ],
+            "notes": []
+          }
+        ],
+        "continuationText": null,
+        "interpretation": [],
+        "specimenNotes": [
+          "Comment: Fasting"
+        ],
+        "warnings": []
+      },
+      "image": "sam-rivera-2026-08-07-1.jpg"
+    }
+  ]
+}

@@ -14,12 +14,17 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "jsx": "preserve",
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "@zod/zod": [
+        "./node_modules/zod"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.vue",
-    "vite.config.ts",
-    "../desktop/contract.ts"
+    "vite.config.ts"
   ]
 }

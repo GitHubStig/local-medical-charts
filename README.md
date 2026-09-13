@@ -10,7 +10,7 @@ report PDFs with a local vision model into versioned JSON, and a desktop app
 
 ```sh
 deno install      # installs everything from deno.lock — never use npm install
-deno task dev     # app in a browser with hot reload
+deno task dev     # app in a browser with hot reload, on fictional sample data
 deno task desktop # app in its desktop window
 deno task build   # production build into app/dist
 deno task test    # pipeline tests
@@ -23,8 +23,22 @@ deno task test    # pipeline tests
 | `deno task map`                | Suggest catalog matches for test names the catalog doesn't know               |
 | `deno task upgrade`            | Upgrade stored reports to the current schema version and catalog              |
 | `deno task dev` / `build`      | Run the app in a browser, or build it                                         |
+| `deno task samples`            | Regenerate the fictional sample reports in `samples/`                         |
 | `deno task desktop`            | Build the app and open it in its desktop window (database in `.data/`)        |
 | `deno task test`               | Run the tests                                                                 |
+
+## Two ways to run the app
+
+|            | `deno task dev`                                        | `deno task desktop`                            |
+| ---------- | ------------------------------------------------------ | ---------------------------------------------- |
+| Runs in    | A normal browser, with live reload                     | The desktop window                             |
+| Data       | Fake bindings with the fictional reports in `samples/` | Real bindings, SQLite in `.data/`              |
+| Use it for | UI work, and anything an AI agent needs to see quickly | Checking the real storage, import and upgrades |
+
+Both implement the same `DesktopBindings` contract (`desktop/contract.ts`), and
+the same contract tests run against both (`desktop/contract_suite.ts`), so the
+fake can't quietly drift from the real thing. Add `?empty` to the dev URL to
+start with no reports.
 
 ## Versions during development
 
@@ -40,6 +54,24 @@ migrations, then reset local data:
   then re-import them.
 
 Migrations start from version 2, after release.
+
+## Known workarounds
+
+### npm `zod` for the app's editor types
+
+The pipeline uses Zod from JSR (`jsr:@zod/zod`). The VS Code Vue extension can't
+resolve JSR packages, so report types imported into the app through
+`src/schema.ts` would silently become `any`. As a workaround:
+
+- `app/package.json` has npm `zod` as a **devDependency, used for types only** —
+  same source repository and version as the JSR package, never bundled.
+- `app/tsconfig.json` maps `@zod/zod` to it with `paths`.
+
+**To remove it** once the Vue extension (or TypeScript) can resolve JSR
+packages: delete the `paths` entry and the `zod` devDependency, run
+`deno install --frozen=false`, and check that report types in a `.vue` file
+still show real types rather than `any`. Keep both zod versions in step until
+then.
 
 ## Dependencies and supply-chain safety
 
