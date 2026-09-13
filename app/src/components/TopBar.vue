@@ -26,8 +26,9 @@ function confirmClear() {
 </script>
 
 <template>
+  <!-- Sticky, so the chart library and theme stay in reach while scrolling. -->
   <header
-    class="flex h-18 items-center justify-between gap-6 border-b border-line bg-surface px-10"
+    class="sticky top-0 z-20 flex h-18 items-center justify-between gap-6 border-b border-line bg-surface px-10"
   >
     <div class="flex items-center gap-5">
       <div class="flex items-center gap-2.5">
