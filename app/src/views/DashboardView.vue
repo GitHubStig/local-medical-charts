@@ -8,6 +8,7 @@ import TestGrid from "../components/TestGrid.vue";
 import TopBar from "../components/TopBar.vue";
 import { useLibrary } from "../composables/useLibrary.ts";
 import { patientOverview } from "../lib/dashboard.ts";
+import Icon from "../components/Icon.vue";
 
 const {
   selectedPatientId,
@@ -60,9 +61,7 @@ const { isOverDropZone } = useDropZone(page, {
           aria-label="Dismiss import results"
           @click="dismissImport"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-          </svg>
+          <Icon name="close" />
         </button>
       </div>
 

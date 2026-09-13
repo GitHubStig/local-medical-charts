@@ -3,6 +3,7 @@ import { onClickOutside } from "@vueuse/core";
 import { computed, nextTick, ref, useId } from "vue";
 import type { PatientSummary } from "../../../desktop/contract.ts";
 import { displayName, initials, monthSpan, plural } from "../lib/format.ts";
+import Icon from "./Icon.vue";
 
 const props = defineProps<{
   patients: readonly PatientSummary[];
@@ -102,17 +103,7 @@ function onListKeydown(event: KeyboardEvent) {
         <span class="text-sm font-semibold text-ink">{{ displayName(selected?.name) }}</span>
         <span class="text-xs text-muted">{{ plural(selected?.reportCount ?? 0, "report") }}</span>
       </span>
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        aria-hidden="true"
-        class="text-ink-2 transition-transform"
-        :class="open ? 'rotate-180' : ''"
-      >
-        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
+      <Icon name="chevron-down" class="text-ink-2 transition-transform" :class="open ? 'rotate-180' : ''" />
     </button>
 
     <ul
@@ -152,17 +143,7 @@ function onListKeydown(event: KeyboardEvent) {
             {{ plural(patient.failedReportCount, "report") }} couldn't be upgraded
           </span>
         </span>
-        <svg
-          v-if="patient.id === selectedId"
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          aria-hidden="true"
-          class="shrink-0 text-ink"
-        >
-          <path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
+        <Icon v-if="patient.id === selectedId" name="check" class="shrink-0 text-ink" />
       </li>
     </ul>
   </div>

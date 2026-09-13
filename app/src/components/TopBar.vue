@@ -4,6 +4,7 @@ import AppLogo from "./AppLogo.vue";
 import FilePickerButton from "./FilePickerButton.vue";
 import PatientPicker from "./PatientPicker.vue";
 import ThemeToggle from "./ThemeToggle.vue";
+import Icon from "./Icon.vue";
 
 const {
   patients,
@@ -47,9 +48,7 @@ function confirmClear() {
         class="flex h-11 items-center gap-2 rounded-lg bg-ink px-4 text-sm font-medium whitespace-nowrap text-page disabled:opacity-60"
         @files="importFiles"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-        </svg>
+        <Icon name="plus" />
         Add reports
       </FilePickerButton>
       <button
@@ -58,15 +57,7 @@ function confirmClear() {
         class="flex h-11 items-center gap-2 rounded-lg border border-danger-line px-3.5 text-sm font-medium whitespace-nowrap text-danger disabled:opacity-60"
         @click="confirmClear"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path
-            d="M2.5 4h11M6 4V2.8h4V4M4 4l.7 9.2h6.6L12 4"
-            stroke="currentColor"
-            stroke-width="1.4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <Icon name="trash" />
         Clear all data
       </button>
     </div>

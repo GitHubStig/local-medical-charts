@@ -4,6 +4,7 @@ import type { DashboardReport } from "../../../desktop/contract.ts";
 import { reportDetails, reportRow } from "../lib/dashboard.ts";
 import { plural } from "../lib/format.ts";
 import FlagPill from "./FlagPill.vue";
+import Icon from "./Icon.vue";
 
 const props = defineProps<{ entry: DashboardReport; initiallyOpen: boolean }>();
 const emit = defineEmits<{ remove: [reportId: number] }>();
@@ -32,16 +33,7 @@ const blocks = computed(() =>
     <summary
       class="flex min-h-13 cursor-pointer list-none items-center gap-3.5 px-5 py-2 hover:bg-hairline [&::-webkit-details-marker]:hidden"
     >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        aria-hidden="true"
-        class="shrink-0 -rotate-90 text-ink-2 transition-transform group-open/report:rotate-0"
-      >
-        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
+      <Icon name="chevron-down" class="shrink-0 -rotate-90 text-ink-2 transition-transform group-open/report:rotate-0" />
       <span class="w-28 shrink-0 text-sm font-semibold">{{ row.date }}</span>
       <span class="min-w-0 flex-1 truncate text-sm text-ink-2">{{ row.lab }}</span>
       <span class="hidden gap-2 lg:flex">
@@ -120,9 +112,7 @@ const blocks = computed(() =>
             <summary
               class="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-lg px-2.5 text-[13px] text-ink-2 hover:bg-chip [&::-webkit-details-marker]:hidden"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="transition-transform group-open/interp:rotate-90">
-                <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <Icon name="chevron-right" class="transition-transform group-open/interp:rotate-90" />
               Interpretation · {{ plural(details.interpretation.length, "note") }}
             </summary>
             <div class="mt-1 flex flex-col gap-3 rounded-lg bg-page px-4 py-3">
@@ -139,9 +129,7 @@ const blocks = computed(() =>
             <summary
               class="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-lg px-2.5 text-[13px] text-ink-2 hover:bg-chip [&::-webkit-details-marker]:hidden"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="transition-transform group-open/notes:rotate-90">
-                <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <Icon name="chevron-right" class="transition-transform group-open/notes:rotate-90" />
               Extraction notes · {{ details.notes.length }}
             </summary>
             <ul class="mt-1 flex flex-col gap-1 rounded-lg bg-page px-4 py-3">
