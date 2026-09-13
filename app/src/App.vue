@@ -134,6 +134,7 @@ const clearAll = () =>
         <li v-for="o in outcomes" :key="o.fileName" class="flex flex-col">
           <span>{{ o.fileName }}: <strong>{{ o.status }}</strong></span>
           <span v-if="o.status === 'rejected'" class="text-danger">{{ o.error }}</span>
+          <span v-for="w in o.status === 'rejected' ? [] : o.warnings" :key="w" class="text-ink-2">Warning: {{ w }}</span>
         </li>
       </ul>
     </section>

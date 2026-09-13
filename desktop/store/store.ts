@@ -17,6 +17,12 @@ import { SCHEMA_VERSION } from "../../src/schema.ts";
 import { upgradeReport } from "../../src/upgrade.ts";
 import { patientIdentity, resultsFromReport } from "../report-data.ts";
 import { normalizeSettings, type Settings } from "../settings.ts";
+import {
+  idMatchWarnings,
+  sameNameAndBirthDate,
+  sameNameDifferentIdWarning,
+  uploadProblem,
+} from "../upload-checks.ts";
 import type {
   AddReportResult,
   PatientSummary,
@@ -105,6 +111,8 @@ export class ReportStore {
     } catch (err) {
       throw new StoreError(`${fileName} is not valid JSON: ${message(err)}`);
     }
+    const problem = uploadProblem(json);
+    if (problem) throw new StoreError(`${fileName}: ${problem}`);
 
     const hash = contentHash(json);
     const existing = this.#db
@@ -115,6 +123,7 @@ export class ReportStore {
         status: "duplicate",
         reportId: Number(existing.id),
         patientId: Number(existing.patient_id),
+        warnings: [],
       };
     }
 
@@ -134,7 +143,41 @@ export class ReportStore {
     }
 
     const at = now.toISOString();
+    const incoming = {
+      name: report.patient.name,
+      dateOfBirth: report.patient.dateOfBirthIso,
+    };
     return this.#transaction(() => {
+      const warnings: string[] = [];
+      const known = this.#db
+        .prepare(
+          "SELECT name, date_of_birth FROM patients WHERE identity_key = ?",
+        )
+        .get(identity) as Row | undefined;
+
+      if (known && identity.startsWith("id:")) {
+        warnings.push(...idMatchWarnings(
+          {
+            name: known.name as string | null,
+            dateOfBirth: known.date_of_birth as string | null,
+          },
+          incoming,
+        ));
+      } else if (!known) {
+        const others = this.#db
+          .prepare(
+            "SELECT name, date_of_birth FROM patients WHERE date_of_birth = ?",
+          )
+          .all(incoming.dateOfBirth) as Row[];
+        const lookalike = others.some((o) =>
+          sameNameAndBirthDate(incoming, {
+            name: o.name as string | null,
+            dateOfBirth: o.date_of_birth as string | null,
+          })
+        );
+        if (lookalike) warnings.push(sameNameDifferentIdWarning(incoming.name));
+      }
+
       this.#db
         .prepare(
           `INSERT INTO patients (identity_key, created_at, updated_at) VALUES (?, ?, ?)
@@ -173,7 +216,7 @@ export class ReportStore {
 
       this.#writeResults(reportId, patientId, report);
       this.#refreshPatient(patientId, at);
-      return { status: "added", reportId, patientId };
+      return { status: "added", reportId, patientId, warnings };
     });
   }
 

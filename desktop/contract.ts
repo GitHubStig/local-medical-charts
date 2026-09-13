@@ -62,6 +62,8 @@ export type ImportOutcome =
     status: "added" | "duplicate";
     patientId: number;
     reportId: number;
+    /** e.g. the ID number matched a patient with a different name. */
+    warnings: string[];
   }
   | { fileName: string; status: "rejected"; error: string };
 
