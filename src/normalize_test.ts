@@ -7,7 +7,8 @@ import {
   parseRange,
   parseResult,
 } from "./normalize.ts";
-import type { PageExtraction, Report } from "./schema.ts";
+import type { PageExtraction, Report, ReportPage } from "./schema.ts";
+import { SCHEMA_VERSION } from "./schema.ts";
 import { normalizeUnit } from "./units.ts";
 
 // All fixtures below are synthetic.
@@ -218,20 +219,21 @@ function page(
   };
 }
 
-const source: Report["source"] = {
-  report: "example",
-  images: [],
-  pages: 2,
-  model: "test",
-  promptHash: "test",
-  catalogHash: "test",
-  extractedAt: "",
-  mergedAt: "",
-};
+function asPages(extractions: PageExtraction[]): ReportPage[] {
+  return extractions.map((extraction) => ({
+    image: `example-${extraction.page}.jpg`,
+    model: "test-model",
+    promptHash: "test-prompt",
+    extractedAt: `2025-01-15T10:0${extraction.page}:00.000Z`,
+    extraction,
+  }));
+}
+
+const source = { report: "example", catalogHash: "test", mergedAt: "" };
 
 function mergeExample(): Report {
   return buildReport(
-    [
+    asPages([
       page({
         page: 1,
         tests: [
@@ -303,7 +305,7 @@ function mergeExample(): Report {
           },
         ],
       }),
-    ],
+    ]),
     source,
     miniCatalog,
   );
@@ -350,13 +352,13 @@ Deno.test("buildReport reconciles repeated header content", () => {
 
 Deno.test("buildReport never puts personal values in warnings", () => {
   const report = buildReport(
-    [
+    asPages([
       page({ page: 1 }),
       page({
         page: 2,
         patient: { ...page({ page: 2 }).patient, name: "OTHER READING" },
       }),
-    ],
+    ]),
     source,
     miniCatalog,
   );
@@ -365,4 +367,16 @@ Deno.test("buildReport never puts personal values in warnings", () => {
   assert(
     !warning.includes("TEST PATIENT") && !warning.includes("OTHER READING"),
   );
+});
+
+Deno.test("buildReport stamps the version and embeds its pages", () => {
+  const report = mergeExample();
+  assertEquals(report.schemaVersion, SCHEMA_VERSION);
+  assertEquals(report.pages.map((p) => p.image), [
+    "example-1.jpg",
+    "example-2.jpg",
+  ]);
+  assertEquals(report.source.images, ["example-1.jpg", "example-2.jpg"]);
+  assertEquals(report.source.model, "test-model");
+  assertEquals(report.source.extractedAt, "2025-01-15T10:02:00.000Z");
 });

@@ -16,10 +16,12 @@ import type {
   RawMeasurement,
   RawTest,
   Report,
+  ReportPage,
   Result,
   Test,
   Unmapped,
 } from "./schema.ts";
+import { SCHEMA_VERSION } from "./schema.ts";
 import { normalizeUnit } from "./units.ts";
 
 const NUMBER = String.raw`-?\d+(?:\.\d+)?`;
@@ -411,13 +413,31 @@ const DATE_PRIORITY: readonly DateSource[] = [
   "reported",
 ];
 
+/** What a merge needs beyond the pages; the rest of `source` is derived. */
+export type MergeInfo = Pick<
+  Report["source"],
+  "report" | "catalogHash" | "mergedAt"
+>;
+
+function distinct(values: string[]): string {
+  return [...new Set(values)].join(", ");
+}
+
+/**
+ * Merges a report's pages into one normalized Report, matching every result
+ * against the catalog. Deterministic: the same pages and catalog always give the
+ * same report, which is what lets stored reports be re-merged later.
+ */
 export function buildReport(
-  pages: PageExtraction[],
-  source: Report["source"],
+  pages: ReportPage[],
+  info: MergeInfo,
   catalog: CatalogIndex,
 ): Report {
   const warnings: string[] = [];
-  const ordered = [...pages].sort((a, b) => a.page - b.page);
+  const sortedPages = [...pages].sort((a, b) =>
+    a.extraction.page - b.extraction.page
+  );
+  const ordered = sortedPages.map((p) => p.extraction);
 
   for (const page of ordered) {
     for (const warning of page.warnings) {
@@ -552,7 +572,17 @@ export function buildReport(
   }
 
   return {
-    source,
+    schemaVersion: SCHEMA_VERSION,
+    source: {
+      report: info.report,
+      images: sortedPages.map((p) => p.image),
+      pages: sortedPages.length,
+      model: distinct(sortedPages.map((p) => p.model)),
+      promptHash: distinct(sortedPages.map((p) => p.promptHash)),
+      catalogHash: info.catalogHash,
+      extractedAt: sortedPages.map((p) => p.extractedAt).sort().at(-1) ?? "",
+      mergedAt: info.mergedAt,
+    },
     provider,
     patient: { ...patient, dateOfBirthIso: parseDate(patient.dateOfBirth) },
     doctor,
@@ -566,5 +596,6 @@ export function buildReport(
     tests,
     unmapped: [...unmapped.values()],
     warnings,
+    pages: sortedPages,
   };
 }
