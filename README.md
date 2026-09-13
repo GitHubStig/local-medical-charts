@@ -11,6 +11,7 @@ report PDFs with a local vision model into versioned JSON, and a desktop app
 ```sh
 deno install      # installs everything from deno.lock — never use npm install
 deno task dev     # app in a browser with hot reload
+deno task desktop # app in its desktop window
 deno task build   # production build into app/dist
 deno task test    # pipeline tests
 ```
@@ -21,7 +22,8 @@ deno task test    # pipeline tests
 | `deno task ocr`                | OCR page images in `2.images` into JSON in `3.data` with a local Ollama model |
 | `deno task map`                | Suggest catalog matches for test names the catalog doesn't know               |
 | `deno task upgrade`            | Upgrade stored reports to the current schema version and catalog              |
-| `deno task dev` / `build`      | Run or build the app                                                          |
+| `deno task dev` / `build`      | Run the app in a browser, or build it                                         |
+| `deno task desktop`            | Build the app and open it in its desktop window                               |
 | `deno task test`               | Run the tests                                                                 |
 
 ## Dependencies and supply-chain safety
