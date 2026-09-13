@@ -25,8 +25,9 @@
     "npm:@tailwindcss/vite@4.3.3": "4.3.3_vite@8.3.0",
     "npm:@vitejs/plugin-vue@6.0.8": "6.0.8_vite@8.3.0_vue@3.5.42",
     "npm:@vueuse/core@14.4.0": "14.4.0_vue@3.5.42",
+    "npm:chart.js@4.5.1": "4.5.1",
     "npm:echarts@6.1.0": "6.1.0",
-    "npm:flint-chart@0.5.1": "0.5.1_echarts@6.1.0_vega@6.4.0_vega-lite@6.4.3",
+    "npm:flint-chart@0.5.1": "0.5.1_chart.js@4.5.1_echarts@6.1.0_vega@6.4.0_vega-lite@6.4.3",
     "npm:mupdf@1.28.1": "1.28.1",
     "npm:tailwindcss@4.3.3": "4.3.3",
     "npm:vega-lite@6.4.3": "6.4.3_vega@6.4.0",
@@ -154,6 +155,9 @@
         "@jridgewell/resolve-uri",
         "@jridgewell/sourcemap-codec"
       ]
+    },
+    "@kurkle/color@0.3.4": {
+      "integrity": "sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w=="
     },
     "@oxc-project/types@0.149.0": {
       "integrity": "sha512-Efcc+iF0j3Bf67YjEqIqWXbX5XddXoK/Mw4K1/JuXwRCZ8N16VR7iT23nlCc9XrveFVh/E5Rqs2StT0V8v9LdA=="
@@ -445,6 +449,12 @@
     "ansi-styles@6.2.3": {
       "integrity": "sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg=="
     },
+    "chart.js@4.5.1": {
+      "integrity": "sha512-GIjfiT9dbmHRiYi6Nl2yFCq7kkwdkp1W/lp2J99rX0yo9tgJGn3lKQATztIjb5tVtevcBtIdICNWqlq5+E8/Pw==",
+      "dependencies": [
+        "@kurkle/color"
+      ]
+    },
     "cliui@9.0.1": {
       "integrity": "sha512-k7ndgKhwoQveBL+/1tqGJYNz097I7WOvwbmmU2AR5+magtbjPWQTS1C5vzGkBC8Ym8UWRzfKUzUUqFLypY4Q+w==",
       "dependencies": [
@@ -615,14 +625,16 @@
         "picomatch"
       ]
     },
-    "flint-chart@0.5.1_echarts@6.1.0_vega@6.4.0_vega-lite@6.4.3": {
+    "flint-chart@0.5.1_chart.js@4.5.1_echarts@6.1.0_vega@6.4.0_vega-lite@6.4.3": {
       "integrity": "sha512-2JWtwM/rj86SXGZYgNsFzya/VUy5SsG4X+nEeGVndr88MmY+yN0zACi1MotHOSpZ9MZY9R0D/xQiGSTuhQngvQ==",
       "dependencies": [
+        "chart.js",
         "echarts",
         "vega",
         "vega-lite"
       ],
       "optionalPeers": [
+        "chart.js",
         "echarts",
         "vega",
         "vega-lite"
@@ -1293,6 +1305,7 @@
             "npm:@tailwindcss/vite@4.3.3",
             "npm:@vitejs/plugin-vue@6.0.8",
             "npm:@vueuse/core@14.4.0",
+            "npm:chart.js@4.5.1",
             "npm:echarts@6.1.0",
             "npm:flint-chart@0.5.1",
             "npm:tailwindcss@4.3.3",

@@ -11,7 +11,7 @@ export const THEMES = ["system", "light", "dark"] as const;
 export type Theme = (typeof THEMES)[number];
 
 /** Chart libraries the dashboard can draw with, through Flint. */
-export const CHART_LIBRARIES = ["vega-lite", "echarts"] as const;
+export const CHART_LIBRARIES = ["vega-lite", "echarts", "chartjs"] as const;
 export type ChartLibrary = (typeof CHART_LIBRARIES)[number];
 
 export type Settings = {
