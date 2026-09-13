@@ -14,7 +14,7 @@
     "desktop": "deno task build && deno desktop --hmr -A desktop/main.ts",
     "extract": "deno run --allow-read --allow-write src/pdf-to-images.ts",
     "ocr": "deno run --allow-read --allow-write --allow-net src/ocr-reports.ts",
-    "test": "deno test --allow-read src/",
+    "test": "deno test --allow-read --allow-write src/ desktop/",
     "map": "deno run --allow-read --allow-write --allow-net src/map-analytes.ts",
     "upgrade": "deno run --allow-read --allow-write src/upgrade-reports.ts"
   },
