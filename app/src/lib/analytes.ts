@@ -5,6 +5,7 @@
  */
 import catalog from "../../../src/analytes.json" with { type: "json" };
 import type { AnalyteGroup } from "../../../src/analyte-groups.ts";
+import { unitKey } from "../../../src/units.ts";
 
 export type AnalyteInfo = {
   id: string;
@@ -15,6 +16,8 @@ export type AnalyteInfo = {
   aliases: readonly string[];
   /** Position in the catalog, which orders cards within a group. */
   order: number;
+  /** Accepted printed unit, as a unitKey, → factor that converts into `unit`. */
+  factors: ReadonlyMap<string, number>;
 };
 
 export const ANALYTES: ReadonlyMap<string, AnalyteInfo> = new Map(
@@ -25,5 +28,23 @@ export const ANALYTES: ReadonlyMap<string, AnalyteInfo> = new Map(
     unit: a.unit,
     aliases: a.aliases,
     order,
+    // JSON imports type each entry's units separately, so check each factor.
+    factors: new Map(
+      Object.entries(a.units).flatMap(([unit, factor]) =>
+        typeof factor === "number" ? [[unitKey(unit), factor] as const] : []
+      ),
+    ),
   }]),
 );
+
+/**
+ * The factor that converts a value printed in `unit` into the analyte's
+ * standard unit, as the pipeline converted it; null when the catalog doesn't
+ * list that unit.
+ */
+export function unitFactor(
+  analyteId: string,
+  unit: string | null,
+): number | null {
+  return ANALYTES.get(analyteId)?.factors.get(unitKey(unit)) ?? null;
+}

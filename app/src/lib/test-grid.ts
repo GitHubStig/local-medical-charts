@@ -8,7 +8,7 @@ import {
   type AnalyteGroup,
 } from "../../../src/analyte-groups.ts";
 import type { Dashboard, StoredResult } from "../../../desktop/contract.ts";
-import { ANALYTES } from "./analytes.ts";
+import { ANALYTES, unitFactor } from "./analytes.ts";
 import { type Flag, toFlag } from "./flags.ts";
 import { monthSpan, monthYear } from "./format.ts";
 
@@ -76,18 +76,15 @@ function display(result: StoredResult): string {
 
 /** The factor between printed and shown units, so ranges line up with values. */
 function factor(result: StoredResult): number {
-  if (!result.analyte) return 1;
-  if (result.value && result.standardValue !== null) {
-    return result.standardValue / result.value;
-  }
-  return 1;
+  return result.analyte ? unitFactor(result.analyte, result.unit) ?? 1 : 1;
 }
 
 export function rangeLabel(result: StoredResult): string | null {
   const range = result.range;
   if (!range) return null;
   const f = factor(result);
-  const n = (v: number) => number.format(v * f);
+  // Rounded as the pipeline rounds values, so 0.1 × 155 reads 15.5.
+  const n = (v: number) => number.format(Number((v * f).toPrecision(12)));
   switch (range.kind) {
     case "between":
       return `${n(range.min)} – ${n(range.max)}`;
