@@ -53,6 +53,87 @@ export function defineContractTests(
     ]);
   });
 
+  test("common wrong files are rejected with an explanation", async (b) => {
+    const report = JSON.parse(syntheticReport());
+    const pageFile = {
+      schemaVersion: 1,
+      model: "test-model",
+      promptHash: "test-prompt",
+      extractedAt: "2025-01-15T10:00:00.000Z",
+      extraction: report.pages[0].extraction,
+    };
+    const outcomes = await b.importReports([
+      { name: "report-1.page.json", text: JSON.stringify(pageFile) },
+      {
+        name: "analyte-suggestions.json",
+        text: '{"instructions": "", "suggestions": []}',
+      },
+      {
+        name: "future.json",
+        text: JSON.stringify({ ...report, schemaVersion: 99 }),
+      },
+      { name: "list.json", text: "[]" },
+    ]);
+    const errors = outcomes.map((o) =>
+      o.status === "rejected" ? o.error : o.status
+    );
+    assert(errors[0].includes("single OCR page file"), errors[0]);
+    assert(errors[1].includes("suggestions file"), errors[1]);
+    assert(errors[2].includes("newer version of the app"), errors[2]);
+    assert(errors[3].includes("expected a JSON object"), errors[3]);
+    assertEquals(await b.listPatients(), []);
+  });
+
+  test("a known ID with a different name or birth date is filed with a warning", async (b) => {
+    const [first, renamed, redated] = await b.importReports([
+      { name: "a.json", text: syntheticReport() },
+      {
+        name: "b.json",
+        text: syntheticReport({
+          patientName: "JORDAN EXAMPLE",
+          collected: "20/06/25 09:00",
+        }),
+      },
+      {
+        name: "c.json",
+        text: syntheticReport({
+          dateOfBirth: "16/08/90",
+          collected: "20/09/25 09:00",
+        }),
+      },
+    ]);
+    assert(first.status === "added" && first.warnings.length === 0);
+    assert(renamed.status === "added" && renamed.patientId === first.patientId);
+    assertEquals(renamed.warnings.length, 1);
+    assert(renamed.warnings[0].includes("check the ID"), renamed.warnings[0]);
+    assert(redated.status === "added");
+    assert(
+      redated.warnings.some((w) => w.includes("date of birth differs")),
+      redated.warnings.join(),
+    );
+    assertEquals((await b.listPatients()).length, 1);
+  });
+
+  test("the same name and birth date under another ID starts a new patient, with a warning", async (b) => {
+    const [first, other] = await b.importReports([
+      { name: "a.json", text: syntheticReport({ idNumber: "X1234567" }) },
+      {
+        name: "b.json",
+        text: syntheticReport({
+          idNumber: "Z9999999",
+          collected: "20/06/25 09:00",
+        }),
+      },
+    ]);
+    assert(first.status === "added" && other.status === "added");
+    assert(first.patientId !== other.patientId);
+    assertEquals(other.warnings.length, 1);
+    assert(
+      other.warnings[0].includes("different ID number"),
+      other.warnings[0],
+    );
+  });
+
   test("reports group by patient ID number", async (b) => {
     await b.importReports([
       { name: "a.json", text: syntheticReport({ idNumber: "X1234567" }) },

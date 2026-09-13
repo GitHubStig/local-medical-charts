@@ -30,6 +30,12 @@ import {
   normalizeSettings,
   parseSettingsPatch,
 } from "../../../desktop/settings.ts";
+import {
+  idMatchWarnings,
+  sameNameAndBirthDate,
+  sameNameDifferentIdWarning,
+  uploadProblem,
+} from "../../../desktop/upload-checks.ts";
 import type { Report } from "../../../src/schema.ts";
 
 type SettingsStorage = {
@@ -75,11 +81,14 @@ function compareNullable(
   return a < b ? -1 : 1;
 }
 
-function looksLikeReport(json: unknown): json is Report {
-  const r = json as Partial<Report> | null;
-  return !!r && typeof r === "object" && typeof r.schemaVersion === "number" &&
-    Array.isArray(r.tests) && Array.isArray(r.pages) &&
-    !!r.patient && typeof r.patient === "object";
+/**
+ * The fake can't run the Zod schema, so beyond the shared upload checks it only
+ * confirms the parts it reads. (The real store would rebuild missing results
+ * from the embedded pages; the fake just refuses.)
+ */
+function hasFieldsFakeUses(json: object): json is Report {
+  const r = json as Partial<Report>;
+  return Array.isArray(r.tests) && !!r.patient && typeof r.patient === "object";
 }
 
 export function createFakeBindings(
@@ -130,9 +139,12 @@ export function createFakeBindings(
         }`,
       );
     }
-    if (!looksLikeReport(json)) {
+    const problem = uploadProblem(json);
+    if (problem) return rejected(`${file.name}: ${problem}`);
+    const report = json as object;
+    if (!hasFieldsFakeUses(report)) {
       return rejected(
-        `${file.name}: not a merged report from the OCR pipeline`,
+        `${file.name}: not a merged report (missing tests or patient)`,
       );
     }
 
@@ -144,17 +156,32 @@ export function createFakeBindings(
         status: "duplicate",
         patientId: duplicate.patientId,
         reportId: duplicate.id,
+        warnings: [],
       };
     }
 
-    const identity = patientIdentity(json.patient);
+    const identity = patientIdentity(report.patient);
     if (!identity) {
       return rejected(
         `${file.name}: the report has no patient ID number, or name and date of birth, to file it under`,
       );
     }
+    const incoming = {
+      name: report.patient.name,
+      dateOfBirth: report.patient.dateOfBirthIso,
+    };
+    const warnings: string[] = [];
     let patientId = patientIds.get(identity);
-    if (patientId === undefined) {
+    if (patientId !== undefined) {
+      const known = summary(patientId);
+      if (known && identity.startsWith("id:")) {
+        warnings.push(...idMatchWarnings(known, incoming));
+      }
+    } else {
+      const lookalike = [...patientIds.values()]
+        .map(summary)
+        .some((p) => p && sameNameAndBirthDate(incoming, p));
+      if (lookalike) warnings.push(sameNameDifferentIdWarning(incoming.name));
       patientId = nextPatientId++;
       patientIds.set(identity, patientId);
     }
@@ -165,10 +192,16 @@ export function createFakeBindings(
       patientId,
       fileName: file.name,
       content,
-      report: json,
+      report,
       importedAt: now().toISOString(),
     });
-    return { fileName: file.name, status: "added", patientId, reportId: id };
+    return {
+      fileName: file.name,
+      status: "added",
+      patientId,
+      reportId: id,
+      warnings,
+    };
   }
 
   function summary(patientId: number): PatientSummary | null {

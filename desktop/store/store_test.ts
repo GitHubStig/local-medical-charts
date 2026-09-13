@@ -155,7 +155,7 @@ Deno.test("invalid uploads throw and store nothing", () => {
     assertThrows(
       () => store.addReport(future, "future.json", catalogV1, now),
       StoreError,
-      "newer than this code",
+      "newer version of the app",
     );
     assertEquals(store.listPatients(), []);
   });

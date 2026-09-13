@@ -54,9 +54,13 @@ export type StoredResult = {
   page: number;
 };
 
-export type AddReportResult =
-  | { status: "added"; reportId: number; patientId: number }
-  | { status: "duplicate"; reportId: number; patientId: number };
+export type AddReportResult = {
+  status: "added" | "duplicate";
+  reportId: number;
+  patientId: number;
+  /** Things worth a second look about how the report was filed. Empty for duplicates. */
+  warnings: string[];
+};
 
 export type UpgradeSummary = {
   checked: number;
