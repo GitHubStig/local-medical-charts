@@ -9,6 +9,7 @@
  * "accept": true on a suggestion, and unit conversion factors are only ever
  * typed in by a person.
  */
+import { ANALYTE_GROUPS } from "./analyte-groups.ts";
 import { parseArgs } from "@std/cli/parse-args";
 import { exists } from "@std/fs";
 import { basename, fromFileUrl, join, resolve } from "@std/path";
@@ -100,6 +101,8 @@ const SuggestionSchema = z.object({
   unit: z.string().nullable(),
   /** Multiply a value in `unit` by this to get the analyte's unit. */
   factor: z.number().positive().nullable(),
+  /** Dashboard section for a new analyte; "Other" when left null. */
+  group: z.enum(ANALYTE_GROUPS).nullable(),
   headings: z.array(z.string()),
   reports: z.array(z.string()),
   reason: z.string(),
@@ -185,6 +188,7 @@ export function toSuggestion(
 ): Suggestion {
   const base = {
     accept: false,
+    group: null,
     printedName: item.name,
     nameZh: item.nameZh,
     unit: item.unit,
@@ -406,6 +410,7 @@ function apply(
       id: s.analyteId,
       name: s.name,
       specimen: s.specimen,
+      group: s.group ?? "Other",
       unit,
       aliases: [s.printedName],
       units: { [unit]: 1 },

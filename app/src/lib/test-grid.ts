@@ -1,0 +1,204 @@
+/**
+ * The test grid: one card per test, grouped by the catalog's dashboard groups,
+ * with search and a flagged-only filter. Plain functions, tested in
+ * desktop/test-grid_test.ts.
+ */
+import {
+  ANALYTE_GROUPS,
+  type AnalyteGroup,
+} from "../../../src/analyte-groups.ts";
+import type { Dashboard, StoredResult } from "../../../desktop/contract.ts";
+import { ANALYTES } from "./analytes.ts";
+import { monthSpan, monthYear } from "./format.ts";
+
+export const UNMATCHED_GROUP = "Not in the catalog";
+export type GridGroupName = AnalyteGroup | typeof UNMATCHED_GROUP;
+
+export type TestCardData = {
+  /** Analyte id, or a key built from the printed name for unmatched tests. */
+  key: string;
+  name: string;
+  group: GridGroupName;
+  /** The unit values are shown in: the catalog's standard unit when matched. */
+  unit: string | null;
+  latest: {
+    display: string;
+    flag: "H" | "L" | "A" | null;
+    collectedAt: string | null;
+  };
+  /** "+0.6 since Oct 2025", or null when there's nothing to compare. */
+  change: string | null;
+  readingCount: number;
+  span: string | null;
+  /** The latest reading's lab range, converted to `unit`; null for banded ranges. */
+  range: string | null;
+  order: number;
+  /** Lower-case text the search matches against. */
+  searchText: string;
+};
+
+export type TestGroupData = {
+  name: GridGroupName;
+  cards: TestCardData[];
+  flagged: number;
+};
+
+export type TestGrid = {
+  groups: TestGroupData[];
+  /** Tests whose results are only ever words (e.g. urine dipstick); they're listed elsewhere. */
+  textOnlyCount: number;
+};
+
+const number = new Intl.NumberFormat("en", { maximumFractionDigits: 2 });
+const OPERATORS: Record<string, string> = {
+  ">=": "≥",
+  "<=": "≤",
+  "<": "<",
+  ">": ">",
+};
+
+/** Value in the card's unit: converted for matched tests, as printed otherwise. */
+function shownValue(result: StoredResult) {
+  return result.analyte
+    ? { value: result.standardValue, op: result.standardOp }
+    : { value: result.value, op: result.op };
+}
+
+function display(result: StoredResult): string {
+  if (result.resultKind === "text") return result.text ?? "";
+  const { value, op } = shownValue(result);
+  if (value === null) return "";
+  return op
+    ? `${OPERATORS[op] ?? op} ${number.format(value)}`
+    : number.format(value);
+}
+
+/** The factor between printed and shown units, so ranges line up with values. */
+function factor(result: StoredResult): number {
+  if (!result.analyte) return 1;
+  if (result.value && result.standardValue !== null) {
+    return result.standardValue / result.value;
+  }
+  return 1;
+}
+
+function rangeLabel(result: StoredResult): string | null {
+  const range = result.range;
+  if (!range) return null;
+  const f = factor(result);
+  const n = (v: number) => number.format(v * f);
+  switch (range.kind) {
+    case "between":
+      return `${n(range.min)} – ${n(range.max)}`;
+    case "below":
+      return `${range.inclusive ? "≤" : "<"} ${n(range.limit)}`;
+    case "above":
+      return `${range.inclusive ? "≥" : ">"} ${n(range.limit)}`;
+    case "qualitative":
+      return range.expected;
+    default:
+      return null;
+  }
+}
+
+function change(
+  latest: StoredResult,
+  previous: StoredResult | undefined,
+): string | null {
+  if (!previous) return null;
+  const a = shownValue(latest), b = shownValue(previous);
+  if (
+    latest.resultKind !== "numeric" || previous.resultKind !== "numeric" ||
+    a.value === null || b.value === null
+  ) return null;
+  const since = monthYear(previous.collectedAt);
+  const suffix = since ? ` since ${since}` : "";
+  // Rounded to the shown precision, so 12.2 − 11.6 reads 0.6, not 0.5999999.
+  const delta = Number((a.value - b.value).toFixed(2));
+  if (delta === 0) return `No change${suffix}`;
+  return `${delta > 0 ? "+" : "−"}${number.format(Math.abs(delta))}${suffix}`;
+}
+
+const byDate = (a: StoredResult, b: StoredResult) =>
+  (a.collectedAt ?? "").localeCompare(b.collectedAt ?? "") ||
+  a.reportId - b.reportId || a.position - b.position;
+
+export function buildTestGrid(dashboard: Dashboard): TestGrid {
+  const series = new Map<string, StoredResult[]>();
+  for (const result of dashboard.results) {
+    const key = result.analyte ??
+      `unmatched:${result.name.toLowerCase()}|${result.unit ?? ""}`;
+    series.set(key, [...(series.get(key) ?? []), result]);
+  }
+
+  const cards: TestCardData[] = [];
+  let textOnlyCount = 0;
+  for (const [key, results] of series) {
+    if (results.every((r) => r.resultKind === "text")) {
+      textOnlyCount++;
+      continue;
+    }
+    const readings = [...results].sort(byDate);
+    const latest = readings[readings.length - 1];
+    const info = latest.analyte ? ANALYTES.get(latest.analyte) : undefined;
+    const printedNames = [...new Set(readings.map((r) => r.name))];
+    const name = info?.name ?? latest.name;
+    const group: GridGroupName = info?.group ?? UNMATCHED_GROUP;
+
+    cards.push({
+      key,
+      name,
+      group,
+      unit: (info ? info.unit : latest.unit) || null,
+      latest: {
+        display: display(latest),
+        flag: latest.flag as TestCardData["latest"]["flag"],
+        collectedAt: latest.collectedAt,
+      },
+      change: change(latest, readings[readings.length - 2]),
+      readingCount: readings.length,
+      span: monthSpan(readings[0].collectedAt, latest.collectedAt),
+      range: rangeLabel(latest),
+      order: info?.order ?? Number.MAX_SAFE_INTEGER,
+      searchText: [name, group, ...printedNames, ...(info?.aliases ?? [])]
+        .join(" ").toLowerCase(),
+    });
+  }
+
+  const groupOrder = [...ANALYTE_GROUPS, UNMATCHED_GROUP] as GridGroupName[];
+  const groups = groupOrder.flatMap((groupName): TestGroupData[] => {
+    const inGroup = cards
+      .filter((c) => c.group === groupName)
+      .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+    return inGroup.length
+      ? [{
+        name: groupName,
+        cards: inGroup,
+        flagged: inGroup.filter((c) => c.latest.flag).length,
+      }]
+      : [];
+  });
+
+  return { groups, textOnlyCount };
+}
+
+/** Cards matching every word of the query (and flagged, if asked), in their groups. */
+export function filterTestGrid(
+  groups: readonly TestGroupData[],
+  filters: { query: string; flaggedOnly: boolean },
+): TestGroupData[] {
+  const words = filters.query.toLowerCase().split(/\s+/).filter(Boolean);
+  return groups.flatMap((group) => {
+    const cards = group.cards.filter((card) =>
+      (!filters.flaggedOnly || card.latest.flag !== null) &&
+      words.every((word) => card.searchText.includes(word))
+    );
+    return cards.length
+      ? [{
+        ...group,
+        cards,
+        flagged: cards.filter((c) => c.latest.flag).length,
+      }]
+      : [];
+  });
+}
