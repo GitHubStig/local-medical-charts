@@ -1,6 +1,7 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { DatabaseSync } from "node:sqlite";
 import {
+  assertExpectedTables,
   DATABASE_MIGRATIONS,
   type DatabaseMigration,
   databaseVersion,
@@ -19,7 +20,7 @@ Deno.test("a new database is migrated to the latest version", () => {
   const db = new DatabaseSync(":memory:");
   const result = migrateDatabase(db);
   assertEquals([result.from, result.to], [0, DATABASE_MIGRATIONS.length]);
-  assertEquals(tables(db), ["patients", "reports", "results"]);
+  assertEquals(tables(db), ["patients", "reports", "results", "settings"]);
   db.close();
 });
 
@@ -85,6 +86,20 @@ Deno.test("migrations must be numbered without gaps", () => {
     () => migrateDatabase(db, [second]),
     DatabaseVersionError,
     "numbered",
+  );
+  db.close();
+});
+
+Deno.test("a stale development database gets a clear error, not a missing-table failure", () => {
+  const db = new DatabaseSync(":memory:");
+  migrateDatabase(db);
+  assertExpectedTables(db);
+  // What an earlier build of migration 1 would have left behind.
+  db.exec("DROP TABLE settings");
+  assertThrows(
+    () => assertExpectedTables(db),
+    DatabaseVersionError,
+    "delete the data folder",
   );
   db.close();
 });

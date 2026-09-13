@@ -296,3 +296,25 @@ Deno.test("clearAll removes everything", () => {
     assertEquals(store.resultsForPatient(patientId), []);
   });
 });
+
+Deno.test("settings default, persist across reopening, and survive clearAll", () => {
+  const dir = Deno.makeTempDirSync();
+  const path = join(dir, "store.db");
+  try {
+    let store = ReportStore.open(path);
+    assertEquals(store.getSettings(), { theme: "system" });
+    assertEquals(store.updateSettings({ theme: "dark" }, now), {
+      theme: "dark",
+    });
+    store.addReport(syntheticReport(), "a.json", catalogV1, now);
+    store.clearAll();
+    store.close();
+
+    store = ReportStore.open(path);
+    assertEquals(store.getSettings(), { theme: "dark" });
+    assertEquals(store.listPatients(), []);
+    store.close();
+  } finally {
+    Deno.removeSync(dir, { recursive: true });
+  }
+});

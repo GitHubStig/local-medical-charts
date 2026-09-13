@@ -1,6 +1,7 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import {
   type Catalog,
+  catalogFromJson,
   DEFAULT_CATALOG,
   formatCatalog,
   indexCatalog,
@@ -182,4 +183,15 @@ Deno.test("analytes.json is in the canonical format", async () => {
     formatCatalog(index.catalog),
     await Deno.readTextFile(DEFAULT_CATALOG),
   );
+});
+
+Deno.test("the catalog hash depends on content, not formatting", async () => {
+  const text = await Deno.readTextFile(DEFAULT_CATALOG);
+  const fromFile = await loadCatalog();
+  const reformatted = JSON.parse(JSON.stringify(JSON.parse(text), null, 8));
+  assertEquals((await catalogFromJson(reformatted)).hash, fromFile.hash);
+
+  const changed = structuredClone(index.catalog);
+  changed.analytes[0].aliases.push("Another Name");
+  assertEquals((await catalogFromJson(changed)).hash !== fromFile.hash, true);
 });

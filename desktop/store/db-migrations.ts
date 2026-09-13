@@ -2,9 +2,12 @@
  * The database's own versioning, separate from the report JSON's
  * `schemaVersion`: this covers tables and columns, not report contents.
  *
- * The version lives in SQLite's `PRAGMA user_version`. To change the tables,
- * append a migration with the next version number — never edit one that has
- * shipped, because existing databases have already run it.
+ * The version lives in SQLite's `PRAGMA user_version`.
+ *
+ * DURING DEVELOPMENT everything stays at version 1: change the tables by editing
+ * migration 1 in place, then delete the development database (`.data/`). Only
+ * once the app is released, append migrations with the next version number
+ * and never edit one that has shipped, because existing databases have run it.
  */
 import type { DatabaseSync } from "node:sqlite";
 
@@ -17,7 +20,7 @@ export type DatabaseMigration = {
 export const DATABASE_MIGRATIONS: readonly DatabaseMigration[] = [
   {
     version: 1,
-    description: "patients, reports and results",
+    description: "patients, reports, results and settings",
     sql: `
       CREATE TABLE patients (
         id            INTEGER PRIMARY KEY,
@@ -79,6 +82,13 @@ export const DATABASE_MIGRATIONS: readonly DatabaseMigration[] = [
         page           INTEGER NOT NULL
       );
       CREATE INDEX results_by_series ON results (patient_id, analyte, collected_at);
+
+      -- One row per setting; values are JSON so each setting keeps its own type.
+      CREATE TABLE settings (
+        key        TEXT PRIMARY KEY,
+        value_json TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
     `,
   },
 ];
@@ -137,4 +147,28 @@ export function migrateDatabase(
     applied.push(migration.description);
   }
   return { from, to: databaseVersion(db), applied };
+}
+
+/** Tables the current code expects, whatever the database's version says. */
+export const EXPECTED_TABLES = ["patients", "reports", "results", "settings"];
+
+/**
+ * Catches a development database created before migration 1 was edited: its
+ * version still says 1, so nothing re-runs, but the tables are out of date.
+ */
+export function assertExpectedTables(db: DatabaseSync): void {
+  const present = new Set(
+    (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'")
+      .all() as {
+        name: string;
+      }[]).map((r) => r.name),
+  );
+  const missing = EXPECTED_TABLES.filter((t) => !present.has(t));
+  if (missing.length > 0) {
+    throw new DatabaseVersionError(
+      `the database is missing tables (${
+        missing.join(", ")
+      }) — it was created by an earlier development build; delete the data folder (.data/ for deno task desktop) and relaunch`,
+    );
+  }
 }
