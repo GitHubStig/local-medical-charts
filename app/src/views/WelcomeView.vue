@@ -6,6 +6,7 @@ import FilePickerButton from "../components/FilePickerButton.vue";
 import ImportResults from "../components/ImportResults.vue";
 import ThemeToggle from "../components/ThemeToggle.vue";
 import { useLibrary } from "../composables/useLibrary.ts";
+import Icon from "../components/Icon.vue";
 
 const { busy, lastImport, mode, importFiles } = useLibrary();
 
@@ -46,15 +47,7 @@ const failedImport = computed(() => lastImport.value?.length ? lastImport.value 
         :class="isOverDropZone ? 'border-series bg-series-wash' : 'border-line-strong bg-surface'"
       >
         <span class="flex size-14 items-center justify-center rounded-full bg-chip">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="text-ink">
-            <path
-              d="M12 15V4M7.5 8.5L12 4l4.5 4.5M4.5 15v3.5a1.5 1.5 0 001.5 1.5h12a1.5 1.5 0 001.5-1.5V15"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <Icon name="upload" :size="24" class="text-ink" />
         </span>
         <h2 class="text-lg font-semibold">
           {{ busy ? "Importing…" : isOverDropZone ? "Drop to import" : "Drop report files here" }}
@@ -81,10 +74,7 @@ const failedImport = computed(() => lastImport.value?.length ? lastImport.value 
       </div>
 
       <p class="flex items-center gap-2 text-[13px] text-muted">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <rect x="2.5" y="6" width="9" height="6.5" rx="1.5" stroke="currentColor" stroke-width="1.3" />
-          <path d="M4.5 6V4.5a2.5 2.5 0 015 0V6" stroke="currentColor" stroke-width="1.3" />
-        </svg>
+        <Icon name="lock" :size="14" />
         <span v-if="mode === 'fake'">
           Browser development: fictional sample data, kept in this tab only.
         </span>
