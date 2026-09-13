@@ -96,4 +96,15 @@
   body {
     @apply bg-page font-sans text-ink antialiased;
   }
+
+  /* Tailwind's reset gives buttons the arrow cursor; clickable things should look it. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
 }
