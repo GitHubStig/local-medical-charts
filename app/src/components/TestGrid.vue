@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import type { Dashboard } from "../../../desktop/contract.ts";
 import { plural } from "../lib/format.ts";
+import { buildSeries } from "../lib/series.ts";
 import { buildTestGrid, filterTestGrid } from "../lib/test-grid.ts";
 import { buildTextResults, filterTextRows } from "../lib/text-results.ts";
 import { useTestFilters } from "../composables/useTestFilters.ts";
@@ -15,6 +16,7 @@ const props = defineProps<{ dashboard: Dashboard }>();
 const { query, flaggedOnly, clear } = useTestFilters();
 
 const grid = computed(() => buildTestGrid(props.dashboard));
+const series = computed(() => buildSeries(props.dashboard));
 const shown = computed(() =>
   filterTestGrid(grid.value.groups, {
     query: query.value,
@@ -102,7 +104,12 @@ const totalCards = computed(() =>
         </span>
       </div>
       <div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
-        <TestCard v-for="card in group.cards" :key="card.key" :card="card" />
+        <TestCard
+          v-for="card in group.cards"
+          :key="card.key"
+          :card="card"
+          :series="series.get(card.key)"
+        />
       </div>
     </section>
 
