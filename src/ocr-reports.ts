@@ -25,6 +25,7 @@ import {
   type PageFile,
   PageFileSchema,
   ReportSchema,
+  SCHEMA_VERSION,
 } from "./schema.ts";
 
 const DEFAULTS = {
@@ -141,15 +142,12 @@ async function ocrPage(
   );
 
   return {
+    schemaVersion: SCHEMA_VERSION,
     model: config.model,
     promptHash: prompt.hash,
     extractedAt: new Date().toISOString(),
     extraction: data,
   };
-}
-
-function distinct(values: string[]): string {
-  return [...new Set(values)].join(", ");
 }
 
 async function main() {
@@ -252,7 +250,9 @@ async function main() {
       if (flags["merge-only"]) {
         throw new CliError(
           `${basename(pagePath)} ${
-            cached ? "was written by an older schema" : "is missing"
+            cached
+              ? `does not match schemaVersion ${SCHEMA_VERSION}`
+              : "is missing"
           } — run without --merge-only to OCR it`,
         );
       }
@@ -268,15 +268,13 @@ async function main() {
 
     const report = ReportSchema.parse(
       buildReport(
-        files.map((f) => f.extraction),
+        files.map(({ schemaVersion: _, ...file }, i) => ({
+          ...file,
+          image: basename(group.pages[i].path),
+        })),
         {
           report: group.name,
-          images: group.pages.map((p) => basename(p.path)),
-          pages: group.pages.length,
-          model: distinct(files.map((f) => f.model)),
-          promptHash: distinct(files.map((f) => f.promptHash)),
           catalogHash: catalog.hash,
-          extractedAt: files.map((f) => f.extractedAt).sort().at(-1) ?? "",
           mergedAt: new Date().toISOString(),
         },
         catalog,

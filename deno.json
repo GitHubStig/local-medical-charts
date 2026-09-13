@@ -4,7 +4,8 @@
     "extract": "deno run --allow-read --allow-write src/pdf-to-images.ts",
     "ocr": "deno run --allow-read --allow-write --allow-net src/ocr-reports.ts",
     "test": "deno test --allow-read src/",
-    "map": "deno run --allow-read --allow-write --allow-net src/map-analytes.ts"
+    "map": "deno run --allow-read --allow-write --allow-net src/map-analytes.ts",
+    "upgrade": "deno run --allow-read --allow-write src/upgrade-reports.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1",

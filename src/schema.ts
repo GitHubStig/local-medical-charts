@@ -13,6 +13,14 @@
  */
 import { z } from "@zod/zod";
 
+/**
+ * Version of the stored JSON format: page files and merged reports.
+ *
+ * Bump it whenever a change to these schemas would make previously written JSON
+ * fail validation, and add a migration from the old version in src/migrations/.
+ */
+export const SCHEMA_VERSION = 1;
+
 const text = () => z.string().nullable();
 
 export const SpecimenSchema = z.enum(["blood", "urine", "stool", "other"]);
@@ -96,11 +104,19 @@ export const PageExtractionSchema = z.object({
 
 /** A cached page: the model's extraction plus how it was produced. */
 export const PageFileSchema = z.object({
+  schemaVersion: z.literal(SCHEMA_VERSION),
   model: z.string(),
   promptHash: z.string(),
   extractedAt: z.string(),
   extraction: PageExtractionSchema,
 });
+
+/**
+ * A page as embedded in a merged report. Keeping the model's transcription lets
+ * a stored report be re-merged against a newer catalog without re-running OCR.
+ */
+export const ReportPageSchema = PageFileSchema.omit({ schemaVersion: true })
+  .extend({ image: z.string() });
 
 // ---------------------------------------------------------------------------
 // Layer 2: the normalized report
@@ -181,6 +197,7 @@ export const DateSourceSchema = z.enum([
 ]);
 
 export const ReportSchema = z.object({
+  schemaVersion: z.literal(SCHEMA_VERSION),
   source: z.object({
     report: z.string(),
     images: z.array(z.string()),
@@ -211,6 +228,8 @@ export const ReportSchema = z.object({
   /** Distinct test names the catalog could not match. See `deno task map`. */
   unmapped: z.array(UnmappedSchema),
   warnings: z.array(z.string()),
+  /** The page transcriptions this report was merged from, in page order. */
+  pages: z.array(ReportPageSchema),
 });
 
 export type Specimen = z.infer<typeof SpecimenSchema>;
@@ -221,6 +240,7 @@ export type RawTest = z.infer<typeof RawTestSchema>;
 export type HeaderField = z.infer<typeof HeaderFieldSchema>;
 export type PageExtraction = z.infer<typeof PageExtractionSchema>;
 export type PageFile = z.infer<typeof PageFileSchema>;
+export type ReportPage = z.infer<typeof ReportPageSchema>;
 export type Result = z.infer<typeof ResultSchema>;
 export type Range = z.infer<typeof RangeSchema>;
 export type Test = z.infer<typeof TestSchema>;
