@@ -76,7 +76,10 @@ Deno.test("with the database unavailable, status explains, settings default, the
   });
   const status = await b.getStartupStatus();
   assert(!status.ok && status.error.includes("newer than this app"));
-  assertEquals(await b.getSettings(), { theme: "system" });
+  assertEquals(await b.getSettings(), {
+    theme: "system",
+    selectedPatientId: null,
+  });
   await assertRejects(
     () => b.listPatients(),
     BindingError,

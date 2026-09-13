@@ -2,6 +2,9 @@
 import { THEMES, type Theme } from "../../../desktop/settings.ts";
 import { useTheme } from "../composables/useTheme.ts";
 
+/** `compact` shows icons only (names stay available to screen readers and as tooltips). */
+defineProps<{ compact?: boolean }>();
+
 const { theme, setTheme } = useTheme();
 
 const LABELS: Record<Theme, string> = {
@@ -23,10 +26,14 @@ const LABELS: Record<Theme, string> = {
       type="button"
       role="radio"
       :aria-checked="theme === option"
-      class="flex h-[38px] items-center gap-1.5 rounded-md px-3 text-[13px] transition-colors"
-      :class="theme === option
-        ? 'bg-surface font-semibold text-ink shadow-sm'
-        : 'font-medium text-ink-2 hover:text-ink'"
+      :title="compact ? `${LABELS[option]} theme` : undefined"
+      class="flex h-[38px] items-center justify-center gap-1.5 rounded-md text-[13px] transition-colors"
+      :class="[
+        compact ? 'w-[38px]' : 'px-3',
+        theme === option
+          ? 'bg-surface font-semibold text-ink shadow-sm'
+          : 'font-medium text-ink-2 hover:text-ink',
+      ]"
       @click="setTheme(option)"
     >
       <svg
@@ -55,7 +62,7 @@ const LABELS: Record<Theme, string> = {
           d="M13.5 9.6A5.75 5.75 0 016.4 2.5a5.75 5.75 0 107.1 7.1z"
         />
       </svg>
-      {{ LABELS[option] }}
+      <span :class="compact ? 'sr-only' : ''">{{ LABELS[option] }}</span>
     </button>
   </div>
 </template>

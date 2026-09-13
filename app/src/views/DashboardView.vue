@@ -1,70 +1,24 @@
 <script setup lang="ts">
+import { useDropZone } from "@vueuse/core";
 import { ref } from "vue";
-import AppLogo from "../components/AppLogo.vue";
 import ImportResults from "../components/ImportResults.vue";
-import ThemeToggle from "../components/ThemeToggle.vue";
+import TopBar from "../components/TopBar.vue";
 import { useLibrary } from "../composables/useLibrary.ts";
+import { displayName } from "../lib/format.ts";
 
-// Placeholder until the dashboard is built: patients, adding reports, clearing.
-const { patients, lastImport, busy, importFiles, clearAll, dismissImport } =
-  useLibrary();
+const { selectedPatient, lastImport, importFiles, dismissImport } = useLibrary();
 
-const picker = ref<HTMLInputElement | null>(null);
-
-function onPick() {
-  const files = [...(picker.value?.files ?? [])];
-  if (picker.value) picker.value.value = "";
-  if (files.length) importFiles(files);
-}
-
-function confirmClear() {
-  if (confirm("Delete every patient and report from this app? Settings are kept.")) {
-    clearAll();
-  }
-}
-
-const dateOnly = (iso: string | null) => iso?.slice(0, 10) ?? "no date";
+// More reports can be dropped anywhere on the dashboard, as on the welcome screen.
+const page = ref<HTMLElement | null>(null);
+const { isOverDropZone } = useDropZone(page, {
+  onDrop: (files) => files && importFiles(files),
+  preventDefaultForUnhandled: true,
+});
 </script>
 
 <template>
-  <div class="min-h-screen">
-    <header
-      class="flex h-18 items-center justify-between gap-6 border-b border-line bg-surface px-10"
-    >
-      <div class="flex items-center gap-2.5">
-        <AppLogo />
-        <span class="text-[15px] font-semibold">Medical Charts</span>
-      </div>
-      <div class="flex items-center gap-4">
-        <ThemeToggle />
-        <input
-          ref="picker"
-          type="file"
-          accept=".json,application/json"
-          multiple
-          class="sr-only"
-          tabindex="-1"
-          aria-hidden="true"
-          @change="onPick"
-        />
-        <button
-          type="button"
-          class="flex h-11 items-center rounded-lg bg-ink px-4 text-sm font-medium text-page disabled:opacity-60"
-          :disabled="busy"
-          @click="picker?.click()"
-        >
-          Add reports
-        </button>
-        <button
-          type="button"
-          class="flex h-11 items-center rounded-lg border border-line px-3.5 text-sm font-medium text-danger disabled:opacity-60"
-          :disabled="busy"
-          @click="confirmClear"
-        >
-          Clear all data
-        </button>
-      </div>
-    </header>
+  <div ref="page" class="min-h-screen">
+    <TopBar />
 
     <main class="mx-auto flex max-w-3xl flex-col gap-6 px-10 py-8">
       <div
@@ -75,7 +29,7 @@ const dateOnly = (iso: string | null) => iso?.slice(0, 10) ?? "no date";
         <ImportResults :outcomes="lastImport" />
         <button
           type="button"
-          class="-mr-2 -mt-2 flex size-11 shrink-0 items-center justify-center rounded-lg text-ink-2 hover:text-ink"
+          class="-mt-2 -mr-2 flex size-11 shrink-0 items-center justify-center rounded-lg text-ink-2 hover:text-ink"
           aria-label="Dismiss import results"
           @click="dismissImport"
         >
@@ -85,23 +39,23 @@ const dateOnly = (iso: string | null) => iso?.slice(0, 10) ?? "no date";
         </button>
       </div>
 
-      <section class="flex flex-col gap-3">
-        <h1 class="text-2xl font-semibold tracking-tight">Patients</h1>
-        <ul class="flex flex-col divide-y divide-line rounded-xl border border-line bg-surface">
-          <li
-            v-for="patient in patients"
-            :key="patient.id"
-            class="flex items-center justify-between gap-4 px-5 py-3.5 text-sm"
-          >
-            <span class="font-medium">{{ patient.name ?? "Unnamed patient" }}</span>
-            <span class="text-ink-2">
-              {{ patient.reportCount }} report{{ patient.reportCount === 1 ? "" : "s" }}
-              · {{ dateOnly(patient.firstCollectedAt) }} to {{ dateOnly(patient.lastCollectedAt) }}
-            </span>
-          </li>
-        </ul>
-        <p class="text-sm text-muted">The dashboard with charts is on its way.</p>
+      <section v-if="selectedPatient" class="flex flex-col gap-2">
+        <h1 class="text-[28px] font-semibold tracking-tight">
+          {{ displayName(selectedPatient.name) }}
+        </h1>
+        <p class="text-sm text-muted">
+          The patient summary, reports and charts are on their way.
+        </p>
       </section>
     </main>
+
+    <div
+      v-if="isOverDropZone"
+      class="pointer-events-none fixed inset-4 z-30 flex items-center justify-center rounded-2xl border-2 border-dashed border-series bg-series-wash backdrop-blur-[2px]"
+    >
+      <p class="rounded-lg bg-surface px-5 py-3 text-base font-semibold shadow-lg">
+        Drop to add reports
+      </p>
+    </div>
   </div>
 </template>

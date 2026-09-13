@@ -33,5 +33,6 @@ Deno.test("fake bindings: settings persist in the storage they're given", async 
   await createFakeBindings({ storage }).updateSettings({ theme: "dark" });
   assertEquals(await createFakeBindings({ storage }).getSettings(), {
     theme: "dark",
+    selectedPatientId: null,
   });
 });

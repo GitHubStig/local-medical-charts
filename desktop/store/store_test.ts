@@ -302,16 +302,23 @@ Deno.test("settings default, persist across reopening, and survive clearAll", ()
   const path = join(dir, "store.db");
   try {
     let store = ReportStore.open(path);
-    assertEquals(store.getSettings(), { theme: "system" });
+    assertEquals(store.getSettings(), {
+      theme: "system",
+      selectedPatientId: null,
+    });
     assertEquals(store.updateSettings({ theme: "dark" }, now), {
       theme: "dark",
+      selectedPatientId: null,
     });
     store.addReport(syntheticReport(), "a.json", catalogV1, now);
     store.clearAll();
     store.close();
 
     store = ReportStore.open(path);
-    assertEquals(store.getSettings(), { theme: "dark" });
+    assertEquals(store.getSettings(), {
+      theme: "dark",
+      selectedPatientId: null,
+    });
     assertEquals(store.listPatients(), []);
     store.close();
   } finally {

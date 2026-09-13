@@ -209,15 +209,39 @@ export function defineContractTests(
     await b.importReports([{ name: "a.json", text: syntheticReport() }]);
     await b.clearAll();
     assertEquals(await b.listPatients(), []);
-    assertEquals(await b.getSettings(), { theme: "dark" });
+    assertEquals(await b.getSettings(), {
+      theme: "dark",
+      selectedPatientId: null,
+    });
+  });
+
+  test("the selected patient is remembered in settings", async (b) => {
+    assertEquals((await b.getSettings()).selectedPatientId, null);
+    await b.updateSettings({ selectedPatientId: 7 });
+    assertEquals(await b.getSettings(), {
+      theme: "system",
+      selectedPatientId: 7,
+    });
+    await b.updateSettings({ selectedPatientId: null });
+    assertEquals((await b.getSettings()).selectedPatientId, null);
+    await assertRejects(() =>
+      b.updateSettings({ selectedPatientId: -2 } as never)
+    );
   });
 
   test("settings round-trip and invalid values reject", async (b) => {
-    assertEquals(await b.getSettings(), { theme: "system" });
+    assertEquals(await b.getSettings(), {
+      theme: "system",
+      selectedPatientId: null,
+    });
     assertEquals(await b.updateSettings({ theme: "light" }), {
       theme: "light",
+      selectedPatientId: null,
     });
     await assertRejects(() => b.updateSettings({ theme: "sepia" } as never));
-    assertEquals(await b.getSettings(), { theme: "light" });
+    assertEquals(await b.getSettings(), {
+      theme: "light",
+      selectedPatientId: null,
+    });
   });
 }
