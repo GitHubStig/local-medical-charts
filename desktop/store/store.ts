@@ -1,0 +1,488 @@
+/**
+ * The app's report store, in SQLite.
+ *
+ * Each report keeps the upload exactly as received next to the version
+ * upgraded to the current format and catalog. Upgrades always start again from
+ * the original, so a bad migration can be fixed and re-run without data loss.
+ *
+ * Synchronous on purpose: node:sqlite's DatabaseSync is fast for a single local
+ * user, and it keeps transactions simple.
+ */
+import { createHash } from "node:crypto";
+import { DatabaseSync } from "node:sqlite";
+import { dirname } from "@std/path";
+import type { CatalogIndex } from "../../src/catalog.ts";
+import type { Report, Test } from "../../src/schema.ts";
+import { SCHEMA_VERSION } from "../../src/schema.ts";
+import { upgradeReport } from "../../src/upgrade.ts";
+import { migrateDatabase } from "./db-migrations.ts";
+
+export class StoreError extends Error {
+  override name = "StoreError";
+}
+
+export type PatientSummary = {
+  id: number;
+  name: string | null;
+  idNumber: string | null;
+  dateOfBirth: string | null;
+  sex: string | null;
+  reportCount: number;
+  failedReportCount: number;
+  firstCollectedAt: string | null;
+  lastCollectedAt: string | null;
+};
+
+export type ReportSummary = {
+  id: number;
+  patientId: number;
+  fileName: string;
+  collectedAt: string | null;
+  providerName: string | null;
+  status: "ok" | "failed";
+  error: string | null;
+  schemaVersion: number;
+  catalogHash: string;
+  importedAt: string;
+  upgradedAt: string;
+};
+
+export type StoredResult = {
+  reportId: number;
+  position: number;
+  analyte: string | null;
+  specimen: string | null;
+  name: string;
+  collectedAt: string | null;
+  resultKind: "numeric" | "comparator" | "text";
+  value: number | null;
+  op: string | null;
+  text: string | null;
+  unit: string | null;
+  standardValue: number | null;
+  standardOp: string | null;
+  standardUnit: string | null;
+  range: Test["range"];
+  flag: string | null;
+  flagSource: string | null;
+  page: number;
+};
+
+export type AddReportResult =
+  | { status: "added"; reportId: number; patientId: number }
+  | { status: "duplicate"; reportId: number; patientId: number };
+
+export type UpgradeSummary = {
+  checked: number;
+  upgraded: number;
+  failed: { reportId: number; fileName: string; error: string }[];
+};
+
+/**
+ * The key reports are grouped under. The ID number is preferred; spaces,
+ * dashes and case are ignored so the same ID printed differently still matches.
+ */
+export function patientIdentity(patient: Report["patient"]): string | null {
+  const id = patient.idNumber?.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (id) return `id:${id}`;
+  const name = patient.name?.toUpperCase().replace(/\s+/g, " ").trim();
+  if (name && patient.dateOfBirthIso) {
+    return `name:${name}|${patient.dateOfBirthIso}`;
+  }
+  return null;
+}
+
+function contentHash(json: unknown): string {
+  return createHash("sha256").update(JSON.stringify(json)).digest("hex");
+}
+
+function message(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+type Row = Record<string, unknown>;
+
+export class ReportStore {
+  readonly #db: DatabaseSync;
+
+  private constructor(db: DatabaseSync) {
+    this.#db = db;
+  }
+
+  /** Opens (creating if needed) a database file, or `":memory:"` for tests. */
+  static open(path: string): ReportStore {
+    if (path !== ":memory:") Deno.mkdirSync(dirname(path), { recursive: true });
+    const db = new DatabaseSync(path);
+    db.exec("PRAGMA foreign_keys = ON");
+    if (path !== ":memory:") db.exec("PRAGMA journal_mode = WAL");
+    try {
+      migrateDatabase(db);
+    } catch (err) {
+      db.close();
+      throw err;
+    }
+    return new ReportStore(db);
+  }
+
+  close(): void {
+    this.#db.close();
+  }
+
+  #transaction<T>(fn: () => T): T {
+    this.#db.exec("BEGIN");
+    try {
+      const result = fn();
+      this.#db.exec("COMMIT");
+      return result;
+    } catch (err) {
+      this.#db.exec("ROLLBACK");
+      throw err;
+    }
+  }
+
+  /**
+   * Adds an uploaded report: upgrades it to the current format and catalog,
+   * files it under its patient, and indexes its results. A report already in
+   * the store is skipped. Anything invalid throws and nothing is stored.
+   */
+  addReport(
+    text: string,
+    fileName: string,
+    catalog: CatalogIndex,
+    now = new Date(),
+  ): AddReportResult {
+    let json: unknown;
+    try {
+      json = JSON.parse(text);
+    } catch (err) {
+      throw new StoreError(`${fileName} is not valid JSON: ${message(err)}`);
+    }
+
+    const hash = contentHash(json);
+    const existing = this.#db
+      .prepare("SELECT id, patient_id FROM reports WHERE content_hash = ?")
+      .get(hash) as Row | undefined;
+    if (existing) {
+      return {
+        status: "duplicate",
+        reportId: Number(existing.id),
+        patientId: Number(existing.patient_id),
+      };
+    }
+
+    let upgraded;
+    try {
+      upgraded = upgradeReport(json, catalog, { now });
+    } catch (err) {
+      throw new StoreError(`${fileName}: ${message(err)}`, { cause: err });
+    }
+    const report = upgraded.report;
+
+    const identity = patientIdentity(report.patient);
+    if (!identity) {
+      throw new StoreError(
+        `${fileName}: the report has no patient ID number, or name and date of birth, to file it under`,
+      );
+    }
+
+    const at = now.toISOString();
+    return this.#transaction(() => {
+      this.#db
+        .prepare(
+          `INSERT INTO patients (identity_key, created_at, updated_at) VALUES (?, ?, ?)
+           ON CONFLICT (identity_key) DO NOTHING`,
+        )
+        .run(identity, at, at);
+      const patientId = Number(
+        (this.#db.prepare("SELECT id FROM patients WHERE identity_key = ?").get(
+          identity,
+        ) as Row).id,
+      );
+
+      const inserted = this.#db
+        .prepare(
+          `INSERT INTO reports (
+             patient_id, content_hash, file_name, original_json, original_schema_version,
+             report_json, schema_version, catalog_hash, collected_at, provider_name,
+             status, error, imported_at, upgraded_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ok', NULL, ?, ?)`,
+        )
+        .run(
+          patientId,
+          hash,
+          fileName,
+          text,
+          upgraded.fromVersion,
+          JSON.stringify(report),
+          report.schemaVersion,
+          report.source.catalogHash,
+          report.collectedAt,
+          report.provider.name,
+          at,
+          at,
+        );
+      const reportId = Number(inserted.lastInsertRowid);
+
+      this.#writeResults(reportId, patientId, report);
+      this.#refreshPatient(patientId, at);
+      return { status: "added", reportId, patientId };
+    });
+  }
+
+  /**
+   * Re-upgrades every report whose stored format or catalog is out of date, or
+   * whose last upgrade failed — from its original upload each time. Meant to
+   * run on launch. A report that fails is marked failed and kept, not deleted.
+   */
+  upgradeAll(catalog: CatalogIndex, now = new Date()): UpgradeSummary {
+    const rows = this.#db
+      .prepare(
+        "SELECT id, patient_id, file_name, original_json, schema_version, catalog_hash, status FROM reports ORDER BY id",
+      )
+      .all() as Row[];
+    const at = now.toISOString();
+    const summary: UpgradeSummary = {
+      checked: rows.length,
+      upgraded: 0,
+      failed: [],
+    };
+
+    for (const row of rows) {
+      const current = row.schema_version === SCHEMA_VERSION &&
+        row.catalog_hash === catalog.hash && row.status === "ok";
+      if (current) continue;
+
+      const reportId = Number(row.id), patientId = Number(row.patient_id);
+      try {
+        const { report } = upgradeReport(
+          JSON.parse(String(row.original_json)),
+          catalog,
+          { now },
+        );
+        this.#transaction(() => {
+          this.#db
+            .prepare(
+              `UPDATE reports SET report_json = ?, schema_version = ?, catalog_hash = ?,
+                 collected_at = ?, provider_name = ?, status = 'ok', error = NULL, upgraded_at = ?
+               WHERE id = ?`,
+            )
+            .run(
+              JSON.stringify(report),
+              report.schemaVersion,
+              report.source.catalogHash,
+              report.collectedAt,
+              report.provider.name,
+              at,
+              reportId,
+            );
+          this.#writeResults(reportId, patientId, report);
+          this.#refreshPatient(patientId, at);
+        });
+        summary.upgraded++;
+      } catch (err) {
+        this.#db
+          .prepare(
+            "UPDATE reports SET status = 'failed', error = ?, upgraded_at = ? WHERE id = ?",
+          )
+          .run(message(err), at, reportId);
+        summary.failed.push({
+          reportId,
+          fileName: String(row.file_name),
+          error: message(err),
+        });
+      }
+    }
+    return summary;
+  }
+
+  listPatients(): PatientSummary[] {
+    const rows = this.#db
+      .prepare(
+        `SELECT p.id, p.name, p.id_number, p.date_of_birth, p.sex,
+           COUNT(r.id) FILTER (WHERE r.status = 'ok')     AS report_count,
+           COUNT(r.id) FILTER (WHERE r.status = 'failed') AS failed_report_count,
+           MIN(r.collected_at) FILTER (WHERE r.status = 'ok') AS first_collected_at,
+           MAX(r.collected_at) FILTER (WHERE r.status = 'ok') AS last_collected_at
+         FROM patients p LEFT JOIN reports r ON r.patient_id = p.id
+         GROUP BY p.id
+         ORDER BY p.name COLLATE NOCASE, p.id`,
+      )
+      .all() as Row[];
+    return rows.map((r) => ({
+      id: Number(r.id),
+      name: r.name as string | null,
+      idNumber: r.id_number as string | null,
+      dateOfBirth: r.date_of_birth as string | null,
+      sex: r.sex as string | null,
+      reportCount: Number(r.report_count),
+      failedReportCount: Number(r.failed_report_count),
+      firstCollectedAt: r.first_collected_at as string | null,
+      lastCollectedAt: r.last_collected_at as string | null,
+    }));
+  }
+
+  listReports(patientId: number): ReportSummary[] {
+    const rows = this.#db
+      .prepare(
+        `SELECT id, patient_id, file_name, collected_at, provider_name, status, error,
+           schema_version, catalog_hash, imported_at, upgraded_at
+         FROM reports WHERE patient_id = ?
+         ORDER BY collected_at IS NULL, collected_at DESC, id DESC`,
+      )
+      .all(patientId) as Row[];
+    return rows.map((r) => ({
+      id: Number(r.id),
+      patientId: Number(r.patient_id),
+      fileName: String(r.file_name),
+      collectedAt: r.collected_at as string | null,
+      providerName: r.provider_name as string | null,
+      status: r.status as "ok" | "failed",
+      error: r.error as string | null,
+      schemaVersion: Number(r.schema_version),
+      catalogHash: String(r.catalog_hash),
+      importedAt: String(r.imported_at),
+      upgradedAt: String(r.upgraded_at),
+    }));
+  }
+
+  /** The upgraded report, or null when there is no such report or its upgrade failed. */
+  getReport(reportId: number): Report | null {
+    const row = this.#db
+      .prepare("SELECT report_json FROM reports WHERE id = ? AND status = 'ok'")
+      .get(reportId) as Row | undefined;
+    return row ? JSON.parse(String(row.report_json)) as Report : null;
+  }
+
+  /** The report exactly as it was uploaded, whatever its upgrade status. */
+  getOriginalJson(reportId: number): string | null {
+    const row = this.#db
+      .prepare("SELECT original_json FROM reports WHERE id = ?")
+      .get(reportId) as Row | undefined;
+    return row ? String(row.original_json) : null;
+  }
+
+  /** Every result for a patient from reports in good standing, oldest first per test. */
+  resultsForPatient(patientId: number): StoredResult[] {
+    const rows = this.#db
+      .prepare(
+        `SELECT res.* FROM results res JOIN reports rep ON rep.id = res.report_id
+         WHERE res.patient_id = ? AND rep.status = 'ok'
+         ORDER BY res.analyte, res.collected_at, res.report_id, res.position`,
+      )
+      .all(patientId) as Row[];
+    return rows.map((r) => ({
+      reportId: Number(r.report_id),
+      position: Number(r.position),
+      analyte: r.analyte as string | null,
+      specimen: r.specimen as string | null,
+      name: String(r.name),
+      collectedAt: r.collected_at as string | null,
+      resultKind: r.result_kind as StoredResult["resultKind"],
+      value: r.value as number | null,
+      op: r.op as string | null,
+      text: r.text as string | null,
+      unit: r.unit as string | null,
+      standardValue: r.standard_value as number | null,
+      standardOp: r.standard_op as string | null,
+      standardUnit: r.standard_unit as string | null,
+      range: r.range_json ? JSON.parse(String(r.range_json)) : null,
+      flag: r.flag as string | null,
+      flagSource: r.flag_source as string | null,
+      page: Number(r.page),
+    }));
+  }
+
+  /** Deletes a report and its results; a patient left with no reports is removed too. */
+  deleteReport(reportId: number, now = new Date()): boolean {
+    return this.#transaction(() => {
+      const row = this.#db
+        .prepare("SELECT patient_id FROM reports WHERE id = ?")
+        .get(reportId) as Row | undefined;
+      if (!row) return false;
+      this.#db.prepare("DELETE FROM reports WHERE id = ?").run(reportId);
+      this.#refreshPatient(Number(row.patient_id), now.toISOString());
+      return true;
+    });
+  }
+
+  /** Removes every patient, report and result. */
+  clearAll(): void {
+    this.#transaction(() => {
+      this.#db.exec(
+        "DELETE FROM results; DELETE FROM reports; DELETE FROM patients;",
+      );
+    });
+  }
+
+  #writeResults(reportId: number, patientId: number, report: Report): void {
+    this.#db.prepare("DELETE FROM results WHERE report_id = ?").run(reportId);
+    const insert = this.#db.prepare(
+      `INSERT INTO results (
+         report_id, patient_id, position, analyte, specimen, name, collected_at,
+         result_kind, value, op, text, unit, standard_value, standard_op, standard_unit,
+         range_json, flag, flag_source, page
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    );
+    report.tests.forEach((test, position) => {
+      const result = test.result;
+      insert.run(
+        reportId,
+        patientId,
+        position,
+        test.analyte,
+        test.specimen,
+        test.name,
+        report.collectedAt,
+        result.kind,
+        result.kind === "text" ? null : result.value,
+        result.kind === "comparator" ? result.op : null,
+        result.kind === "text" ? result.text : null,
+        test.unit,
+        test.standard?.value ?? null,
+        test.standard?.op ?? null,
+        test.standard?.unit ?? null,
+        test.range ? JSON.stringify(test.range) : null,
+        test.flag,
+        test.flagSource,
+        test.page,
+      );
+    });
+  }
+
+  /**
+   * Keeps the patient's details in step with their most recent report, or
+   * removes the patient once they have no reports at all.
+   */
+  #refreshPatient(patientId: number, at: string): void {
+    const latest = this.#db
+      .prepare(
+        `SELECT report_json FROM reports WHERE patient_id = ? AND status = 'ok'
+         ORDER BY collected_at IS NULL, collected_at DESC, id DESC LIMIT 1`,
+      )
+      .get(patientId) as Row | undefined;
+
+    if (!latest) {
+      const any = this.#db
+        .prepare("SELECT 1 FROM reports WHERE patient_id = ? LIMIT 1")
+        .get(patientId);
+      if (!any) {
+        this.#db.prepare("DELETE FROM patients WHERE id = ?").run(patientId);
+      }
+      return;
+    }
+
+    const { patient } = JSON.parse(String(latest.report_json)) as Report;
+    this.#db
+      .prepare(
+        "UPDATE patients SET name = ?, id_number = ?, date_of_birth = ?, sex = ?, updated_at = ? WHERE id = ?",
+      )
+      .run(
+        patient.name,
+        patient.idNumber,
+        patient.dateOfBirthIso,
+        patient.sex,
+        at,
+        patientId,
+      );
+  }
+}
