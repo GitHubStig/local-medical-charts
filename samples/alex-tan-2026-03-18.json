@@ -1,0 +1,1468 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "report": "alex-tan-2026-03-18",
+    "images": [
+      "alex-tan-2026-03-18-1.jpg",
+      "alex-tan-2026-03-18-2.jpg"
+    ],
+    "pages": 2,
+    "model": "sample-data",
+    "promptHash": "sample-data",
+    "catalogHash": "64724459590c",
+    "extractedAt": "2026-03-19T21:14:00.000Z",
+    "mergedAt": "2026-03-19T21:20:00.000Z"
+  },
+  "provider": {
+    "name": "Harbour Medical Lab",
+    "address": "14 Wharf Street, Port Ellery",
+    "phone": "(03) 5550 0192",
+    "website": "harbour-medical.example"
+  },
+  "patient": {
+    "name": "ALEX TAN",
+    "idNumber": "S1234482K",
+    "dateOfBirth": "02/11/84",
+    "sex": "Female",
+    "age": "41 Years",
+    "dateOfBirthIso": "1984-11-02"
+  },
+  "doctor": {
+    "name": "Dr Priya Nair",
+    "clinic": "Riverside Family Clinic"
+  },
+  "dates": {
+    "collected": "18/03/26 08:40",
+    "received": null,
+    "requested": null,
+    "reported": "19/03/26 16:05"
+  },
+  "collectedAt": "2026-03-18T08:40:00",
+  "collectedAtSource": "collected",
+  "reportedAt": "2026-03-19T16:05:00",
+  "headerFields": [
+    {
+      "label": "Lab No.",
+      "value": "26-00000318-H"
+    }
+  ],
+  "specimenNotes": [
+    "Specimen type Fasting"
+  ],
+  "interpretation": [
+    {
+      "page": 2,
+      "text": "Diagnostic values of HbA1c: Normal < 5.7% (< 39 mmol/mol); Prediabetes 5.7 - 6.2% (39 - 44 mmol/mol); Diabetes >= 6.3% (>= 45 mmol/mol)"
+    }
+  ],
+  "tests": [
+    {
+      "analyte": "haemoglobin",
+      "analyteName": "Haemoglobin",
+      "specimen": "blood",
+      "name": "Haemoglobin",
+      "nameZh": null,
+      "headings": [
+        "HAEMATOLOGY"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 122
+      },
+      "unit": "g/L",
+      "range": {
+        "kind": "between",
+        "min": 120,
+        "max": 155
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 12.2,
+        "unit": "g/dL"
+      },
+      "printed": {
+        "value": "122",
+        "unit": "g/L",
+        "referenceText": "(120-155)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "wbc",
+      "analyteName": "White cell count",
+      "specimen": "blood",
+      "name": "White Cell Count",
+      "nameZh": null,
+      "headings": [
+        "HAEMATOLOGY"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 6.8
+      },
+      "unit": "x10^9/L",
+      "range": {
+        "kind": "between",
+        "min": 4,
+        "max": 10
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 6.8,
+        "unit": "x10^9/L"
+      },
+      "printed": {
+        "value": "6.8",
+        "unit": "x 10^9/L",
+        "referenceText": "(4.0-10.0)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "platelets",
+      "analyteName": "Platelet count",
+      "specimen": "blood",
+      "name": "Platelets",
+      "nameZh": null,
+      "headings": [
+        "HAEMATOLOGY"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 250
+      },
+      "unit": "x10^9/L",
+      "range": {
+        "kind": "between",
+        "min": 150,
+        "max": 410
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 250,
+        "unit": "x10^9/L"
+      },
+      "printed": {
+        "value": "250",
+        "unit": "x 10^9/L",
+        "referenceText": "(150-410)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "neutrophils_pct",
+      "analyteName": "Neutrophils (%)",
+      "specimen": "blood",
+      "name": "Neutrophils",
+      "nameZh": null,
+      "headings": [
+        "HAEMATOLOGY"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 60
+      },
+      "unit": "%",
+      "range": null,
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 60,
+        "unit": "%"
+      },
+      "printed": {
+        "value": "60",
+        "unit": "%",
+        "referenceText": null,
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "neutrophils_abs",
+      "analyteName": "Neutrophils (absolute)",
+      "specimen": "blood",
+      "name": "Neutrophils",
+      "nameZh": null,
+      "headings": [
+        "HAEMATOLOGY"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 4.1
+      },
+      "unit": "x10^9/L",
+      "range": {
+        "kind": "between",
+        "min": 2,
+        "max": 7
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 4.1,
+        "unit": "x10^9/L"
+      },
+      "printed": {
+        "value": "4.1",
+        "unit": "x 10^9/L",
+        "referenceText": "(2.0-7.0)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "total_cholesterol",
+      "analyteName": "Total cholesterol",
+      "specimen": "blood",
+      "name": "Total Chol",
+      "nameZh": null,
+      "headings": [
+        "GENERAL BIOCHEMISTRY",
+        "Lipids"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 5.3
+      },
+      "unit": "mmol/L",
+      "range": {
+        "kind": "below",
+        "limit": 5.2,
+        "inclusive": false
+      },
+      "flag": "H",
+      "flagSource": "derived",
+      "standard": {
+        "op": null,
+        "value": 5.3,
+        "unit": "mmol/L"
+      },
+      "printed": {
+        "value": "5.3",
+        "unit": "mmol/L",
+        "referenceText": "(< 5.2)",
+        "marker": "*"
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "ldl_c",
+      "analyteName": "LDL cholesterol",
+      "specimen": "blood",
+      "name": "LDL-C",
+      "nameZh": null,
+      "headings": [
+        "GENERAL BIOCHEMISTRY",
+        "Lipids"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 3.4
+      },
+      "unit": "mmol/L",
+      "range": {
+        "kind": "below",
+        "limit": 3,
+        "inclusive": false
+      },
+      "flag": "H",
+      "flagSource": "derived",
+      "standard": {
+        "op": null,
+        "value": 3.4,
+        "unit": "mmol/L"
+      },
+      "printed": {
+        "value": "3.4",
+        "unit": "mmol/L",
+        "referenceText": "(< 3.0)",
+        "marker": "*"
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "hdl_c",
+      "analyteName": "HDL cholesterol",
+      "specimen": "blood",
+      "name": "HDL-C",
+      "nameZh": null,
+      "headings": [
+        "GENERAL BIOCHEMISTRY",
+        "Lipids"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 1.4
+      },
+      "unit": "mmol/L",
+      "range": {
+        "kind": "above",
+        "limit": 1.2,
+        "inclusive": false
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 1.4,
+        "unit": "mmol/L"
+      },
+      "printed": {
+        "value": "1.4",
+        "unit": "mmol/L",
+        "referenceText": "(> 1.2)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "triglycerides",
+      "analyteName": "Triglycerides",
+      "specimen": "blood",
+      "name": "Triglyceride",
+      "nameZh": null,
+      "headings": [
+        "GENERAL BIOCHEMISTRY",
+        "Lipids"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 1.5
+      },
+      "unit": "mmol/L",
+      "range": {
+        "kind": "below",
+        "limit": 1.7,
+        "inclusive": false
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 1.5,
+        "unit": "mmol/L"
+      },
+      "printed": {
+        "value": "1.5",
+        "unit": "mmol/L",
+        "referenceText": "(< 1.70)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "creatinine",
+      "analyteName": "Creatinine",
+      "specimen": "blood",
+      "name": "Creatinine",
+      "nameZh": null,
+      "headings": [
+        "GENERAL BIOCHEMISTRY",
+        "Renal Function"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 70
+      },
+      "unit": "umol/L",
+      "range": {
+        "kind": "between",
+        "min": 40,
+        "max": 80
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 70,
+        "unit": "umol/L"
+      },
+      "printed": {
+        "value": "70",
+        "unit": "umol/L",
+        "referenceText": "(40-80)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "egfr",
+      "analyteName": "eGFR",
+      "specimen": "blood",
+      "name": "eGFR",
+      "nameZh": null,
+      "headings": [
+        "GENERAL BIOCHEMISTRY",
+        "Renal Function"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 94
+      },
+      "unit": "mL/min/1.73m²",
+      "range": {
+        "kind": "above",
+        "limit": 60,
+        "inclusive": true
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 94,
+        "unit": "mL/min/1.73m²"
+      },
+      "printed": {
+        "value": "94",
+        "unit": "mL/min/1.73m²",
+        "referenceText": "(>= 60)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "potassium",
+      "analyteName": "Potassium",
+      "specimen": "blood",
+      "name": "Potassium",
+      "nameZh": null,
+      "headings": [
+        "GENERAL BIOCHEMISTRY",
+        "Renal Function"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 4.8
+      },
+      "unit": "mmol/L",
+      "range": {
+        "kind": "between",
+        "min": 3.5,
+        "max": 5.1
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 4.8,
+        "unit": "mmol/L"
+      },
+      "printed": {
+        "value": "4.8",
+        "unit": "mmol/L",
+        "referenceText": "(3.5-5.1)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "urea",
+      "analyteName": "Urea",
+      "specimen": "blood",
+      "name": "Urea",
+      "nameZh": null,
+      "headings": [
+        "GENERAL BIOCHEMISTRY",
+        "Renal Function"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 4.4
+      },
+      "unit": "mmol/L",
+      "range": {
+        "kind": "between",
+        "min": 2.5,
+        "max": 8
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 4.4,
+        "unit": "mmol/L"
+      },
+      "printed": {
+        "value": "4.4",
+        "unit": "mmol/L",
+        "referenceText": "(2.5-8.0)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 1
+    },
+    {
+      "analyte": "hba1c",
+      "analyteName": "HbA1c (NGSP %)",
+      "specimen": "blood",
+      "name": "HbA1c",
+      "nameZh": null,
+      "headings": [
+        "SPECIAL CHEMISTRY"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 5.7
+      },
+      "unit": "%",
+      "range": null,
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 5.7,
+        "unit": "%"
+      },
+      "printed": {
+        "value": "5.7",
+        "unit": "%",
+        "referenceText": null,
+        "marker": null
+      },
+      "notes": [],
+      "page": 2
+    },
+    {
+      "analyte": "hba1c_ifcc",
+      "analyteName": "HbA1c (IFCC mmol/mol)",
+      "specimen": "blood",
+      "name": "HbA1c",
+      "nameZh": null,
+      "headings": [
+        "SPECIAL CHEMISTRY"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 39
+      },
+      "unit": "mmol/mol",
+      "range": null,
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 39,
+        "unit": "mmol/mol"
+      },
+      "printed": {
+        "value": "39",
+        "unit": "mmol/mol",
+        "referenceText": null,
+        "marker": null
+      },
+      "notes": [],
+      "page": 2
+    },
+    {
+      "analyte": "glucose",
+      "analyteName": "Glucose",
+      "specimen": "blood",
+      "name": "Glucose",
+      "nameZh": null,
+      "headings": [
+        "SERUM/PLASMA GLUCOSE"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 5.2
+      },
+      "unit": "mmol/L",
+      "range": {
+        "kind": "between",
+        "min": 3.9,
+        "max": 6
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 5.2,
+        "unit": "mmol/L"
+      },
+      "printed": {
+        "value": "5.2",
+        "unit": "mmol/L",
+        "referenceText": "(3.9 - 6.0)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 2
+    },
+    {
+      "analyte": "alt",
+      "analyteName": "ALT",
+      "specimen": "blood",
+      "name": "ALT",
+      "nameZh": null,
+      "headings": [
+        "Liver Function"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 47
+      },
+      "unit": "U/L",
+      "range": {
+        "kind": "below",
+        "limit": 35,
+        "inclusive": false
+      },
+      "flag": "H",
+      "flagSource": "derived",
+      "standard": {
+        "op": null,
+        "value": 47,
+        "unit": "U/L"
+      },
+      "printed": {
+        "value": "47",
+        "unit": "U/L",
+        "referenceText": "(< 35)",
+        "marker": "*"
+      },
+      "notes": [],
+      "page": 2
+    },
+    {
+      "analyte": "ggt",
+      "analyteName": "Gamma-glutamyl transferase",
+      "specimen": "blood",
+      "name": "GGT",
+      "nameZh": null,
+      "headings": [
+        "Liver Function"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 24
+      },
+      "unit": "U/L",
+      "range": {
+        "kind": "below",
+        "limit": 38,
+        "inclusive": false
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 24,
+        "unit": "U/L"
+      },
+      "printed": {
+        "value": "24",
+        "unit": "U/L",
+        "referenceText": "(< 38)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 2
+    },
+    {
+      "analyte": "tsh",
+      "analyteName": "TSH",
+      "specimen": "blood",
+      "name": "TSH",
+      "nameZh": null,
+      "headings": [
+        "Thyroid"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 2.3
+      },
+      "unit": "mIU/L",
+      "range": {
+        "kind": "between",
+        "min": 0.3,
+        "max": 4.2
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 2.3,
+        "unit": "uIU/mL"
+      },
+      "printed": {
+        "value": "2.3",
+        "unit": "mIU/L",
+        "referenceText": "(0.30-4.20)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 2
+    },
+    {
+      "analyte": "free_t4",
+      "analyteName": "Free T4",
+      "specimen": "blood",
+      "name": "Free T4",
+      "nameZh": null,
+      "headings": [
+        "Thyroid"
+      ],
+      "result": {
+        "kind": "numeric",
+        "value": 13.6
+      },
+      "unit": "pmol/L",
+      "range": {
+        "kind": "between",
+        "min": 10,
+        "max": 20
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": {
+        "op": null,
+        "value": 13.6,
+        "unit": "pmol/L"
+      },
+      "printed": {
+        "value": "13.6",
+        "unit": "pmol/L",
+        "referenceText": "(10.0-20.0)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 2
+    },
+    {
+      "analyte": "urine_colour",
+      "analyteName": "Urine colour",
+      "specimen": "urine",
+      "name": "Colour",
+      "nameZh": null,
+      "headings": [
+        "URINE FEME",
+        "CHEMISTRY"
+      ],
+      "result": {
+        "kind": "text",
+        "text": "Pale Yellow"
+      },
+      "unit": null,
+      "range": null,
+      "flag": null,
+      "flagSource": null,
+      "standard": null,
+      "printed": {
+        "value": "Pale Yellow",
+        "unit": null,
+        "referenceText": null,
+        "marker": null
+      },
+      "notes": [],
+      "page": 2
+    },
+    {
+      "analyte": "urine_transparency",
+      "analyteName": "Urine transparency",
+      "specimen": "urine",
+      "name": "Transparency",
+      "nameZh": null,
+      "headings": [
+        "URINE FEME",
+        "CHEMISTRY"
+      ],
+      "result": {
+        "kind": "text",
+        "text": "Clear"
+      },
+      "unit": null,
+      "range": null,
+      "flag": null,
+      "flagSource": null,
+      "standard": null,
+      "printed": {
+        "value": "Clear",
+        "unit": null,
+        "referenceText": null,
+        "marker": null
+      },
+      "notes": [],
+      "page": 2
+    },
+    {
+      "analyte": "urine_protein",
+      "analyteName": "Urine protein (dipstick)",
+      "specimen": "urine",
+      "name": "Protein",
+      "nameZh": null,
+      "headings": [
+        "URINE FEME",
+        "CHEMISTRY"
+      ],
+      "result": {
+        "kind": "text",
+        "text": "Negative"
+      },
+      "unit": null,
+      "range": {
+        "kind": "qualitative",
+        "expected": "Negative"
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": null,
+      "printed": {
+        "value": "Negative",
+        "unit": null,
+        "referenceText": "(Negative)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 2
+    },
+    {
+      "analyte": "urine_glucose",
+      "analyteName": "Urine glucose (dipstick)",
+      "specimen": "urine",
+      "name": "Glucose",
+      "nameZh": null,
+      "headings": [
+        "URINE FEME",
+        "CHEMISTRY"
+      ],
+      "result": {
+        "kind": "text",
+        "text": "Negative"
+      },
+      "unit": null,
+      "range": {
+        "kind": "qualitative",
+        "expected": "Negative"
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": null,
+      "printed": {
+        "value": "Negative",
+        "unit": null,
+        "referenceText": "(Negative)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 2
+    },
+    {
+      "analyte": "urine_blood",
+      "analyteName": "Urine blood (dipstick)",
+      "specimen": "urine",
+      "name": "Blood",
+      "nameZh": null,
+      "headings": [
+        "URINE FEME",
+        "CHEMISTRY"
+      ],
+      "result": {
+        "kind": "text",
+        "text": "Negative"
+      },
+      "unit": null,
+      "range": {
+        "kind": "qualitative",
+        "expected": "Negative"
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": null,
+      "printed": {
+        "value": "Negative",
+        "unit": null,
+        "referenceText": "(Negative)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 2
+    },
+    {
+      "analyte": "urine_leucocytes",
+      "analyteName": "Urine leucocytes (dipstick)",
+      "specimen": "urine",
+      "name": "Leucocytes",
+      "nameZh": null,
+      "headings": [
+        "URINE FEME",
+        "CHEMISTRY"
+      ],
+      "result": {
+        "kind": "text",
+        "text": "Negative"
+      },
+      "unit": null,
+      "range": {
+        "kind": "qualitative",
+        "expected": "Negative"
+      },
+      "flag": null,
+      "flagSource": null,
+      "standard": null,
+      "printed": {
+        "value": "Negative",
+        "unit": null,
+        "referenceText": "(Negative)",
+        "marker": null
+      },
+      "notes": [],
+      "page": 2
+    }
+  ],
+  "unmapped": [],
+  "warnings": [],
+  "pages": [
+    {
+      "model": "sample-data",
+      "promptHash": "sample-data",
+      "extractedAt": "2026-03-19T21:14:00.000Z",
+      "extraction": {
+        "page": 1,
+        "pageCount": 2,
+        "provider": {
+          "name": "Harbour Medical Lab",
+          "address": "14 Wharf Street, Port Ellery",
+          "phone": "(03) 5550 0192",
+          "website": "harbour-medical.example"
+        },
+        "patient": {
+          "name": "ALEX TAN",
+          "idNumber": "S1234482K",
+          "dateOfBirth": "02/11/84",
+          "sex": "Female",
+          "age": "41 Years"
+        },
+        "doctor": {
+          "name": "Dr Priya Nair",
+          "clinic": "Riverside Family Clinic"
+        },
+        "dates": {
+          "collected": "18/03/26 08:40",
+          "received": null,
+          "requested": null,
+          "reported": "19/03/26 16:05"
+        },
+        "headerFields": [
+          {
+            "label": "Lab No.",
+            "value": "26-00000318-H"
+          }
+        ],
+        "tests": [
+          {
+            "headings": [
+              "HAEMATOLOGY"
+            ],
+            "specimen": "blood",
+            "name": "Haemoglobin",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "122",
+                "unit": "g/L",
+                "referenceText": "(120-155)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "HAEMATOLOGY"
+            ],
+            "specimen": "blood",
+            "name": "White Cell Count",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "6.8",
+                "unit": "x 10^9/L",
+                "referenceText": "(4.0-10.0)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "HAEMATOLOGY"
+            ],
+            "specimen": "blood",
+            "name": "Platelets",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "250",
+                "unit": "x 10^9/L",
+                "referenceText": "(150-410)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "HAEMATOLOGY"
+            ],
+            "specimen": "blood",
+            "name": "Neutrophils",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "60",
+                "unit": "%",
+                "referenceText": null,
+                "marker": null
+              },
+              {
+                "value": "4.1",
+                "unit": "x 10^9/L",
+                "referenceText": "(2.0-7.0)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "GENERAL BIOCHEMISTRY",
+              "Lipids"
+            ],
+            "specimen": "blood",
+            "name": "Total Chol",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "5.3",
+                "unit": "mmol/L",
+                "referenceText": "(< 5.2)",
+                "marker": "*"
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "GENERAL BIOCHEMISTRY",
+              "Lipids"
+            ],
+            "specimen": "blood",
+            "name": "LDL-C",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "3.4",
+                "unit": "mmol/L",
+                "referenceText": "(< 3.0)",
+                "marker": "*"
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "GENERAL BIOCHEMISTRY",
+              "Lipids"
+            ],
+            "specimen": "blood",
+            "name": "HDL-C",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "1.4",
+                "unit": "mmol/L",
+                "referenceText": "(> 1.2)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "GENERAL BIOCHEMISTRY",
+              "Lipids"
+            ],
+            "specimen": "blood",
+            "name": "Triglyceride",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "1.5",
+                "unit": "mmol/L",
+                "referenceText": "(< 1.70)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "GENERAL BIOCHEMISTRY",
+              "Renal Function"
+            ],
+            "specimen": "blood",
+            "name": "Creatinine",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "70",
+                "unit": "umol/L",
+                "referenceText": "(40-80)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "GENERAL BIOCHEMISTRY",
+              "Renal Function"
+            ],
+            "specimen": "blood",
+            "name": "eGFR",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "94",
+                "unit": "mL/min/1.73m²",
+                "referenceText": "(>= 60)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "GENERAL BIOCHEMISTRY",
+              "Renal Function"
+            ],
+            "specimen": "blood",
+            "name": "Potassium",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "4.8",
+                "unit": "mmol/L",
+                "referenceText": "(3.5-5.1)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "GENERAL BIOCHEMISTRY",
+              "Renal Function"
+            ],
+            "specimen": "blood",
+            "name": "Urea",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "4.4",
+                "unit": "mmol/L",
+                "referenceText": "(2.5-8.0)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          }
+        ],
+        "continuationText": null,
+        "interpretation": [],
+        "specimenNotes": [
+          "Specimen type Fasting"
+        ],
+        "warnings": []
+      },
+      "image": "alex-tan-2026-03-18-1.jpg"
+    },
+    {
+      "model": "sample-data",
+      "promptHash": "sample-data",
+      "extractedAt": "2026-03-19T21:14:00.000Z",
+      "extraction": {
+        "page": 2,
+        "pageCount": 2,
+        "provider": {
+          "name": "Harbour Medical Lab",
+          "address": "14 Wharf Street, Port Ellery",
+          "phone": "(03) 5550 0192",
+          "website": "harbour-medical.example"
+        },
+        "patient": {
+          "name": "ALEX TAN",
+          "idNumber": "S1234482K",
+          "dateOfBirth": "02/11/84",
+          "sex": "Female",
+          "age": "41 Years"
+        },
+        "doctor": {
+          "name": "Dr Priya Nair",
+          "clinic": "Riverside Family Clinic"
+        },
+        "dates": {
+          "collected": "18/03/26 08:40",
+          "received": null,
+          "requested": null,
+          "reported": "19/03/26 16:05"
+        },
+        "headerFields": [
+          {
+            "label": "Lab No.",
+            "value": "26-00000318-H"
+          }
+        ],
+        "tests": [
+          {
+            "headings": [
+              "SPECIAL CHEMISTRY"
+            ],
+            "specimen": "blood",
+            "name": "HbA1c",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "5.7",
+                "unit": "%",
+                "referenceText": null,
+                "marker": null
+              },
+              {
+                "value": "39",
+                "unit": "mmol/mol",
+                "referenceText": null,
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "SERUM/PLASMA GLUCOSE"
+            ],
+            "specimen": "blood",
+            "name": "Glucose",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "5.2",
+                "unit": "mmol/L",
+                "referenceText": "(3.9 - 6.0)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "Liver Function"
+            ],
+            "specimen": "blood",
+            "name": "ALT",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "47",
+                "unit": "U/L",
+                "referenceText": "(< 35)",
+                "marker": "*"
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "Liver Function"
+            ],
+            "specimen": "blood",
+            "name": "GGT",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "24",
+                "unit": "U/L",
+                "referenceText": "(< 38)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "Thyroid"
+            ],
+            "specimen": "blood",
+            "name": "TSH",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "2.3",
+                "unit": "mIU/L",
+                "referenceText": "(0.30-4.20)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "Thyroid"
+            ],
+            "specimen": "blood",
+            "name": "Free T4",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "13.6",
+                "unit": "pmol/L",
+                "referenceText": "(10.0-20.0)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "URINE FEME",
+              "CHEMISTRY"
+            ],
+            "specimen": "urine",
+            "name": "Colour",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "Pale Yellow",
+                "unit": null,
+                "referenceText": null,
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "URINE FEME",
+              "CHEMISTRY"
+            ],
+            "specimen": "urine",
+            "name": "Transparency",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "Clear",
+                "unit": null,
+                "referenceText": null,
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "URINE FEME",
+              "CHEMISTRY"
+            ],
+            "specimen": "urine",
+            "name": "Protein",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "Negative",
+                "unit": null,
+                "referenceText": "(Negative)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "URINE FEME",
+              "CHEMISTRY"
+            ],
+            "specimen": "urine",
+            "name": "Glucose",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "Negative",
+                "unit": null,
+                "referenceText": "(Negative)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "URINE FEME",
+              "CHEMISTRY"
+            ],
+            "specimen": "urine",
+            "name": "Blood",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "Negative",
+                "unit": null,
+                "referenceText": "(Negative)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          },
+          {
+            "headings": [
+              "URINE FEME",
+              "CHEMISTRY"
+            ],
+            "specimen": "urine",
+            "name": "Leucocytes",
+            "nameZh": null,
+            "measurements": [
+              {
+                "value": "Negative",
+                "unit": null,
+                "referenceText": "(Negative)",
+                "marker": null
+              }
+            ],
+            "notes": []
+          }
+        ],
+        "continuationText": null,
+        "interpretation": [
+          "Diagnostic values of HbA1c: Normal < 5.7% (< 39 mmol/mol); Prediabetes 5.7 - 6.2% (39 - 44 mmol/mol); Diabetes >= 6.3% (>= 45 mmol/mol)"
+        ],
+        "specimenNotes": [],
+        "warnings": []
+      },
+      "image": "alex-tan-2026-03-18-2.jpg"
+    }
+  ]
+}

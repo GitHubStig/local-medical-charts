@@ -6,28 +6,76 @@
 @import "@fontsource/ibm-plex-sans/600.css";
 @import "@fontsource/ibm-plex-mono/400.css";
 
-/* Tokens from the design canvas (design/). Used as bg-page, text-ink-2, etc. */
+/*
+ * Colours from the design canvas (design/), light and dark. The resolved theme
+ * is set on <html data-theme="light|dark"> (see composables/useTheme.ts), so a
+ * class like bg-page or text-ink-2 switches automatically — no dark: variants
+ * needed for these tokens.
+ */
+:root {
+  color-scheme: light;
+  --mc-page: #f7f6f3;
+  --mc-surface: #ffffff;
+  --mc-ink: #1c1917;
+  --mc-ink-2: #57534e;
+  --mc-muted: #77706b;
+  --mc-line: #e7e5e0;
+  --mc-hairline: #eeece7;
+  --mc-chip: #f0eee9;
+  --mc-danger: #b42318;
+  /* Charts: one series hue; red only for out-of-range results. */
+  --mc-series: #2a78d6;
+  --mc-band: #eceae4;
+  --mc-band-edge: #d3cfc6;
+  --mc-critical: #d03b3b;
+  --mc-flag: #fbeaea;
+  --mc-flag-ink: #8f1f1f;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --mc-page: #141311;
+  --mc-surface: #1c1b18;
+  --mc-ink: #f1efea;
+  --mc-ink-2: #c4c0b7;
+  --mc-muted: #9f9a91;
+  --mc-line: #34312c;
+  --mc-hairline: #292724;
+  --mc-chip: #2a2825;
+  --mc-danger: #ff8a7a;
+  /* Stepped for the dark surface, not inverted. */
+  --mc-series: #3987e5;
+  --mc-band: #2a2825;
+  --mc-band-edge: #45423c;
+  --mc-critical: #e66767;
+  --mc-flag: #3c211e;
+  --mc-flag-ink: #ffb4a8;
+}
+
+/* For the rare element that needs a different treatment in dark mode. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --color-page: var(--mc-page);
+  --color-surface: var(--mc-surface);
+  --color-ink: var(--mc-ink);
+  --color-ink-2: var(--mc-ink-2);
+  --color-muted: var(--mc-muted);
+  --color-line: var(--mc-line);
+  --color-hairline: var(--mc-hairline);
+  --color-chip: var(--mc-chip);
+  --color-danger: var(--mc-danger);
+  --color-series: var(--mc-series);
+  --color-band: var(--mc-band);
+  --color-band-edge: var(--mc-band-edge);
+  --color-critical: var(--mc-critical);
+  --color-flag: var(--mc-flag);
+  --color-flag-ink: var(--mc-flag-ink);
+}
+
 @theme {
   --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
-
-  --color-page: #f7f6f3;
-  --color-surface: #ffffff;
-  --color-ink: #1c1917;
-  --color-ink-2: #57534e;
-  --color-muted: #78716c;
-  --color-line: #e7e5e0;
-  --color-hairline: #eeece7;
-  --color-chip: #f0eee9;
-  --color-danger: #b42318;
-
-  /* Charts: one series hue; red only for out-of-range results. */
-  --color-series: #2a78d6;
-  --color-band: #eceae4;
-  --color-band-edge: #d3cfc6;
-  --color-critical: #d03b3b;
-  --color-flag: #fbeaea;
-  --color-flag-ink: #8f1f1f;
 }
 
 @layer base {
