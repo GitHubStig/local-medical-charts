@@ -20,11 +20,15 @@
   --mc-ink-2: #57534e;
   --mc-muted: #77706b;
   --mc-line: #e7e5e0;
+  /* Stronger outlines, such as the drop zone's dashed border. */
+  --mc-line-strong: #c9c3b8;
   --mc-hairline: #eeece7;
   --mc-chip: #f0eee9;
   --mc-danger: #b42318;
   /* Charts: one series hue; red only for out-of-range results. */
   --mc-series: #2a78d6;
+  /* A faint tint of the series hue, e.g. a drop zone while dragging. */
+  --mc-series-wash: rgb(42 120 214 / 0.06);
   --mc-band: #eceae4;
   --mc-band-edge: #d3cfc6;
   --mc-critical: #d03b3b;
@@ -40,11 +44,13 @@
   --mc-ink-2: #c4c0b7;
   --mc-muted: #9f9a91;
   --mc-line: #34312c;
+  --mc-line-strong: #4d4943;
   --mc-hairline: #292724;
   --mc-chip: #2a2825;
   --mc-danger: #ff8a7a;
   /* Stepped for the dark surface, not inverted. */
   --mc-series: #3987e5;
+  --mc-series-wash: rgb(57 135 229 / 0.12);
   --mc-band: #2a2825;
   --mc-band-edge: #45423c;
   --mc-critical: #e66767;
@@ -62,10 +68,12 @@
   --color-ink-2: var(--mc-ink-2);
   --color-muted: var(--mc-muted);
   --color-line: var(--mc-line);
+  --color-line-strong: var(--mc-line-strong);
   --color-hairline: var(--mc-hairline);
   --color-chip: var(--mc-chip);
   --color-danger: var(--mc-danger);
   --color-series: var(--mc-series);
+  --color-series-wash: var(--mc-series-wash);
   --color-band: var(--mc-band);
   --color-band-edge: var(--mc-band-edge);
   --color-critical: var(--mc-critical);
