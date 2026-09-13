@@ -7,7 +7,11 @@
  */
 import { usePreferredDark } from "@vueuse/core";
 import { computed, readonly, ref, watchEffect } from "vue";
-import type { DesktopBindings, Theme } from "../../../desktop/contract.ts";
+import type {
+  DesktopBindings,
+  Settings,
+  Theme,
+} from "../../../desktop/contract.ts";
 import { errorMessage } from "../api/index.ts";
 
 const theme = ref<Theme>("system");
@@ -25,11 +29,17 @@ watchEffect(() => {
   document.documentElement.style.colorScheme = resolved.value;
 });
 
-/** Call once the bindings are connected: loads the saved theme. */
-export async function initTheme(connected: DesktopBindings): Promise<void> {
+/**
+ * Call once the bindings are connected: applies the saved theme. Pass settings
+ * already loaded to avoid fetching them twice.
+ */
+export async function initTheme(
+  connected: DesktopBindings,
+  settings?: Settings,
+): Promise<void> {
   bindings = connected;
   try {
-    theme.value = (await connected.getSettings()).theme;
+    theme.value = (settings ?? await connected.getSettings()).theme;
   } catch (err) {
     saveError.value = errorMessage(err);
   }

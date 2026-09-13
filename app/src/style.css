@@ -25,6 +25,8 @@
   --mc-hairline: #eeece7;
   --mc-chip: #f0eee9;
   --mc-danger: #b42318;
+  --mc-danger-line: #efd5d0;
+  --mc-avatar: #e6e1d8;
   /* Charts: one series hue; red only for out-of-range results. */
   --mc-series: #2a78d6;
   /* A faint tint of the series hue, e.g. a drop zone while dragging. */
@@ -48,6 +50,8 @@
   --mc-hairline: #292724;
   --mc-chip: #2a2825;
   --mc-danger: #ff8a7a;
+  --mc-danger-line: #5c2c26;
+  --mc-avatar: #3a3732;
   /* Stepped for the dark surface, not inverted. */
   --mc-series: #3987e5;
   --mc-series-wash: rgb(57 135 229 / 0.12);
@@ -72,6 +76,8 @@
   --color-hairline: var(--mc-hairline);
   --color-chip: var(--mc-chip);
   --color-danger: var(--mc-danger);
+  --color-danger-line: var(--mc-danger-line);
+  --color-avatar: var(--mc-avatar);
   --color-series: var(--mc-series);
   --color-series-wash: var(--mc-series-wash);
   --color-band: var(--mc-band);

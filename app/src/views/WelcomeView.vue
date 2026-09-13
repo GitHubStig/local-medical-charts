@@ -2,6 +2,7 @@
 import { useDropZone } from "@vueuse/core";
 import { computed, ref } from "vue";
 import AppLogo from "../components/AppLogo.vue";
+import FilePickerButton from "../components/FilePickerButton.vue";
 import ImportResults from "../components/ImportResults.vue";
 import ThemeToggle from "../components/ThemeToggle.vue";
 import { useLibrary } from "../composables/useLibrary.ts";
@@ -9,7 +10,6 @@ import { useLibrary } from "../composables/useLibrary.ts";
 const { busy, lastImport, mode, importFiles } = useLibrary();
 
 const page = ref<HTMLElement | null>(null);
-const picker = ref<HTMLInputElement | null>(null);
 
 // The whole screen accepts drops; the card shows the drop state. Unhandled drops
 // are cancelled so the window never navigates to a dropped file.
@@ -17,12 +17,6 @@ const { isOverDropZone } = useDropZone(page, {
   onDrop: (files) => files && importFiles(files),
   preventDefaultForUnhandled: true,
 });
-
-function onPick() {
-  const files = [...(picker.value?.files ?? [])];
-  if (picker.value) picker.value.value = "";
-  if (files.length) importFiles(files);
-}
 
 // Still on this screen after an import means nothing could be filed.
 const failedImport = computed(() => lastImport.value?.length ? lastImport.value : null);
@@ -69,24 +63,13 @@ const failedImport = computed(() => lastImport.value?.length ? lastImport.value 
           Merged report JSON from the OCR pipeline, one or many at a time.
           Per-page files are skipped.
         </p>
-        <input
-          ref="picker"
-          type="file"
-          accept=".json,application/json"
-          multiple
-          class="sr-only"
-          tabindex="-1"
-          aria-hidden="true"
-          @change="onPick"
-        />
-        <button
-          type="button"
-          class="mt-1.5 flex h-11 items-center rounded-lg bg-ink px-4.5 text-sm font-medium text-page disabled:opacity-60"
+        <FilePickerButton
           :disabled="busy"
-          @click="picker?.click()"
+          class="mt-1.5 flex h-11 items-center rounded-lg bg-ink px-4.5 text-sm font-medium text-page disabled:opacity-60"
+          @files="importFiles"
         >
           Choose files
-        </button>
+        </FilePickerButton>
       </section>
 
       <div
