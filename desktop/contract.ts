@@ -12,7 +12,7 @@
  * Map or class instances. Every binding returns a Promise on both sides.
  */
 import type { ReportWithoutPages } from "./report-data.ts";
-import type { Settings, Theme } from "./settings.ts";
+import type { ChartLibrary, Settings, Theme } from "./settings.ts";
 import type {
   PatientSummary,
   ReportSummary,
@@ -21,6 +21,7 @@ import type {
 } from "./types.ts";
 
 export type {
+  ChartLibrary,
   PatientSummary,
   ReportSummary,
   ReportWithoutPages,

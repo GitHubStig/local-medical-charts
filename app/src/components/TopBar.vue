@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useLibrary } from "../composables/useLibrary.ts";
 import AppLogo from "./AppLogo.vue";
+import ChartLibraryToggle from "./ChartLibraryToggle.vue";
 import FilePickerButton from "./FilePickerButton.vue";
 import PatientPicker from "./PatientPicker.vue";
 import ThemeToggle from "./ThemeToggle.vue";
@@ -42,6 +43,7 @@ function confirmClear() {
     </div>
 
     <div class="flex items-center gap-4">
+      <ChartLibraryToggle />
       <ThemeToggle compact />
       <FilePickerButton
         :disabled="busy"

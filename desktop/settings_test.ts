@@ -14,6 +14,9 @@ Deno.test("a valid settings patch is accepted", () => {
   assertEquals(parseSettingsPatch({ selectedPatientId: null }), {
     selectedPatientId: null,
   });
+  assertEquals(parseSettingsPatch({ chartLibrary: "echarts" }), {
+    chartLibrary: "echarts",
+  });
   assertEquals(parseSettingsPatch({}), {});
 });
 
@@ -32,6 +35,11 @@ Deno.test("invalid settings from the page are refused", () => {
     () => parseSettingsPatch({ selectedPatientId: "3" }),
     SettingsError,
     "positive integer or null",
+  );
+  assertThrows(
+    () => parseSettingsPatch({ chartLibrary: "d3" }),
+    SettingsError,
+    "chartLibrary must be one of",
   );
   assertThrows(
     () => parseSettingsPatch({ fontSize: 14 }),
@@ -53,11 +61,17 @@ Deno.test("invalid settings from the page are refused", () => {
 Deno.test("stored settings fall back to defaults for anything unknown or invalid", () => {
   assertEquals(normalizeSettings({}), DEFAULT_SETTINGS);
   assertEquals(
-    normalizeSettings({ theme: "light", selectedPatientId: 2, retired: true }),
-    { theme: "light", selectedPatientId: 2 },
+    normalizeSettings({
+      theme: "light",
+      selectedPatientId: 2,
+      chartLibrary: "echarts",
+      retired: true,
+    }),
+    { theme: "light", selectedPatientId: 2, chartLibrary: "echarts" },
   );
   assertEquals(
-    normalizeSettings({ theme: 42, selectedPatientId: -1 }),
+    // A library that's been removed falls back too.
+    normalizeSettings({ theme: 42, selectedPatientId: -1, chartLibrary: "d3" }),
     DEFAULT_SETTINGS,
   );
 });

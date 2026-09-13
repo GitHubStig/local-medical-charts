@@ -212,6 +212,7 @@ export function defineContractTests(
     assertEquals(await b.getSettings(), {
       theme: "dark",
       selectedPatientId: null,
+      chartLibrary: "vega-lite",
     });
   });
 
@@ -221,6 +222,7 @@ export function defineContractTests(
     assertEquals(await b.getSettings(), {
       theme: "system",
       selectedPatientId: 7,
+      chartLibrary: "vega-lite",
     });
     await b.updateSettings({ selectedPatientId: null });
     assertEquals((await b.getSettings()).selectedPatientId, null);
@@ -233,15 +235,21 @@ export function defineContractTests(
     assertEquals(await b.getSettings(), {
       theme: "system",
       selectedPatientId: null,
+      chartLibrary: "vega-lite",
     });
     assertEquals(await b.updateSettings({ theme: "light" }), {
       theme: "light",
       selectedPatientId: null,
+      chartLibrary: "vega-lite",
     });
     await assertRejects(() => b.updateSettings({ theme: "sepia" } as never));
+    await assertRejects(() =>
+      b.updateSettings({ chartLibrary: "d3" } as never)
+    );
     assertEquals(await b.getSettings(), {
       theme: "light",
       selectedPatientId: null,
+      chartLibrary: "vega-lite",
     });
   });
 }

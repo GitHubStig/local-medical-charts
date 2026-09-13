@@ -17,6 +17,7 @@ import {
   prepareImport,
 } from "../lib/import-files.ts";
 import { importedPatient, resolveSelection } from "../lib/selection.ts";
+import { initChartLibrary } from "./useChartLibrary.ts";
 import { initTheme } from "./useTheme.ts";
 
 type Phase = "loading" | "unavailable" | "ready";
@@ -76,6 +77,7 @@ export async function startLibrary(): Promise<void> {
     api.value = await connectApi();
     const settings = await api.value.bindings.getSettings();
     await initTheme(api.value.bindings, settings);
+    initChartLibrary(api.value.bindings, settings);
     status.value = await api.value.bindings.getStartupStatus();
     if (!status.value.ok) {
       phase.value = "unavailable";
