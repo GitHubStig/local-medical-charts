@@ -61,3 +61,69 @@ export function initials(name: string | null | undefined): string {
 export function plural(count: number, one: string, many = `${one}s`): string {
   return `${count} ${count === 1 ? one : many}`;
 }
+
+/** "2026-03-18T08:40:00" → "18 Mar 2026". Read from the text, so time zones can't shift it. */
+export function dayMonthYear(iso: string | null): string | null {
+  const match = iso?.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const month = match && MONTHS[Number(match[2]) - 1];
+  return match && month ? `${Number(match[3])} ${month} ${match[1]}` : null;
+}
+
+/** "2026-03-18T08:40:00" → "18 Mar 2026, 08:40"; just the date when no time is printed. */
+export function dateAndTime(iso: string | null): string | null {
+  const date = dayMonthYear(iso);
+  const time = iso?.match(/T(\d{2}:\d{2})/)?.[1];
+  return date && time ? `${date}, ${time}` : date;
+}
+
+/**
+ * An instant (e.g. "2026-03-19T13:14:00.000Z") in local time, e.g.
+ * "19 Mar 2026, 21:14". Formatting is left to the engine's Intl, so the exact
+ * wording can vary slightly between browsers (", " or " at ").
+ */
+export function timestamp(
+  iso: string | null,
+  timeZone?: string,
+): string | null {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone,
+  }).format(date);
+}
+
+/** Whole years from an ISO date of birth to `today` (local calendar date). */
+export function ageOn(dateOfBirth: string | null, today: Date): number | null {
+  const match = dateOfBirth?.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return null;
+  const [year, month, day] = match.slice(1).map(Number);
+  let age = today.getFullYear() - year;
+  if (
+    today.getMonth() + 1 < month ||
+    (today.getMonth() + 1 === month && today.getDate() < day)
+  ) age--;
+  return age >= 0 ? age : null;
+}
+
+/** "FEMALE" or "F" → "Female". */
+export function displaySex(sex: string | null): string | null {
+  const value = sex?.trim().toLowerCase();
+  if (!value) return null;
+  if (value === "f" || value === "female") return "Female";
+  if (value === "m" || value === "male") return "Male";
+  return displayName(value);
+}
+
+/** Only the last four characters of an ID number stay readable: "•••• 482K". */
+export function maskId(id: string | null): string | null {
+  const compact = id?.replace(/\s+/g, "");
+  if (!compact) return null;
+  return compact.length <= 4 ? compact : `•••• ${compact.slice(-4)}`;
+}

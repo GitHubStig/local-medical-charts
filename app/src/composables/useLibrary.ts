@@ -3,8 +3,9 @@
  * shown, and the latest import. One shared state for the whole app, started
  * once from App.vue.
  */
-import { computed, readonly, ref, shallowRef } from "vue";
+import { computed, readonly, ref, shallowRef, watch } from "vue";
 import type {
+  Dashboard,
   ImportOutcome,
   PatientSummary,
   StartupStatus,
@@ -25,6 +26,8 @@ const api = shallowRef<Api | null>(null);
 const status = shallowRef<StartupStatus | null>(null);
 const patients = shallowRef<PatientSummary[]>([]);
 const selectedPatientId = ref<number | null>(null);
+/** Everything shown for the selected patient; null while none is selected. */
+const dashboard = shallowRef<Dashboard | null>(null);
 const lastImport = shallowRef<ImportOutcome[] | null>(null);
 const busy = ref(false);
 const error = ref<string | null>(null);
@@ -41,6 +44,22 @@ function bindings() {
 async function refreshPatients() {
   patients.value = await bindings().listPatients();
 }
+
+let dashboardRequest = 0;
+
+/** Loads the selected patient's dashboard, ignoring answers for a patient no longer selected. */
+async function loadDashboard() {
+  const id = selectedPatientId.value;
+  const request = ++dashboardRequest;
+  const loaded = id === null ? null : await bindings().getDashboard(id);
+  if (request === dashboardRequest) dashboard.value = loaded;
+}
+
+watch(selectedPatientId, () => {
+  loadDashboard().catch((err) => {
+    error.value = errorMessage(err);
+  });
+});
 
 /** Shows a patient and remembers the choice for next time. */
 function selectPatient(id: number | null) {
@@ -96,6 +115,7 @@ export function useLibrary() {
     patients,
     selectedPatientId: readonly(selectedPatientId),
     selectedPatient,
+    dashboard,
     lastImport,
     busy: readonly(busy),
     error: readonly(error),
@@ -121,7 +141,20 @@ export function useLibrary() {
             importedPatient(lastImport.value) ?? selectedPatientId.value,
           ),
         );
+        // The same patient may have gained reports, which a selection change wouldn't reload.
+        await loadDashboard();
         return lastImport.value;
+      }),
+
+    /** Removes one report; a patient left with none drops out of the picker. */
+    deleteReport: (reportId: number) =>
+      withBusy(async () => {
+        await bindings().deleteReport(reportId);
+        await refreshPatients();
+        selectPatient(
+          resolveSelection(patients.value, selectedPatientId.value),
+        );
+        await loadDashboard();
       }),
 
     clearAll: () =>

@@ -1,12 +1,38 @@
 <script setup lang="ts">
 import { useDropZone } from "@vueuse/core";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import ImportResults from "../components/ImportResults.vue";
+import PatientSummary from "../components/PatientSummary.vue";
+import ReportsSection from "../components/ReportsSection.vue";
 import TopBar from "../components/TopBar.vue";
 import { useLibrary } from "../composables/useLibrary.ts";
-import { displayName } from "../lib/format.ts";
+import { patientOverview } from "../lib/dashboard.ts";
 
-const { selectedPatient, lastImport, importFiles, dismissImport } = useLibrary();
+const {
+  selectedPatientId,
+  dashboard,
+  lastImport,
+  importFiles,
+  deleteReport,
+  dismissImport,
+} = useLibrary();
+
+// Only show a dashboard that belongs to the selected patient, never a stale one
+// while the next is loading.
+const current = computed(() =>
+  dashboard.value?.patient.id === selectedPatientId.value ? dashboard.value : null
+);
+const overview = computed(() =>
+  current.value ? patientOverview(current.value, new Date()) : null
+);
+
+function confirmRemove(reportId: number) {
+  const entry = current.value?.reports.find((r) => r.id === reportId);
+  const name = entry?.fileName ?? "this report";
+  if (confirm(`Remove ${name} from this app? Its results disappear from the charts.`)) {
+    deleteReport(reportId);
+  }
+}
 
 // More reports can be dropped anywhere on the dashboard, as on the welcome screen.
 const page = ref<HTMLElement | null>(null);
@@ -20,7 +46,7 @@ const { isOverDropZone } = useDropZone(page, {
   <div ref="page" class="min-h-screen">
     <TopBar />
 
-    <main class="mx-auto flex max-w-3xl flex-col gap-6 px-10 py-8">
+    <main class="mx-auto flex max-w-[1440px] flex-col gap-7 px-10 pt-8 pb-14">
       <div
         v-if="lastImport"
         role="status"
@@ -39,14 +65,16 @@ const { isOverDropZone } = useDropZone(page, {
         </button>
       </div>
 
-      <section v-if="selectedPatient" class="flex flex-col gap-2">
-        <h1 class="text-[28px] font-semibold tracking-tight">
-          {{ displayName(selectedPatient.name) }}
-        </h1>
-        <p class="text-sm text-muted">
-          The patient summary, reports and charts are on their way.
-        </p>
-      </section>
+      <template v-if="current && overview">
+        <PatientSummary :key="`summary-${current.patient.id}`" :overview="overview" />
+        <!-- Keyed by patient, so expanded reports reset when switching patients. -->
+        <ReportsSection
+          :key="`reports-${current.patient.id}`"
+          :reports="current.reports"
+          @remove="confirmRemove"
+        />
+        <p class="text-sm text-muted">Charts for each test are on their way.</p>
+      </template>
     </main>
 
     <div
