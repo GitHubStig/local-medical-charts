@@ -305,10 +305,12 @@ Deno.test("settings default, persist across reopening, and survive clearAll", ()
     assertEquals(store.getSettings(), {
       theme: "system",
       selectedPatientId: null,
+      chartLibrary: "vega-lite",
     });
     assertEquals(store.updateSettings({ theme: "dark" }, now), {
       theme: "dark",
       selectedPatientId: null,
+      chartLibrary: "vega-lite",
     });
     store.addReport(syntheticReport(), "a.json", catalogV1, now);
     store.clearAll();
@@ -318,6 +320,7 @@ Deno.test("settings default, persist across reopening, and survive clearAll", ()
     assertEquals(store.getSettings(), {
       theme: "dark",
       selectedPatientId: null,
+      chartLibrary: "vega-lite",
     });
     assertEquals(store.listPatients(), []);
     store.close();

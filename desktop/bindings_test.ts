@@ -79,6 +79,7 @@ Deno.test("with the database unavailable, status explains, settings default, the
   assertEquals(await b.getSettings(), {
     theme: "system",
     selectedPatientId: null,
+    chartLibrary: "vega-lite",
   });
   await assertRejects(
     () => b.listPatients(),

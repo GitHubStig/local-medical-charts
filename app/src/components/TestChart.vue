@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useElementSize } from "@vueuse/core";
 import { onBeforeUnmount, ref, shallowRef, watch } from "vue";
+import { useChartLibrary } from "../composables/useChartLibrary.ts";
 import { useTheme } from "../composables/useTheme.ts";
+import { CHART_BACKENDS } from "../lib/charts/backends.ts";
 import type { ChartPalette } from "../lib/charts/palette.ts";
 import type { ChartTooltip, RenderedChart } from "../lib/charts/types.ts";
 import type { Series } from "../lib/series.ts";
@@ -13,6 +15,7 @@ const props = withDefaults(defineProps<{ series: Series; height?: number }>(), {
 const element = ref<HTMLElement | null>(null);
 const { width } = useElementSize(element);
 const { resolved } = useTheme();
+const { chartLibrary } = useChartLibrary();
 const tooltip = ref<ChartTooltip>(null);
 const failed = ref<string | null>(null);
 const chart = shallowRef<RenderedChart | null>(null);
@@ -39,12 +42,12 @@ async function draw() {
   if (!target || w <= 0) return;
   const mine = ++generation;
   try {
-    // Loaded on first use: Vega stays out of the main bundle.
-    const { vegaLite } = await import("../lib/charts/vega-lite.ts");
+    // Each library loads on first use, so the main bundle carries none of them.
+    const backend = await CHART_BACKENDS[chartLibrary.value].load();
     if (mine !== generation) return;
     chart.value?.destroy();
     chart.value = null;
-    const rendered = await vegaLite.render(target, props.series, {
+    const rendered = await backend.render(target, props.series, {
       palette: readPalette(),
       width: w,
       height: props.height,
@@ -58,8 +61,11 @@ async function draw() {
   }
 }
 
-// Redraw for new data, a new width, or a theme switch (after <html data-theme> changes).
-watch([() => props.series, width, resolved], draw, { flush: "post" });
+// Redraw for new data, a new width, another chart library, or a theme switch
+// (after <html data-theme> changes).
+watch([() => props.series, width, resolved, chartLibrary], draw, {
+  flush: "post",
+});
 
 onBeforeUnmount(() => {
   generation++;

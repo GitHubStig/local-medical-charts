@@ -10,16 +10,22 @@
 export const THEMES = ["system", "light", "dark"] as const;
 export type Theme = (typeof THEMES)[number];
 
+/** Chart libraries the dashboard can draw with, through Flint. */
+export const CHART_LIBRARIES = ["vega-lite", "echarts"] as const;
+export type ChartLibrary = (typeof CHART_LIBRARIES)[number];
+
 export type Settings = {
   /** "system" follows the operating system's light or dark appearance. */
   theme: Theme;
   /** The patient the dashboard last showed; null before one is chosen. */
   selectedPatientId: number | null;
+  chartLibrary: ChartLibrary;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: "system",
   selectedPatientId: null,
+  chartLibrary: "vega-lite",
 };
 
 export class SettingsError extends Error {
@@ -28,6 +34,9 @@ export class SettingsError extends Error {
 
 const isTheme = (value: unknown): value is Theme =>
   (THEMES as readonly unknown[]).includes(value);
+
+const isChartLibrary = (value: unknown): value is ChartLibrary =>
+  (CHART_LIBRARIES as readonly unknown[]).includes(value);
 
 const isPatientId = (value: unknown): value is number | null =>
   value === null ||
@@ -52,6 +61,13 @@ export function parseSettingsPatch(value: unknown): Partial<Settings> {
         );
       }
       patch.selectedPatientId = entry;
+    } else if (key === "chartLibrary") {
+      if (!isChartLibrary(entry)) {
+        throw new SettingsError(
+          `chartLibrary must be one of ${CHART_LIBRARIES.join(", ")}`,
+        );
+      }
+      patch.chartLibrary = entry;
     } else {
       throw new SettingsError(`unknown setting "${key}"`);
     }
@@ -69,5 +85,8 @@ export function normalizeSettings(stored: Record<string, unknown>): Settings {
     selectedPatientId: isPatientId(stored.selectedPatientId)
       ? stored.selectedPatientId
       : DEFAULT_SETTINGS.selectedPatientId,
+    chartLibrary: isChartLibrary(stored.chartLibrary)
+      ? stored.chartLibrary
+      : DEFAULT_SETTINGS.chartLibrary,
   };
 }
