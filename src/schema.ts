@@ -1,90 +1,105 @@
 /**
  * Schemas for lab-report extraction, in two layers:
  *
- *   PageExtraction — what the vision model is asked to return for one page.
- *                    Deliberately close to what is printed: values and
- *                    reference ranges stay verbatim strings.
- *   Report         — the normalized, chart-ready merge of a report's pages,
- *                    produced in code from the page extractions.
+ *   PageExtraction — what the vision model returns for one page. Deliberately
+ *                    close to what is printed: values, units and reference
+ *                    ranges stay verbatim strings, whatever the laboratory.
+ *   Report         — the normalized merge of a report's pages, produced in
+ *                    code, with each result matched to the analyte catalog so
+ *                    results from different laboratories chart together.
  *
- * Keeping the model's job to transcription (and doing every interpretation in
- * code) is what makes the output reproducible and testable.
+ * The model's job stops at transcription. Parsing, flag derivation, unit
+ * conversion and deciding which tests are the same test all happen in code.
  */
 import { z } from "@zod/zod";
 
-export const FlagSchema = z.enum(["H", "L"]);
+const text = () => z.string().nullable();
 
-/**
- * Which half of a two-line differential a row came from: the percentage line
- * or the parenthesized absolute-count line beneath it. Null for ordinary tests.
- */
-export const ComponentSchema = z.enum(["percent", "absolute"]);
+export const SpecimenSchema = z.enum(["blood", "urine", "stool", "other"]);
+
+/** H/L when the direction is known; A for abnormal with no direction. */
+export const FlagSchema = z.enum(["H", "L", "A"]);
+
+export const ComparatorSchema = z.enum(["<", "<=", ">", ">="]);
 
 // ---------------------------------------------------------------------------
 // Layer 1: what the model returns
 // ---------------------------------------------------------------------------
 
+/** One printed result. A row can print several: %, absolute, a second unit. */
+export const RawMeasurementSchema = z.object({
+  /** The result exactly as printed, operators and trailing zeros intact. */
+  value: z.string(),
+  unit: text(),
+  /** This result's reference range as printed, parentheses included. */
+  referenceText: text(),
+  /** Abnormal marker as printed: "H", "L", "*", … */
+  marker: text(),
+});
+
 export const RawTestSchema = z.object({
-  /** Section heading the row sits under, e.g. "Full Blood Count". */
-  panel: z.string().nullable(),
+  /** Section headings above the row, outermost first. */
+  headings: z.array(z.string()),
+  specimen: SpecimenSchema.nullable(),
   name: z.string(),
   /** Chinese test name printed beside the English one. */
-  nameZh: z.string().nullable(),
-  component: ComponentSchema.nullable(),
-  flag: FlagSchema.nullable(),
-  /** Result exactly as printed, operators and trailing zeros intact. */
-  value: z.string(),
-  unit: z.string().nullable(),
-  /** Reference-range column verbatim; multi-line ranges joined with "; ". */
-  referenceText: z.string().nullable(),
-  /** Footnotes attached to this row, e.g. the eGFR CKD-EPI note. */
+  nameZh: text(),
+  measurements: z.array(RawMeasurementSchema).min(1),
+  /** Footnotes attached to this row. */
   notes: z.array(z.string()),
+});
+
+/** A labelled header value with no fixed slot, e.g. "Lab No.", "R/N". */
+export const HeaderFieldSchema = z.object({
+  label: z.string(),
+  value: z.string(),
 });
 
 export const PageExtractionSchema = z.object({
   page: z.number().int(),
   pageCount: z.number().int(),
-  lab: z.object({
-    name: z.string().nullable(),
-    department: z.string().nullable(),
-    address: z.string().nullable(),
-    phone: z.string().nullable(),
-    email: z.string().nullable(),
-    website: z.string().nullable(),
+  provider: z.object({
+    name: text(),
+    address: text(),
+    phone: text(),
+    website: text(),
   }),
   patient: z.object({
-    name: z.string().nullable(),
-    recordNumber: z.string().nullable(),
-    dateOfBirth: z.string().nullable(),
-    idNumber: z.string().nullable(),
-    age: z.string().nullable(),
-    sex: z.string().nullable(),
-    comment: z.string().nullable(),
+    name: text(),
+    idNumber: text(),
+    dateOfBirth: text(),
+    sex: text(),
+    age: text(),
   }),
   doctor: z.object({
-    name: z.string().nullable(),
-    location: z.string().nullable(),
-    roomNumber: z.string().nullable(),
+    name: text(),
+    clinic: text(),
   }),
-  encounter: z.object({
-    visitNumber: z.string().nullable(),
-    sampleId: z.string().nullable(),
-    dateRequested: z.string().nullable(),
-    dateReceived: z.string().nullable(),
-    packageName: z.string().nullable(),
+  /** Filled by label meaning only — a "Collected" date is never "received". */
+  dates: z.object({
+    collected: text(),
+    received: text(),
+    requested: text(),
+    reported: text(),
   }),
-  validation: z.object({
-    validatedBy: z.string().nullable(),
-    printedOn: z.string().nullable(),
-  }),
+  headerFields: z.array(HeaderFieldSchema),
   tests: z.array(RawTestSchema),
-  /**
-   * Reference-range lines that belong to a test carried over from the previous
-   * page. Page 5 of a 5-page report is often nothing but these.
-   */
-  continuationText: z.string().nullable(),
+  /** The rest of a reference range for a test printed on the previous page. */
+  continuationText: text(),
+  /** Guideline, cut-off and risk tables, references, method notes. */
+  interpretation: z.array(z.string()),
+  /** Specimen comments and fasting status, e.g. "Haemolysis +". */
+  specimenNotes: z.array(z.string()),
   /** The model's own notes about anything it could not read confidently. */
   warnings: z.array(z.string()),
+});
+
+/** A cached page: the model's extraction plus how it was produced. */
+export const PageFileSchema = z.object({
+  model: z.string(),
+  promptHash: z.string(),
+  extractedAt: z.string(),
+  extraction: PageExtractionSchema,
 });
 
 // ---------------------------------------------------------------------------
@@ -95,16 +110,17 @@ export const ResultSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("numeric"), value: z.number() }),
   z.object({
     kind: z.literal("comparator"),
-    op: z.enum(["<", "<=", ">", ">="]),
+    op: ComparatorSchema,
     value: z.number(),
   }),
   z.object({ kind: z.literal("text"), text: z.string() }),
 ]);
 
 /**
- * Only plain numeric ranges are structured. Banded ranges (Glucose, HbA1c,
- * Vitamin D) and sex/phase-conditional ones (FSH, Estradiol) stay as text —
- * `rangeText` always holds what was printed, so nothing is lost.
+ * Plain numeric and single-bound ranges are structured, as are one-word
+ * qualitative expectations like "Negative". Banded and conditional ranges
+ * (diabetes cut-offs, hormone phases) stay text; `printed.referenceText` always
+ * keeps the original.
  */
 export const RangeSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("between"), min: z.number(), max: z.number() }),
@@ -118,26 +134,51 @@ export const RangeSchema = z.discriminatedUnion("kind", [
     limit: z.number(),
     inclusive: z.boolean(),
   }),
+  z.object({ kind: z.literal("qualitative"), expected: z.string() }),
   z.object({ kind: z.literal("text"), text: z.string() }),
 ]);
 
 export const TestSchema = z.object({
-  /** Stable slug for charting across reports, e.g. "neutrophils_pct". */
-  key: z.string(),
+  /** Catalog analyte id — the key to chart on. Null until the name is mapped. */
+  analyte: text(),
+  analyteName: text(),
+  specimen: SpecimenSchema.nullable(),
   name: z.string(),
-  nameZh: z.string().nullable(),
-  panel: z.string().nullable(),
-  component: ComponentSchema.nullable(),
-  flag: FlagSchema.nullable(),
+  nameZh: text(),
+  headings: z.array(z.string()),
   result: ResultSchema,
-  /** The result exactly as printed. */
-  raw: z.string(),
-  unit: z.string().nullable(),
+  /** The printed unit, spelling normalized. */
+  unit: text(),
   range: RangeSchema.nullable(),
-  rangeText: z.string().nullable(),
+  flag: FlagSchema.nullable(),
+  /** "printed" when the lab printed the flag; "derived" when worked out here. */
+  flagSource: z.enum(["printed", "derived"]).nullable(),
+  /** The result converted to the analyte's catalog unit. Plot this. */
+  standard: z.object({
+    op: ComparatorSchema.nullable(),
+    value: z.number(),
+    unit: text(),
+  }).nullable(),
+  printed: RawMeasurementSchema,
   notes: z.array(z.string()),
   page: z.number().int(),
 });
+
+export const UnmappedSchema = z.object({
+  name: z.string(),
+  nameZh: text(),
+  specimen: SpecimenSchema.nullable(),
+  unit: text(),
+  reason: z.string(),
+  pages: z.array(z.number().int()),
+});
+
+export const DateSourceSchema = z.enum([
+  "collected",
+  "received",
+  "requested",
+  "reported",
+]);
 
 export const ReportSchema = z.object({
   source: z.object({
@@ -145,68 +186,44 @@ export const ReportSchema = z.object({
     images: z.array(z.string()),
     pages: z.number().int(),
     model: z.string(),
-    host: z.string(),
     promptHash: z.string(),
+    catalogHash: z.string(),
     extractedAt: z.string(),
+    mergedAt: z.string(),
   }),
-  lab: PageExtractionSchema.shape.lab,
+  provider: PageExtractionSchema.shape.provider,
   patient: PageExtractionSchema.shape.patient.extend({
-    dateOfBirthIso: z.string().nullable(),
+    dateOfBirthIso: text(),
   }),
   doctor: PageExtractionSchema.shape.doctor,
-  encounter: PageExtractionSchema.shape.encounter.extend({
-    dateRequestedIso: z.string().nullable(),
-    dateReceivedIso: z.string().nullable(),
-  }),
-  validation: PageExtractionSchema.shape.validation,
+  dates: PageExtractionSchema.shape.dates,
+  /** When the specimen was taken — the x-axis for charts. */
+  collectedAt: text(),
+  /** Which printed date `collectedAt` came from. */
+  collectedAtSource: DateSourceSchema.nullable(),
+  reportedAt: text(),
+  headerFields: z.array(HeaderFieldSchema),
+  specimenNotes: z.array(z.string()),
+  interpretation: z.array(
+    z.object({ page: z.number().int(), text: z.string() }),
+  ),
   tests: z.array(TestSchema),
+  /** Distinct test names the catalog could not match. See `deno task map`. */
+  unmapped: z.array(UnmappedSchema),
   warnings: z.array(z.string()),
 });
 
+export type Specimen = z.infer<typeof SpecimenSchema>;
+export type Flag = z.infer<typeof FlagSchema>;
+export type Comparator = z.infer<typeof ComparatorSchema>;
+export type RawMeasurement = z.infer<typeof RawMeasurementSchema>;
 export type RawTest = z.infer<typeof RawTestSchema>;
+export type HeaderField = z.infer<typeof HeaderFieldSchema>;
 export type PageExtraction = z.infer<typeof PageExtractionSchema>;
+export type PageFile = z.infer<typeof PageFileSchema>;
 export type Result = z.infer<typeof ResultSchema>;
 export type Range = z.infer<typeof RangeSchema>;
 export type Test = z.infer<typeof TestSchema>;
+export type Unmapped = z.infer<typeof UnmappedSchema>;
+export type DateSource = z.infer<typeof DateSourceSchema>;
 export type Report = z.infer<typeof ReportSchema>;
-
-/**
- * JSON Schema for Ollama's `format`, which constrains decoding so the model
- * can only emit conforming JSON.
- *
- * Ollama's grammar conversion is happier with `type: [..., "null"]` than with
- * `anyOf`, and the huge integer bounds Zod emits are noise, so both are
- * rewritten here.
- */
-export function pageExtractionJsonSchema(): Record<string, unknown> {
-  const schema = z.toJSONSchema(PageExtractionSchema, { target: "draft-7" });
-  return simplify(schema) as Record<string, unknown>;
-}
-
-function simplify(node: unknown): unknown {
-  if (Array.isArray(node)) return node.map(simplify);
-  if (node === null || typeof node !== "object") return node;
-
-  const obj = { ...node as Record<string, unknown> };
-
-  // `X | null` as anyOf → a nullable type, keeping any enum values.
-  const anyOf = obj.anyOf;
-  if (Array.isArray(anyOf) && anyOf.length === 2) {
-    const variants = anyOf as Record<string, unknown>[];
-    const nullBranch = variants.find((v) => v.type === "null");
-    const other = variants.find((v) => v.type !== "null");
-    if (nullBranch && other && typeof other.type === "string") {
-      delete obj.anyOf;
-      Object.assign(obj, other, { type: [other.type, "null"] });
-      if (Array.isArray(other.enum)) obj.enum = [...other.enum, null];
-    }
-  }
-
-  if (obj.type === "integer" || obj.type === "number") {
-    delete obj.minimum;
-    delete obj.maximum;
-  }
-
-  for (const [key, value] of Object.entries(obj)) obj[key] = simplify(value);
-  return obj;
-}

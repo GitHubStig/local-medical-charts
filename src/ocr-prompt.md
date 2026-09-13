@@ -1,160 +1,195 @@
 # Lab report page transcription
 
 You are transcribing **page {{PAGE}} of {{PAGE_COUNT}}** of a printed clinical
-laboratory report into JSON. The page is a scan, so read carefully.
+laboratory report into JSON. Reports come from many different laboratories, so
+do not assume any particular layout. The page is a scan; read carefully.
 
 Your job is transcription, not interpretation. Return only JSON matching the
-schema you were given.
+schema you were given. Every example below uses made-up values.
 
 ## Absolute rules
 
 1. **Copy, never compute.** Do not calculate, convert, round, or complete any
    value. If a number is not printed on the page, it does not go in the output.
-2. **Results stay verbatim.** Keep comparison operators and trailing zeros
-   exactly as printed: `7.0`, `< 15.00`, `>=60`, `0.0`. Do not turn `5.0` into
-   `5` or `< 15.00` into `15`.
-3. **Blank means null.** Fields with nothing after the colon (Room number is
-   often empty) are `null`, not `""` and not a guess.
-4. **Never invent a test.** Only rows actually printed on _this_ page.
-5. **Unsure? Say so.** If a character is ambiguous, transcribe your best reading
-   and add a short note to `warnings` naming the field, e.g.
-   `"Creatinine result could be 61 or 67"`. Never silently guess.
+2. **Values stay verbatim.** Keep operators, trailing zeros and decimal places:
+   `7.0`, `< 15.00`, `>=60`, `0.00`. Never turn `5.0` into `5`.
+3. **Blank means null.** A label with nothing after it is `null`, not `""`.
+4. **Never invent a test.** Only results actually printed on *this* page.
+5. **Unsure? Say so.** Transcribe your best reading and add a note to
+   `warnings` naming the field, e.g. `"Creatinine could be 61 or 67"`.
 
-## The header
+## Header
 
-Every page repeats the patient/doctor/encounter header. Transcribe it on every
-page, from this page's own printing.
+The header usually repeats on every page. Transcribe it from this page.
 
-- Dates stay exactly as printed (`15-08-1990`, `14/01/2025 08:30:00`). Do not
-  reformat or reorder them.
-- `patient.comment` is the Comment field, e.g. `Fasting`.
-- The package title above the first test (e.g. `Hospital Package D (HC 1)`) is
-  `encounter.packageName`. It is not a panel and not a test.
+Fill a fixed slot only when the page prints a label with that meaning:
+
+| Slot                  | Typical printed labels                                   |
+| --------------------- | -------------------------------------------------------- |
+| `patient.name`        | Patient Name, Name                                       |
+| `patient.idNumber`    | I/C/Passport no., IC No., NRIC, Passport                 |
+| `patient.dateOfBirth` | Date of Birth, DOB                                       |
+| `patient.sex`         | Sex, Gender                                              |
+| `patient.age`         | Age                                                      |
+| `doctor.name`         | Doctor, Referring Doctor, first line of Doctor Details   |
+| `doctor.clinic`       | Location, Clinic, the clinic line under the doctor       |
+| `provider.*`          | The laboratory or hospital issuing the report            |
+| `dates.collected`     | Collected, Date Collected, Specimen Collected            |
+| `dates.received`      | Date Received, Received                                  |
+| `dates.requested`     | Date Requested, Referred, Ordered                        |
+| `dates.reported`      | Printed on, Report Printed, Reported, Date Reported      |
+
+**Match on meaning, never on position.** A page that prints `Collected` fills
+`dates.collected` and leaves the other date slots `null` unless they are
+printed too. Never move a value into a slot with a different meaning to fill a
+gap. Copy dates exactly as printed: `15/08/90` stays `15/08/90`.
+
+Every **other** labelled header value goes in `headerFields` as
+`{ "label": ..., "value": ... }` with the label as printed — record numbers
+(`R/N`, `UR`, `MRN`), visit, lab and sample numbers (`VN/AN`, `Lab No.`,
+`Sample ID`), `Ward`, `Room number`, `Courier Run`, the package or profile name,
+the validating technologist, and so on. Skip labels with no value.
 
 ## Test rows
 
-Each test row is: English name, optional `H`/`L` flag, Chinese name, result,
-unit, reference range.
+For each printed result row, emit one entry in `tests`:
 
-- `panel` is the underlined section heading the row sits beneath —
-  `Full Blood
-  Count`, `Lipid Profile`, `Renal Function Test`,
-  `Liver Function Test`, `Biochemistry`, `Immunology/Serology`. Repeat it for
-  every row under that heading, and use `null` for rows printed before any
-  heading.
-- `flag` is the single letter `H` or `L` printed between the English and Chinese
-  names, otherwise `null`. It is never a word.
-- `nameZh` is the Chinese name, or `null` when none is printed.
-- `referenceText` is the whole reference-range column for that row, copied
-  verbatim. When it spans several printed lines, join them with `"; "` — see the
-  banded example below.
-- `notes` holds footnotes attached to that row (a line beginning with `*`, for
-  example). Usually empty.
+- `headings`: the section headings the row sits under, outermost first, e.g.
+  `["GENERAL BIOCHEMISTRY", "Lipids"]` or `["URINE FEME", "CHEMISTRY"]`. Use
+  an empty array when there are none.
+- `specimen`: `"urine"` when the headings or page say urine (`URINE FEME`,
+  `Urinalysis`, `Urine Microscopy`), `"stool"` for stool tests, `"blood"` for
+  blood, serum, plasma and whole-blood tests, or `null` when the page does not
+  make it clear. Haematology and serum chemistry are `"blood"`.
+- `name`: the English test name as printed, without a trailing colon.
+- `nameZh`: the Chinese name if printed, else `null`.
+- `measurements`: one entry per result printed for this test — see below.
+- `notes`: footnotes that belong to this specific row. Usually empty.
 
-### Two-line differentials — read this twice
+A heading with no result of its own (`Urine Appearance`, `Lipids`,
+`Electrolytes`) is **not** a test. It only appears in `headings`.
 
-In the Full Blood Count, differentials print **one test across two lines**: a
-percentage, then a parenthesized absolute count on the line below with its own
-unit and range. Emit these as **two separate entries** with the same `name`,
-distinguished by `component`. Drop the parentheses from the absolute value.
+### Measurements
 
-Printed:
+Each measurement is `{ "value", "unit", "referenceText", "marker" }`:
+
+- `value`: the result as printed, without surrounding parentheses.
+- `unit`: the unit printed for that value, or `null`.
+- `referenceText`: that value's reference range exactly as printed, including
+  any parentheses — `(120-150)`, `< 5.2`, `(Negative)`. When the range column
+  spans several lines, join them with `"; "`. `null` when none is printed for
+  that value.
+- `marker`: an abnormal-result marker printed for that value, copied exactly —
+  a letter such as `H` or `L`, or a symbol such as `*`. If the laboratory marks
+  an abnormal value only by underlining or bold with no letter, use `"*"`.
+  Otherwise `null`.
+
+Most rows have one measurement. Some print **several results for one test**,
+and each becomes its own measurement. Recognise these three layouts:
+
+**A. Percentage and absolute count on two lines**
 
 ```
 Neutrophils   L  嗜中性白血球   52       %         55 - 62
                               (2.61)   x10^9/L   2.20 - 6.82
 ```
 
-Correct output:
+```json
+{
+  "headings": ["Full Blood Count"],
+  "specimen": "blood",
+  "name": "Neutrophils",
+  "nameZh": "嗜中性白血球",
+  "measurements": [
+    { "value": "52", "unit": "%", "referenceText": "55 - 62", "marker": "L" },
+    { "value": "2.61", "unit": "x10^9/L", "referenceText": "2.20 - 6.82", "marker": null }
+  ],
+  "notes": []
+}
+```
+
+The `L` is printed on the percentage line, so only that measurement has it.
+
+**B. Percentage and absolute count on one line**
+
+```
+Neutrophils   嗜中性粒细胞   58 %   3.4   x 10^9/L   (2.0-7.0)
+```
 
 ```json
-[
-  {
-    "panel": "Full Blood Count",
-    "name": "Neutrophils",
-    "nameZh": "嗜中性白血球",
-    "component": "percent",
-    "flag": "L",
-    "value": "52",
-    "unit": "%",
-    "referenceText": "55 - 62",
-    "notes": []
-  },
-  {
-    "panel": "Full Blood Count",
-    "name": "Neutrophils",
-    "nameZh": "嗜中性白血球",
-    "component": "absolute",
-    "flag": null,
-    "value": "2.61",
-    "unit": "x10^9/L",
-    "referenceText": "2.20 - 6.82",
-    "notes": []
-  }
-]
+{
+  "headings": ["HAEMATOLOGY"],
+  "specimen": "blood",
+  "name": "Neutrophils",
+  "nameZh": "嗜中性粒细胞",
+  "measurements": [
+    { "value": "58", "unit": "%", "referenceText": null, "marker": null },
+    { "value": "3.4", "unit": "x 10^9/L", "referenceText": "(2.0-7.0)", "marker": null }
+  ],
+  "notes": []
+}
 ```
 
-The flag belongs to the line it is printed on, so the absolute line's flag is
-`null` here. Every differential with a parenthesized second line gets this
-treatment. Ordinary single-line tests have `component: null`.
+The range is printed beside the absolute count, so it belongs to that
+measurement only.
 
-### Banded reference ranges
-
-Some ranges are a list of categories rather than a min–max. Copy every line into
-`referenceText`, joined with `"; "`, and leave the result alone:
+**C. One result reported in two units**
 
 ```
-Glucose   H  血糖   6.3   mmol/L   Fasting:
-                                   Normal     <5.6
-                                   Pre-Diab.  5.6-6.9
-                                   Diabetes   >=7.0
-                                   Random  3.8 - 11.0
+HbA1c   糖化血红蛋白   6.1 %   43   mmol/mol
 ```
 
-gives
-`"referenceText": "Fasting:; Normal <5.6; Pre-Diab. 5.6-6.9; Diabetes >=7.0; Random 3.8 - 11.0"`.
+```json
+{
+  "headings": ["SPECIAL CHEMISTRY"],
+  "specimen": "blood",
+  "name": "HbA1c",
+  "nameZh": "糖化血红蛋白",
+  "measurements": [
+    { "value": "6.1", "unit": "%", "referenceText": null, "marker": null },
+    { "value": "43", "unit": "mmol/mol", "referenceText": null, "marker": null }
+  ],
+  "notes": []
+}
+```
 
-Sex- and phase-dependent ranges (Follicle Stimulating Hormone, Estradiol) work
-the same way: copy all of it into `referenceText` in printed order, including
-the Male/Female and phase labels.
+### Words as results
+
+Words are results too — `Negative`, `Normal`, `Clear`, `Pale Yellow`,
+`Not Seen`. Copy them as the value, with `unit: null`. A count printed together
+with its unit, like `0 x 10^6/L`, splits into `"value": "0"` and
+`"unit": "x 10^6/L"`.
+
+## Things that are not tests
+
+These never go in `tests`:
+
+- **Interpretation and guideline material** — diagnostic cut-off tables, risk
+  category tables, treatment target tables, "Interpretation:" blocks, lists of
+  references, method notes. Put each block in `interpretation` as one string
+  with its lines joined by `"; "`. Copy it; do not summarise.
+- **Specimen information** — specimen comments (`Haemolysis +`, `Lipaemic`),
+  fasting status, specimen type, and collection-time rows such as
+  `Specimen collected 08:15 h` or `Specimen type Fasting`. A header
+  `Comment: Fasting` counts too. Put each in `specimenNotes`, e.g.
+  `"Specimen Comment: Haemolysis + (Severity: + Mild ++ Mod +++ Severe)"`.
+- **Administrative lines** — `Tests Requested: ...`, `REPORT COMPLETED`,
+  `CC Drs`, accreditation text, page footers. Leave them out.
 
 ## Text carried over from the previous page
 
-A page can begin with lines that belong to a test printed on the _previous_
-page: the rest of a long reference range, or a block of target/interpretation
-bands. Put every such line in `continuationText` (joined with `"; "`) and do
-**not** invent a test to hang them on.
+`continuationText` is only for the **reference-range column of a test printed
+on the previous page** that continues at the top of this page — for example
+the remaining phases of a hormone's ranges:
+`"Luteal Phase 48.0 - 309.0; Postmenopausal Phase <20 - 41.0"`. This page may
+still print its own tests below it; transcribe those as normal.
 
-This happens in two shapes, and both matter:
+An interpretation or guideline table continuing from the previous page is
+**not** `continuationText`; it goes in `interpretation`.
 
-1. **A page with nothing else on it.** The last page of a report is often only
-   the tail of a reference range:
-   `"Luteal Phase 48.0 - 309.0; Postmenopausal Phase <20 - 41.0; Pregnancy; 1st Trimester 1000.0 - 5000.0"`.
-   Return an empty `tests` array.
+`continuationText` is `null` otherwise.
 
-2. **A page that continues _and then_ starts new tests.** A target block can sit
-   above this page's own first test — for example an HbA1c result printed at the
-   bottom of the previous page, whose targets continue here:
+## Page numbers
 
-   ```
-   T2DM General Target:-
-   Good Control  6.1-6.9%
-   Fair Control  7.0-8.0%
-   Poor Control  >8.0%
-   ```
-
-   That is
-   `"continuationText": "T2DM General Target:-; Good Control 6.1-6.9%; Fair Control 7.0-8.0%; Poor Control >8.0%"`,
-   and the tests printed lower down the page are still transcribed as normal.
-
-`continuationText` is `null` only when the page truly starts with its own test
-row and carries nothing over.
-
-## Footer
-
-`validation.validatedBy` is the name after "Validated by Medical Lab
-Technologist", and `validation.printedOn` is the "Printed on" timestamp,
-verbatim.
-
-Set `page` and `pageCount` from the printed page footer if it is legible;
-otherwise use {{PAGE}} and {{PAGE_COUNT}}.
+Set `page` and `pageCount` from the printed footer (`Page 2 of 6`,
+`Page :002`) when legible; otherwise use {{PAGE}} and {{PAGE_COUNT}}.

@@ -1,0 +1,389 @@
+{
+  "analytes": [
+    {
+      "id": "wbc", "name": "White cell count", "specimen": "blood", "unit": "x10^9/L",
+      "aliases": ["Total WBC", "White Cell Count", "WBC", "White Blood Cell Count", "Total White Cell Count"],
+      "units": { "x10^9/L": 1 }
+    },
+    {
+      "id": "neutrophils_pct", "name": "Neutrophils (%)", "specimen": "blood", "unit": "%",
+      "aliases": ["Neutrophils", "Neutrophil", "Neutrophils %"],
+      "units": { "%": 1 }
+    },
+    {
+      "id": "neutrophils_abs", "name": "Neutrophils (absolute)", "specimen": "blood", "unit": "x10^9/L",
+      "aliases": ["Neutrophils", "Neutrophil", "Absolute Neutrophil Count", "ANC"],
+      "units": { "x10^9/L": 1 }
+    },
+    {
+      "id": "lymphocytes_pct", "name": "Lymphocytes (%)", "specimen": "blood", "unit": "%",
+      "aliases": ["Lymphocytes", "Lymphocyte", "Lymphocytes %"],
+      "units": { "%": 1 }
+    },
+    {
+      "id": "lymphocytes_abs", "name": "Lymphocytes (absolute)", "specimen": "blood", "unit": "x10^9/L",
+      "aliases": ["Lymphocytes", "Lymphocyte", "Absolute Lymphocyte Count"],
+      "units": { "x10^9/L": 1 }
+    },
+    {
+      "id": "monocytes_pct", "name": "Monocytes (%)", "specimen": "blood", "unit": "%",
+      "aliases": ["Monocytes", "Monocyte", "Monocytes %"],
+      "units": { "%": 1 }
+    },
+    {
+      "id": "monocytes_abs", "name": "Monocytes (absolute)", "specimen": "blood", "unit": "x10^9/L",
+      "aliases": ["Monocytes", "Monocyte", "Absolute Monocyte Count"],
+      "units": { "x10^9/L": 1 }
+    },
+    {
+      "id": "eosinophils_pct", "name": "Eosinophils (%)", "specimen": "blood", "unit": "%",
+      "aliases": ["Eosinophils", "Eosinophil", "Eosinophils %"],
+      "units": { "%": 1 }
+    },
+    {
+      "id": "eosinophils_abs", "name": "Eosinophils (absolute)", "specimen": "blood", "unit": "x10^9/L",
+      "aliases": ["Eosinophils", "Eosinophil", "Absolute Eosinophil Count"],
+      "units": { "x10^9/L": 1 }
+    },
+    {
+      "id": "basophils_pct", "name": "Basophils (%)", "specimen": "blood", "unit": "%",
+      "aliases": ["Basophils", "Basophil", "Basophils %"],
+      "units": { "%": 1 }
+    },
+    {
+      "id": "basophils_abs", "name": "Basophils (absolute)", "specimen": "blood", "unit": "x10^9/L",
+      "aliases": ["Basophils", "Basophil", "Absolute Basophil Count"],
+      "units": { "x10^9/L": 1 }
+    },
+    {
+      "id": "ig_pct", "name": "Immature granulocytes (%)", "specimen": "blood", "unit": "%",
+      "aliases": ["IG", "Immature Granulocytes", "IG %"],
+      "units": { "%": 1 }
+    },
+    {
+      "id": "ig_abs", "name": "Immature granulocytes (absolute)", "specimen": "blood", "unit": "x10^9/L",
+      "aliases": ["IG", "Immature Granulocytes"],
+      "units": { "x10^9/L": 1 }
+    },
+    {
+      "id": "haemoglobin", "name": "Haemoglobin", "specimen": "blood", "unit": "g/dL",
+      "aliases": ["Haemoglobin", "Hemoglobin", "Hb", "HGB"],
+      "units": { "g/dL": 1, "g/L": 0.1 }
+    },
+    {
+      "id": "haematocrit", "name": "Haematocrit (PCV)", "specimen": "blood", "unit": "%",
+      "aliases": ["PCV", "Haematocrit", "Hematocrit", "HCT", "Packed Cell Volume"],
+      "units": { "%": 1, "L/L": 100 }
+    },
+    {
+      "id": "rbc", "name": "Red cell count", "specimen": "blood", "unit": "x10^12/L",
+      "aliases": ["Total RBC", "RBC", "Red Cell Count", "Red Blood Cell Count", "Erythrocytes"],
+      "units": { "x10^12/L": 1 }
+    },
+    {
+      "id": "mcv", "name": "Mean cell volume", "specimen": "blood", "unit": "fL",
+      "aliases": ["MCV", "Mean Cell Volume", "Mean Corpuscular Volume"],
+      "units": { "fL": 1 }
+    },
+    {
+      "id": "mch", "name": "Mean cell haemoglobin", "specimen": "blood", "unit": "pg",
+      "aliases": ["MCH", "Mean Cell Haemoglobin", "Mean Corpuscular Hemoglobin"],
+      "units": { "pg": 1 }
+    },
+    {
+      "id": "mchc", "name": "Mean cell haemoglobin concentration", "specimen": "blood", "unit": "g/dL",
+      "aliases": ["MCHC", "Mean Cell Haemoglobin Concentration", "Mean Corpuscular Hemoglobin Concentration"],
+      "units": { "g/dL": 1, "g/L": 0.1 }
+    },
+    {
+      "id": "rdw", "name": "Red cell distribution width", "specimen": "blood", "unit": "%",
+      "aliases": ["RDW", "RDW-CV", "Red Cell Distribution Width"],
+      "units": { "%": 1 }
+    },
+    {
+      "id": "nrbc_pct", "name": "Nucleated red cells (per 100 WBC)", "specimen": "blood", "unit": "%",
+      "aliases": ["NRBC / WBC %", "NRBC", "Nucleated RBC"],
+      "units": { "%": 1 }
+    },
+    {
+      "id": "platelets", "name": "Platelet count", "specimen": "blood", "unit": "x10^9/L",
+      "aliases": ["Platelet Count", "Platelets", "PLT"],
+      "units": { "x10^9/L": 1 }
+    },
+    {
+      "id": "mpv", "name": "Mean platelet volume", "specimen": "blood", "unit": "fL",
+      "aliases": ["MPV", "Mean Platelet Volume"],
+      "units": { "fL": 1 }
+    },
+    {
+      "id": "pdw", "name": "Platelet distribution width", "specimen": "blood", "unit": "fL",
+      "aliases": ["PDW", "Platelet Distribution Width"],
+      "units": { "fL": 1 }
+    },
+    {
+      "id": "nl_ratio", "name": "Neutrophil:lymphocyte ratio", "specimen": "blood", "unit": "",
+      "aliases": ["N:L Ratio", "NLR", "Neutrophil Lymphocyte Ratio"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "glucose", "name": "Glucose", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Glucose", "Plasma Glucose", "Fasting Glucose", "Fasting Plasma Glucose", "Blood Glucose"],
+      "units": { "mmol/L": 1, "mg/dL": 0.0555 }
+    },
+    {
+      "id": "hba1c", "name": "HbA1c (NGSP %)", "specimen": "blood", "unit": "%",
+      "aliases": ["HbA1c", "HbA1c (NGSP)", "Glycated Haemoglobin", "Glycated Hemoglobin", "Haemoglobin A1c", "Hemoglobin A1c", "A1c"],
+      "units": { "%": 1 }
+    },
+    {
+      "id": "hba1c_ifcc", "name": "HbA1c (IFCC mmol/mol)", "specimen": "blood", "unit": "mmol/mol",
+      "aliases": ["HbA1c", "HbA1c (IFCC)", "Glycated Haemoglobin", "Glycated Hemoglobin", "Haemoglobin A1c", "Hemoglobin A1c", "A1c"],
+      "units": { "mmol/mol": 1 }
+    },
+    {
+      "id": "total_cholesterol", "name": "Total cholesterol", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Total Cholesterol", "Total Chol", "Cholesterol", "TC"],
+      "units": { "mmol/L": 1, "mg/dL": 0.02586 }
+    },
+    {
+      "id": "triglycerides", "name": "Triglycerides", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Triglycerides", "Triglyceride", "TG"],
+      "units": { "mmol/L": 1, "mg/dL": 0.01129 }
+    },
+    {
+      "id": "hdl_c", "name": "HDL cholesterol", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["HDL-Cholesterol", "HDL-C", "HDL Cholesterol", "HDL"],
+      "units": { "mmol/L": 1, "mg/dL": 0.02586 }
+    },
+    {
+      "id": "ldl_c", "name": "LDL cholesterol", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["LDL-Cholesterol", "LDL-C", "LDL Cholesterol", "LDL"],
+      "units": { "mmol/L": 1, "mg/dL": 0.02586 }
+    },
+    {
+      "id": "non_hdl_c", "name": "Non-HDL cholesterol", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Non HDL-C", "Non-HDL", "Non-HDL-C", "Non-HDL Cholesterol", "Non HDL Cholesterol"],
+      "units": { "mmol/L": 1, "mg/dL": 0.02586 }
+    },
+    {
+      "id": "tc_hdl_ratio", "name": "Total cholesterol / HDL ratio", "specimen": "blood", "unit": "",
+      "aliases": ["Total CHOL/HDL", "T Chol/HDL ratio", "Total Cholesterol/HDL Ratio", "TC/HDL Ratio", "Chol/HDL Ratio"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "ldl_hdl_ratio", "name": "LDL / HDL ratio", "specimen": "blood", "unit": "",
+      "aliases": ["LDL Chol/HDL ratio", "LDL/HDL Ratio", "LDL-C/HDL-C Ratio"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "aip", "name": "Atherogenic index of plasma", "specimen": "blood", "unit": "",
+      "aliases": ["AIP", "Atherogenic Index of Plasma", "Atherogenic Index in Plasma"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "creatinine", "name": "Creatinine", "specimen": "blood", "unit": "umol/L",
+      "aliases": ["Creatinine", "Serum Creatinine"],
+      "units": { "umol/L": 1, "mmol/L": 1000, "mg/dL": 88.42 }
+    },
+    {
+      "id": "egfr", "name": "eGFR", "specimen": "blood", "unit": "mL/min/1.73m²",
+      "aliases": ["eGFR", "Estimated GFR", "Estimated Glomerular Filtration Rate"],
+      "units": { "mL/min/1.73m²": 1 }
+    },
+    {
+      "id": "urea", "name": "Urea", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Urea", "Serum Urea"],
+      "units": { "mmol/L": 1 }
+    },
+    {
+      "id": "uric_acid", "name": "Uric acid", "specimen": "blood", "unit": "umol/L",
+      "aliases": ["Uric Acid", "Urate"],
+      "units": { "umol/L": 1, "mmol/L": 1000, "mg/dL": 59.48 }
+    },
+    {
+      "id": "sodium", "name": "Sodium", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Sodium", "Na"],
+      "units": { "mmol/L": 1, "mEq/L": 1 }
+    },
+    {
+      "id": "potassium", "name": "Potassium", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Potassium", "K"],
+      "units": { "mmol/L": 1, "mEq/L": 1 }
+    },
+    {
+      "id": "chloride", "name": "Chloride", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Chloride", "Cl"],
+      "units": { "mmol/L": 1, "mEq/L": 1 }
+    },
+    {
+      "id": "bicarbonate", "name": "Bicarbonate (total CO2)", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Carbon Dioxide", "CO2", "Total CO2", "Bicarbonate", "HCO3"],
+      "units": { "mmol/L": 1, "mEq/L": 1 }
+    },
+    {
+      "id": "anion_gap", "name": "Anion gap", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Anion Gap"],
+      "units": { "mmol/L": 1, "mEq/L": 1 }
+    },
+    {
+      "id": "calcium", "name": "Calcium", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Calcium", "Total Calcium"],
+      "units": { "mmol/L": 1, "mg/dL": 0.2495 }
+    },
+    {
+      "id": "corrected_calcium", "name": "Corrected calcium", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Corrected Calcium", "Adjusted Calcium"],
+      "units": { "mmol/L": 1, "mg/dL": 0.2495 }
+    },
+    {
+      "id": "phosphate", "name": "Phosphate", "specimen": "blood", "unit": "mmol/L",
+      "aliases": ["Phosphate", "Phosphorus", "Inorganic Phosphate", "Inorganic Phosphorus"],
+      "units": { "mmol/L": 1, "mg/dL": 0.3229 }
+    },
+    {
+      "id": "total_bilirubin", "name": "Total bilirubin", "specimen": "blood", "unit": "umol/L",
+      "aliases": ["Total Bilirubin", "Bilirubin Total", "Bilirubin"],
+      "units": { "umol/L": 1, "mg/dL": 17.1 }
+    },
+    {
+      "id": "total_protein", "name": "Total protein", "specimen": "blood", "unit": "g/L",
+      "aliases": ["Total Protein", "Protein Total", "Protein"],
+      "units": { "g/L": 1, "g/dL": 10 }
+    },
+    {
+      "id": "albumin", "name": "Albumin", "specimen": "blood", "unit": "g/L",
+      "aliases": ["Albumin"],
+      "units": { "g/L": 1, "g/dL": 10 }
+    },
+    {
+      "id": "globulin", "name": "Globulin", "specimen": "blood", "unit": "g/L",
+      "aliases": ["Globulin"],
+      "units": { "g/L": 1, "g/dL": 10 }
+    },
+    {
+      "id": "ag_ratio", "name": "Albumin / globulin ratio", "specimen": "blood", "unit": "",
+      "aliases": ["A/G Ratio", "Albumin/Globulin ratio", "A:G Ratio"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "alp", "name": "Alkaline phosphatase", "specimen": "blood", "unit": "U/L",
+      "aliases": ["Alk. Phos", "Alkaline Phosphatase", "ALP"],
+      "units": { "U/L": 1 }
+    },
+    {
+      "id": "alt", "name": "ALT", "specimen": "blood", "unit": "U/L",
+      "aliases": ["ALT", "ALT (SGPT)", "SGPT", "Alanine Aminotransferase", "Alanine Transaminase"],
+      "units": { "U/L": 1 }
+    },
+    {
+      "id": "ast", "name": "AST", "specimen": "blood", "unit": "U/L",
+      "aliases": ["AST", "AST (SGOT)", "SGOT", "Aspartate Aminotransferase", "Aspartate Transaminase"],
+      "units": { "U/L": 1 }
+    },
+    {
+      "id": "ggt", "name": "Gamma-glutamyl transferase", "specimen": "blood", "unit": "U/L",
+      "aliases": ["GGT", "Gamma GT", "Gamma-Glutamyl Transferase", "GGTP"],
+      "units": { "U/L": 1 }
+    },
+    {
+      "id": "tsh", "name": "TSH", "specimen": "blood", "unit": "uIU/mL",
+      "aliases": ["TSH", "Thyroid Stimulating Hormone"],
+      "units": { "uIU/mL": 1, "mIU/L": 1 }
+    },
+    {
+      "id": "free_t4", "name": "Free T4", "specimen": "blood", "unit": "pmol/L",
+      "aliases": ["Free T4", "FT4", "Free Thyroxine"],
+      "units": { "pmol/L": 1, "ng/dL": 12.87 }
+    },
+    {
+      "id": "vitamin_d", "name": "25-hydroxy vitamin D", "specimen": "blood", "unit": "nmol/L",
+      "aliases": ["25-Hydroxy Vitamin D", "25(OH) Vitamin D", "25-OH Vitamin D", "Vitamin D"],
+      "units": { "nmol/L": 1, "ng/mL": 2.496 }
+    },
+    {
+      "id": "fsh", "name": "Follicle stimulating hormone", "specimen": "blood", "unit": "mIU/mL",
+      "aliases": ["Follicle Stimulating Hormone", "FSH"],
+      "units": { "mIU/mL": 1, "U/L": 1 }
+    },
+    {
+      "id": "estradiol", "name": "Estradiol", "specimen": "blood", "unit": "pg/mL",
+      "aliases": ["Estradiol", "Oestradiol", "E2"],
+      "units": { "pg/mL": 1, "pmol/L": 0.2724 }
+    },
+    {
+      "id": "urine_transparency", "name": "Urine transparency", "specimen": "urine", "unit": "",
+      "aliases": ["Transparency", "Clarity", "Appearance"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "urine_colour", "name": "Urine colour", "specimen": "urine", "unit": "",
+      "aliases": ["Colour", "Color"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "urine_sg", "name": "Urine specific gravity", "specimen": "urine", "unit": "",
+      "aliases": ["SG", "Specific Gravity"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "urine_ph", "name": "Urine pH", "specimen": "urine", "unit": "",
+      "aliases": ["pH"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "urine_leucocytes", "name": "Urine leucocytes (dipstick)", "specimen": "urine", "unit": "",
+      "aliases": ["Leucocytes", "Leukocytes", "Leucocyte Esterase"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "urine_blood", "name": "Urine blood (dipstick)", "specimen": "urine", "unit": "",
+      "aliases": ["Blood"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "urine_nitrite", "name": "Urine nitrite", "specimen": "urine", "unit": "",
+      "aliases": ["Nitrite"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "urine_ketones", "name": "Urine ketones", "specimen": "urine", "unit": "",
+      "aliases": ["Ketones", "Ketone"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "urine_bilirubin", "name": "Urine bilirubin", "specimen": "urine", "unit": "",
+      "aliases": ["Bilirubin"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "urine_urobilinogen", "name": "Urine urobilinogen", "specimen": "urine", "unit": "",
+      "aliases": ["Urobilinogen"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "urine_protein", "name": "Urine protein (dipstick)", "specimen": "urine", "unit": "",
+      "aliases": ["Protein"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "urine_glucose", "name": "Urine glucose (dipstick)", "specimen": "urine", "unit": "",
+      "aliases": ["Glucose"],
+      "units": { "": 1 }
+    },
+    {
+      "id": "urine_wbc_micro", "name": "Urine leucocytes (microscopy)", "specimen": "urine", "unit": "x10^6/L",
+      "aliases": ["Leucocytes", "Leukocytes", "WBC", "Pus Cells"],
+      "units": { "x10^6/L": 1 }
+    },
+    {
+      "id": "urine_rbc_micro", "name": "Urine erythrocytes (microscopy)", "specimen": "urine", "unit": "x10^6/L",
+      "aliases": ["Erythrocytes", "RBC", "Red Blood Cells"],
+      "units": { "x10^6/L": 1 }
+    },
+    {
+      "id": "urine_epithelial", "name": "Urine epithelial cells", "specimen": "urine", "unit": "",
+      "aliases": ["Epithelial Cells"],
+      "units": { "": 1 }
+    }
+  ]
+}
