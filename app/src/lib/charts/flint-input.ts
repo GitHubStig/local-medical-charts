@@ -1,7 +1,8 @@
 /**
  * A Series as Flint input: the same line chart for every backend. Flint lays
  * out and styles the line; each backend's overlay adds what Flint can't
- * express (reference bands, hollow markers for bounds, the shared axis window).
+ * express (reference bands, hollow markers for bounds, the shared axis window),
+ * from the overlay data here.
  */
 import type { ChartAssemblyInput } from "flint-chart/core";
 import { FLAGS } from "../flags.ts";
@@ -44,6 +45,37 @@ export function chartRows(series: Series): ChartRow[] {
     flagged: point.flag !== null,
     tooltip: tooltip(point, series.unit),
   }));
+}
+
+/** A reference band in chart terms: times in ms, open limits run to the window's edge. */
+export type ChartBand = {
+  start: number;
+  end: number;
+  low: number;
+  high: number;
+};
+
+/** A band's real limit, drawn as a thin edge line. */
+export type BandEdge = { start: number; end: number; value: number };
+
+export function chartBands(series: Series): ChartBand[] {
+  const [bottom, top] = series.domain?.y ?? [0, 0];
+  return series.bands.map((band) => ({
+    start: dateMs(band.start),
+    end: dateMs(band.end),
+    low: band.min ?? bottom,
+    high: band.max ?? top,
+  }));
+}
+
+export function bandEdges(series: Series): BandEdge[] {
+  return series.bands.flatMap((band) =>
+    [band.min, band.max].flatMap((value) =>
+      value === null
+        ? []
+        : [{ start: dateMs(band.start), end: dateMs(band.end), value }]
+    )
+  );
 }
 
 export function flintInput(

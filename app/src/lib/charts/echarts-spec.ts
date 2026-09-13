@@ -14,7 +14,7 @@ import { type EChartsCoreOption, init, use } from "echarts/core";
 import { SVGRenderer } from "echarts/renderers";
 import { assembleECharts } from "flint-chart/echarts";
 import { dateMs, type Series } from "../series.ts";
-import { chartRows, flintInput } from "./flint-input.ts";
+import { bandEdges, chartBands, chartRows, flintInput } from "./flint-input.ts";
 import type { ChartPalette } from "./palette.ts";
 
 use([
@@ -57,18 +57,14 @@ export function echartsOption(
   const colour = (flagged: boolean) =>
     flagged ? palette.critical : palette.series;
 
-  const bands = series.bands.map((band) => [
-    { xAxis: dateMs(band.start), yAxis: band.min ?? bottom },
-    { xAxis: dateMs(band.end), yAxis: band.max ?? top },
+  const bands = chartBands(series).map((band) => [
+    { xAxis: band.start, yAxis: band.low },
+    { xAxis: band.end, yAxis: band.high },
   ]);
-  const edges = series.bands.flatMap((band) =>
-    [band.min, band.max].flatMap((value) =>
-      value === null ? [] : [[
-        { coord: [dateMs(band.start), value] },
-        { coord: [dateMs(band.end), value] },
-      ]]
-    )
-  );
+  const edges = bandEdges(series).map((edge) => [
+    { coord: [edge.start, edge.value] },
+    { coord: [edge.end, edge.value] },
+  ]);
 
   return {
     animation: false,

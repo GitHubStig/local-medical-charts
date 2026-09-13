@@ -17,4 +17,8 @@ export const CHART_BACKENDS: Record<
     label: "ECharts",
     load: () => import("./echarts.ts").then((m) => m.echarts),
   },
+  chartjs: {
+    label: "Chart.js",
+    load: () => import("./chartjs.ts").then((m) => m.chartjs),
+  },
 };

@@ -7,7 +7,7 @@ import { assembleVegaLite } from "flint-chart/vegalite";
 import { parse, View } from "vega";
 import { compile, type TopLevelSpec } from "vega-lite";
 import { dateMs, type Series } from "../series.ts";
-import { chartRows, flintInput } from "./flint-input.ts";
+import { bandEdges, chartBands, chartRows, flintInput } from "./flint-input.ts";
 import type { ChartPalette } from "./palette.ts";
 
 /** Room around the plot so markers at the edges aren't clipped. */
@@ -53,19 +53,8 @@ export function vegaLiteSpec(
     },
   };
 
-  const bands = series.bands.map((band) => ({
-    start: dateMs(band.start),
-    end: dateMs(band.end),
-    low: band.min ?? bottom,
-    high: band.max ?? top,
-  }));
-  const edges = series.bands.flatMap((band) =>
-    [band.min, band.max].flatMap((value) =>
-      value === null
-        ? []
-        : [{ start: dateMs(band.start), end: dateMs(band.end), value }]
-    )
-  );
+  const bands = chartBands(series);
+  const edges = bandEdges(series);
   const colour = {
     condition: { test: "datum.flagged", value: palette.critical },
     value: palette.series,
