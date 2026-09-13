@@ -21,4 +21,8 @@ export const CHART_BACKENDS: Record<
     label: "Chart.js",
     load: () => import("./chartjs.ts").then((m) => m.chartjs),
   },
+  plotly: {
+    label: "Plotly",
+    load: () => import("./plotly.ts").then((m) => m.plotly),
+  },
 };

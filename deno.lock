@@ -29,6 +29,7 @@
     "npm:echarts@6.1.0": "6.1.0",
     "npm:flint-chart@0.5.1": "0.5.1_chart.js@4.5.1_echarts@6.1.0_vega@6.4.0_vega-lite@6.4.3",
     "npm:mupdf@1.28.1": "1.28.1",
+    "npm:plotly.js-basic-dist-min@3.7.0": "3.7.0",
     "npm:tailwindcss@4.3.3": "4.3.3",
     "npm:vega-lite@6.4.3": "6.4.3_vega@6.4.0",
     "npm:vega@6.4.0": "6.4.0",
@@ -837,6 +838,9 @@
     "picomatch@4.0.7": {
       "integrity": "sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA=="
     },
+    "plotly.js-basic-dist-min@3.7.0": {
+      "integrity": "sha512-84KPQhLTrO5IHu6DCte2KwA4bzSoVIdIs3uDPWid3sgeTX8L5RjpDARjCG3spgOwQ8MYE8PL+MeQ0DQRWA1Emw=="
+    },
     "postcss@8.5.28": {
       "integrity": "sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==",
       "dependencies": [
@@ -1308,6 +1312,7 @@
             "npm:chart.js@4.5.1",
             "npm:echarts@6.1.0",
             "npm:flint-chart@0.5.1",
+            "npm:plotly.js-basic-dist-min@3.7.0",
             "npm:tailwindcss@4.3.3",
             "npm:vega-lite@6.4.3",
             "npm:vega@6.4.0",
