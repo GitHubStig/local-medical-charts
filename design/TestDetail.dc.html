@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">
+  <style>
+    body { margin: 0; background: #f7f6f3; color: #1c1917; font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #2a78d6; } a:hover { color: #1c5cab; }
+    h1, h2, h3, p { text-wrap: pretty; }
+  </style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 900px; overflow: hidden; background: #f7f6f3">
+  <div aria-hidden="true">
+    <header style="display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 72px; padding: 0 40px; background: #ffffff; border-bottom: 1px solid #e7e5e0">
+    <div style="display: flex; align-items: center; gap: 20px">
+      <div style="display: flex; align-items: center; gap: 10px"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect width="28" height="28" rx="7" fill="#1c1917"></rect><rect x="5" y="11" width="18" height="7" rx="1.5" fill="#3a3530"></rect><path d="M5.5 19.5l5-6 4 3.5 7.5-9" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span style="font-size: 15px; font-weight: 600; color: #1c1917">Medical Charts</span></div>
+      <span style="width: 1px; height: 28px; background: #e7e5e0"></span>
+      <div style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px 0 6px; border: 1px solid #e7e5e0; border-radius: 8px; background: #ffffff">
+        <span style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 999px; background: #e6e1d8; font-size: 12px; font-weight: 600; color: #1c1917">AT</span>
+        <span style="display: flex; flex-direction: column; line-height: 1.2">
+          <span style="font-size: 14px; font-weight: 600; color: #1c1917">Alex Tan</span>
+          <span style="font-size: 12px; color: #78716c">4 reports</span>
+        </span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="#57534e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="font-size: 12px; color: #78716c">Chart library</span>
+        <div style="display: flex; gap: 2px; padding: 3px; border-radius: 9px; background: #f0eee9"><span style="display: flex; align-items: center; height: 38px; padding: 0 12px; border-radius: 6px; background: #ffffff; box-shadow: 0 1px 2px rgba(28, 25, 23, 0.14); font-size: 13px; font-weight: 600; color: #1c1917">Vega-Lite</span><span style="display: flex; align-items: center; height: 38px; padding: 0 12px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #57534e">ECharts</span><span style="display: flex; align-items: center; height: 38px; padding: 0 12px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #57534e">Chart.js</span><span style="display: flex; align-items: center; height: 38px; padding: 0 12px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #57534e">Plotly</span></div>
+      </div>
+      <span style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 8px; background: #1c1917; color: #ffffff; font-size: 14px; font-weight: 500"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"></path></svg>Add reports</span>
+      <span style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px; border-radius: 8px; border: 1px solid #efd5d0; color: #b42318; font-size: 14px; font-weight: 500"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 4h11M6 4V2.8h4V4M4 4l.7 9.2h6.6L12 4" stroke="#b42318" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>Clear all data</span>
+    </div>
+  </header>
+    <div style="display: flex; flex-direction: column; gap: 28px; padding: 32px 40px">
+      <div style="width: 240px; height: 30px; border-radius: 6px; background: #e8e5df"></div>
+      <div style="height: 120px; border-radius: 12px; background: #ffffff; border: 1px solid #e7e5e0"></div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px"><div style="height: 186px; border-radius: 10px; background: #ffffff; border: 1px solid #e7e5e0"></div><div style="height: 186px; border-radius: 10px; background: #ffffff; border: 1px solid #e7e5e0"></div><div style="height: 186px; border-radius: 10px; background: #ffffff; border: 1px solid #e7e5e0"></div><div style="height: 186px; border-radius: 10px; background: #ffffff; border: 1px solid #e7e5e0"></div><div style="height: 186px; border-radius: 10px; background: #ffffff; border: 1px solid #e7e5e0"></div><div style="height: 186px; border-radius: 10px; background: #ffffff; border: 1px solid #e7e5e0"></div><div style="height: 186px; border-radius: 10px; background: #ffffff; border: 1px solid #e7e5e0"></div><div style="height: 186px; border-radius: 10px; background: #ffffff; border: 1px solid #e7e5e0"></div></div>
+    </div>
+  </div>
+  <div style="position: absolute; inset: 0; background: rgba(28, 25, 23, 0.5)"></div>
+
+  <div role="dialog" aria-label="ALT results" style="position: absolute; left: 144px; top: 64px; width: 1152px; display: flex; flex-direction: column; background: #ffffff; border-radius: 14px; box-shadow: 0 24px 64px rgba(28, 25, 23, 0.3)">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding: 24px 32px 18px">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: baseline; gap: 12px">
+          <h2 style="margin: 0; font-size: 24px; font-weight: 600; color: #1c1917">ALT</h2>
+          <span style="font-size: 15px; color: #57534e">Alanine aminotransferase</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; font-size: 13px; color: #57534e">
+          <span>Liver · blood · U/L</span><span>Latest 47 U/L on 18 Mar 2026</span><span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px 3px 6px; border-radius: 999px; background: #fbeaea; color: #8f1f1f; font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 10V2M2.5 5.5L6 2l3.5 3.5" stroke="#d03b3b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>High</span></span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="padding: 3px 7px; border: 1px solid #e7e5e0; border-radius: 5px; font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; font-size: 12px; color: #78716c">Esc</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; border: 1px solid #e7e5e0"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9" stroke="#1c1917" stroke-width="1.7" stroke-linecap="round"></path></svg></span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 0 32px 22px">
+      <div style="display: flex; flex-wrap: wrap; gap: 24px; font-size: 13px; color: #57534e">
+        <span style="display: flex; align-items: center; gap: 8px"><svg width="26" height="12" viewBox="0 0 26 12" aria-hidden="true"><path d="M1 6h24" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"></path><circle cx="13" cy="6" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"></circle></svg><span>Result</span></span>
+        <span style="display: flex; align-items: center; gap: 8px"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="#ffffff" stroke="#2a78d6" stroke-width="2"></circle></svg><span>Reported as a bound, e.g. &lt; 5</span></span>
+        <span style="display: flex; align-items: center; gap: 8px"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="#d03b3b" stroke="#ffffff" stroke-width="2"></circle></svg><span>Outside the lab’s range</span></span>
+        <span style="display: flex; align-items: center; gap: 8px"><svg width="22" height="12" viewBox="0 0 22 12" aria-hidden="true"><rect x="0" y="1" width="22" height="10" fill="#eceae4"></rect><line x1="0" x2="22" y1="1" y2="1" stroke="#d3cfc6"></line></svg><span>Lab reference range — steps where the lab changes</span></span>
+      </div>
+      <svg width="1088" height="300" viewBox="0 0 1088 300" role="img" aria-label="ALT results from Nov 2024 to Mar 2026 against each lab's reference range" style="display: block"><rect x="52" y="93.3" width="493.5" height="154.7" fill="#eceae4"></rect><line x1="52" x2="545.5" y1="93.3" y2="93.3" stroke="#d3cfc6" stroke-width="1"></line><line x1="52" x2="545.5" y1="248" y2="248" stroke="#d3cfc6" stroke-width="1"></line><rect x="545.5" y="112.7" width="454.5" height="135.3" fill="#eceae4"></rect><line x1="545.5" x2="1000" y1="112.7" y2="112.7" stroke="#d3cfc6" stroke-width="1"></line><line x1="52" x2="1000" y1="248" y2="248" stroke="#eeece7" stroke-width="1"></line><text x="40" y="252" text-anchor="end" fill="#78716c" style="font: 12px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums">0</text><line x1="52" x2="1000" y1="170.7" y2="170.7" stroke="#eeece7" stroke-width="1"></line><text x="40" y="174.7" text-anchor="end" fill="#78716c" style="font: 12px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums">20</text><line x1="52" x2="1000" y1="93.3" y2="93.3" stroke="#eeece7" stroke-width="1"></line><text x="40" y="97.3" text-anchor="end" fill="#78716c" style="font: 12px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums">40</text><line x1="52" x2="1000" y1="16" y2="16" stroke="#eeece7" stroke-width="1"></line><text x="40" y="20" text-anchor="end" fill="#78716c" style="font: 12px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums">60</text><line x1="52" x2="1000" y1="248" y2="248" stroke="#d3cfc6" stroke-width="1"></line><text x="110.2" y="270" text-anchor="middle" fill="#57534e" style="font: 12px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">12 Nov 2024</text><text x="110.2" y="288" text-anchor="middle" fill="#78716c" style="font: 11px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">Northside Pathology</text><text x="430.3" y="270" text-anchor="middle" fill="#57534e" style="font: 12px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">20 May 2025</text><text x="430.3" y="288" text-anchor="middle" fill="#78716c" style="font: 11px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">Northside Pathology</text><text x="660.6" y="270" text-anchor="middle" fill="#57534e" style="font: 12px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">03 Oct 2025</text><text x="660.6" y="288" text-anchor="middle" fill="#78716c" style="font: 11px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">Harbour Medical Lab</text><text x="941.8" y="270" text-anchor="middle" fill="#57534e" style="font: 12px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">18 Mar 2026</text><text x="941.8" y="288" text-anchor="middle" fill="#78716c" style="font: 11px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">Harbour Medical Lab</text><path d="M110.2 228.7 L430.3 178.4 L660.6 128.1 L941.8 66.3" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="110.2" cy="228.7" r="5" fill="#ffffff" stroke="#2a78d6" stroke-width="2"></circle><circle cx="430.3" cy="178.4" r="5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"></circle><circle cx="660.6" cy="128.1" r="5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"></circle><circle cx="941.8" cy="66.3" r="5" fill="#d03b3b" stroke="#ffffff" stroke-width="2"></circle><text x="953.8" y="71.3" fill="#1c1917" style="font: 600 14px 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">47 U/L</text></svg>
+      <table style="width: 100%; border-collapse: collapse">
+        <thead><tr><th style="padding: 9px 16px; text-align: left; font-size: 12px; font-weight: 500; color: #78716c; border-bottom: 1px solid #e7e5e0; white-space: nowrap">Collected</th><th style="padding: 9px 16px; text-align: left; font-size: 12px; font-weight: 500; color: #78716c; border-bottom: 1px solid #e7e5e0; white-space: nowrap">Lab</th><th style="padding: 9px 16px; text-align: left; font-size: 12px; font-weight: 500; color: #78716c; border-bottom: 1px solid #e7e5e0; white-space: nowrap">Printed</th><th style="padding: 9px 16px; text-align: left; font-size: 12px; font-weight: 500; color: #78716c; border-bottom: 1px solid #e7e5e0; white-space: nowrap">Standard</th><th style="padding: 9px 16px; text-align: left; font-size: 12px; font-weight: 500; color: #78716c; border-bottom: 1px solid #e7e5e0; white-space: nowrap">Lab range (U/L)</th><th style="padding: 9px 16px; text-align: left; font-size: 12px; font-weight: 500; color: #78716c; border-bottom: 1px solid #e7e5e0; white-space: nowrap">Flag</th><th style="padding: 9px 16px; text-align: left; font-size: 12px; font-weight: 500; color: #78716c; border-bottom: 1px solid #e7e5e0; white-space: nowrap">Specimen notes</th></tr></thead>
+        <tbody>
+      <tr>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; white-space: nowrap">18 Mar 2026</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; color: #57534e">Harbour Medical Lab</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; ">47 IU/L<span style="display: block; font-size: 12px; color: #78716c">as “ALT”</span></td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; font-variant-numeric: tabular-nums">47 U/L</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; color: #57534e">&lt; 35</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; "><span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px 3px 6px; border-radius: 999px; background: #fbeaea; color: #8f1f1f; font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 10V2M2.5 5.5L6 2l3.5 3.5" stroke="#d03b3b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>High</span></span></td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; "><span style="display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; background: #f0eee9; color: #57534e; font-size: 12px; font-weight: 500; white-space: nowrap">Fasting</span></td>
+      </tr>
+<tr>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; white-space: nowrap">03 Oct 2025</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; color: #57534e">Harbour Medical Lab</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; ">31 IU/L<span style="display: block; font-size: 12px; color: #78716c">as “ALT”</span></td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; font-variant-numeric: tabular-nums">31 U/L</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; color: #57534e">&lt; 35</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; "><span style="color: #78716c">—</span></td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; "><span style="display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; background: #f0eee9; color: #57534e; font-size: 12px; font-weight: 500; white-space: nowrap">Haemolysis +</span></td>
+      </tr>
+<tr>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; white-space: nowrap">20 May 2025</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; color: #57534e">Northside Pathology</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; ">18 U/L<span style="display: block; font-size: 12px; color: #78716c">as “ALT (SGPT)”</span></td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; font-variant-numeric: tabular-nums">18 U/L</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; color: #57534e">0 – 40</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; "><span style="color: #78716c">—</span></td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; border-bottom: 1px solid #eeece7; "><span style="color: #78716c">—</span></td>
+      </tr>
+<tr>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; ; white-space: nowrap">12 Nov 2024</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; ; color: #57534e">Northside Pathology</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; ; ">&lt; 5 U/L<span style="display: block; font-size: 12px; color: #78716c">as “ALT (SGPT)”</span></td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; ; font-variant-numeric: tabular-nums">&lt; 5 U/L</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; ; color: #57534e">0 – 40</td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; ; "><span style="font-size: 13px; color: #78716c">Below reportable limit</span></td>
+        <td style="padding: 11px 16px; font-size: 14px; color: #1c1917; ; "><span style="display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; background: #f0eee9; color: #57534e; font-size: 12px; font-weight: 500; white-space: nowrap">Fasting</span></td>
+      </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 32px; border-top: 1px solid #e7e5e0; font-size: 12px; color: #78716c">
+      <span>Matched to catalog analyte <span style="font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace">alt</span> · IU/L and U/L are the same unit</span>
+      <span>Press Esc or click outside to close</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

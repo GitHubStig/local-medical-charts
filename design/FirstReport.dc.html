@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">
+  <style>
+    body { margin: 0; background: #f7f6f3; color: #1c1917; font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #2a78d6; } a:hover { color: #1c5cab; }
+    h1, h2, h3, p { text-wrap: pretty; }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 1000px; background: #f7f6f3">
+  <header style="display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 72px; padding: 0 40px; background: #ffffff; border-bottom: 1px solid #e7e5e0">
+    <div style="display: flex; align-items: center; gap: 20px">
+      <div style="display: flex; align-items: center; gap: 10px"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect width="28" height="28" rx="7" fill="#1c1917"></rect><rect x="5" y="11" width="18" height="7" rx="1.5" fill="#3a3530"></rect><path d="M5.5 19.5l5-6 4 3.5 7.5-9" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span style="font-size: 15px; font-weight: 600; color: #1c1917">Medical Charts</span></div>
+      <span style="width: 1px; height: 28px; background: #e7e5e0"></span>
+      <div style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px 0 6px; border: 1px solid #e7e5e0; border-radius: 8px; background: #ffffff">
+        <span style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 999px; background: #e6e1d8; font-size: 12px; font-weight: 600; color: #1c1917">SR</span>
+        <span style="display: flex; flex-direction: column; line-height: 1.2">
+          <span style="font-size: 14px; font-weight: 600; color: #1c1917">Sam Rivera</span>
+          <span style="font-size: 12px; color: #78716c">1 report</span>
+        </span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="#57534e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="font-size: 12px; color: #78716c">Chart library</span>
+        <div style="display: flex; gap: 2px; padding: 3px; border-radius: 9px; background: #f0eee9"><span style="display: flex; align-items: center; height: 38px; padding: 0 12px; border-radius: 6px; background: #ffffff; box-shadow: 0 1px 2px rgba(28, 25, 23, 0.14); font-size: 13px; font-weight: 600; color: #1c1917">Vega-Lite</span><span style="display: flex; align-items: center; height: 38px; padding: 0 12px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #57534e">ECharts</span><span style="display: flex; align-items: center; height: 38px; padding: 0 12px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #57534e">Chart.js</span><span style="display: flex; align-items: center; height: 38px; padding: 0 12px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #57534e">Plotly</span></div>
+      </div>
+      <span style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 8px; background: #1c1917; color: #ffffff; font-size: 14px; font-weight: 500"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"></path></svg>Add reports</span>
+      <span style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px; border-radius: 8px; border: 1px solid #efd5d0; color: #b42318; font-size: 14px; font-weight: 500"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 4h11M6 4V2.8h4V4M4 4l.7 9.2h6.6L12 4" stroke="#b42318" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>Clear all data</span>
+    </div>
+  </header>
+  <main style="display: flex; flex-direction: column; gap: 24px; padding: 32px 40px 48px">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.01em; color: #1c1917">Sam Rivera</h1>
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; font-size: 13px; color: #57534e">
+        <span>Male · 36</span><span>ID •••• 907M</span><span>1 report · 07 Aug 2026</span><span>Northside Pathology</span>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 16px 20px; background: #ffffff; border: 1px solid #e7e5e0; border-radius: 12px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 15px; font-weight: 600; color: #1c1917">One report so far</span>
+        <span style="font-size: 14px; color: #57534e">Each chart shows a single reading against the lab’s range. Add a report from another date to see how results change.</span>
+      </div>
+      <span style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 8px; background: #1c1917; color: #ffffff; font-size: 14px; font-weight: 500; white-space: nowrap"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"></path></svg>Add reports</span>
+    </div>
+    <section style="display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: baseline; gap: 10px">
+      <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #1c1917">Full blood count</h3>
+      <span style="font-size: 12px; color: #78716c">4 tests</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #ffffff; border: 1px solid #e7e5e0; border-radius: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 14px; font-weight: 600; color: #1c1917">Haemoglobin</span>
+          <span style="font-size: 12px; color: #78716c">g/dL</span>
+        </div>
+        
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap">
+        <span style="font-size: 26px; font-weight: 600; line-height: 1; color: #1c1917">14.8</span>
+        <span style="font-size: 12px; color: #57534e">1 result — add another report to see a trend</span>
+      </div>
+      <svg width="294" height="64" viewBox="0 0 294 64" role="img" aria-label="Haemoglobin over time" style="display: block"><rect x="6" y="13.6" width="282" height="36.8" fill="#eceae4"></rect><line x1="6" x2="288" y1="13.6" y2="13.6" stroke="#d3cfc6" stroke-width="1"></line><line x1="6" x2="288" y1="50.4" y2="50.4" stroke="#d3cfc6" stroke-width="1"></line><circle cx="147" cy="33.8" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"></circle></svg>
+      <div style="display: flex; justify-content: space-between; font-size: 11px; color: #78716c"><span>07 Aug 2026</span><span>13 – 17 g/dL</span></div>
+    </div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #ffffff; border: 1px solid #e7e5e0; border-radius: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 14px; font-weight: 600; color: #1c1917">White cell count</span>
+          <span style="font-size: 12px; color: #78716c">×10⁹/L</span>
+        </div>
+        
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap">
+        <span style="font-size: 26px; font-weight: 600; line-height: 1; color: #1c1917">7.9</span>
+        <span style="font-size: 12px; color: #57534e">1 result — add another report to see a trend</span>
+      </div>
+      <svg width="294" height="64" viewBox="0 0 294 64" role="img" aria-label="White cell count over time" style="display: block"><rect x="6" y="13.6" width="282" height="36.8" fill="#eceae4"></rect><line x1="6" x2="288" y1="13.6" y2="13.6" stroke="#d3cfc6" stroke-width="1"></line><line x1="6" x2="288" y1="50.4" y2="50.4" stroke="#d3cfc6" stroke-width="1"></line><circle cx="147" cy="29.9" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"></circle></svg>
+      <div style="display: flex; justify-content: space-between; font-size: 11px; color: #78716c"><span>07 Aug 2026</span><span>4 – 11 ×10⁹/L</span></div>
+    </div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #ffffff; border: 1px solid #e7e5e0; border-radius: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 14px; font-weight: 600; color: #1c1917">Platelets</span>
+          <span style="font-size: 12px; color: #78716c">×10⁹/L</span>
+        </div>
+        
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap">
+        <span style="font-size: 26px; font-weight: 600; line-height: 1; color: #1c1917">212</span>
+        <span style="font-size: 12px; color: #57534e">1 result — add another report to see a trend</span>
+      </div>
+      <svg width="294" height="64" viewBox="0 0 294 64" role="img" aria-label="Platelets over time" style="display: block"><rect x="6" y="13.6" width="282" height="36.8" fill="#eceae4"></rect><line x1="6" x2="288" y1="13.6" y2="13.6" stroke="#d3cfc6" stroke-width="1"></line><line x1="6" x2="288" y1="50.4" y2="50.4" stroke="#d3cfc6" stroke-width="1"></line><circle cx="147" cy="41.3" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"></circle></svg>
+      <div style="display: flex; justify-content: space-between; font-size: 11px; color: #78716c"><span>07 Aug 2026</span><span>150 – 400 ×10⁹/L</span></div>
+    </div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #ffffff; border: 1px solid #e7e5e0; border-radius: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 14px; font-weight: 600; color: #1c1917">Neutrophils</span>
+          <span style="font-size: 12px; color: #78716c">×10⁹/L</span>
+        </div>
+        
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap">
+        <span style="font-size: 26px; font-weight: 600; line-height: 1; color: #1c1917">5.1</span>
+        <span style="font-size: 12px; color: #57534e">1 result — add another report to see a trend</span>
+      </div>
+      <svg width="294" height="64" viewBox="0 0 294 64" role="img" aria-label="Neutrophils over time" style="display: block"><rect x="6" y="13.6" width="282" height="36.8" fill="#eceae4"></rect><line x1="6" x2="288" y1="13.6" y2="13.6" stroke="#d3cfc6" stroke-width="1"></line><line x1="6" x2="288" y1="50.4" y2="50.4" stroke="#d3cfc6" stroke-width="1"></line><circle cx="147" cy="29.7" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"></circle></svg>
+      <div style="display: flex; justify-content: space-between; font-size: 11px; color: #78716c"><span>07 Aug 2026</span><span>2 – 7.5 ×10⁹/L</span></div>
+    </div>
+    </div>
+  </section>
+    <section style="display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: baseline; gap: 10px">
+      <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #1c1917">Lipids</h3>
+      <span style="font-size: 12px; color: #78716c">4 tests · 1 flagged</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #ffffff; border: 1px solid #e7e5e0; border-radius: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 14px; font-weight: 600; color: #1c1917">Total cholesterol</span>
+          <span style="font-size: 12px; color: #78716c">mmol/L</span>
+        </div>
+        
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap">
+        <span style="font-size: 26px; font-weight: 600; line-height: 1; color: #1c1917">4.6</span>
+        <span style="font-size: 12px; color: #57534e">1 result — add another report to see a trend</span>
+      </div>
+      <svg width="294" height="64" viewBox="0 0 294 64" role="img" aria-label="Total cholesterol over time" style="display: block"><rect x="6" y="13.6" width="282" height="43.4" fill="#eceae4"></rect><line x1="6" x2="288" y1="13.6" y2="13.6" stroke="#d3cfc6" stroke-width="1"></line><circle cx="147" cy="50.4" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"></circle></svg>
+      <div style="display: flex; justify-content: space-between; font-size: 11px; color: #78716c"><span>07 Aug 2026</span><span>&lt; 5.2 mmol/L</span></div>
+    </div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #ffffff; border: 1px solid #e7e5e0; border-radius: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 14px; font-weight: 600; color: #1c1917">LDL cholesterol</span>
+          <span style="font-size: 12px; color: #78716c">mmol/L</span>
+        </div>
+        
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap">
+        <span style="font-size: 26px; font-weight: 600; line-height: 1; color: #1c1917">2.7</span>
+        <span style="font-size: 12px; color: #57534e">1 result — add another report to see a trend</span>
+      </div>
+      <svg width="294" height="64" viewBox="0 0 294 64" role="img" aria-label="LDL cholesterol over time" style="display: block"><rect x="6" y="13.6" width="282" height="43.4" fill="#eceae4"></rect><line x1="6" x2="288" y1="13.6" y2="13.6" stroke="#d3cfc6" stroke-width="1"></line><circle cx="147" cy="50.4" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"></circle></svg>
+      <div style="display: flex; justify-content: space-between; font-size: 11px; color: #78716c"><span>07 Aug 2026</span><span>&lt; 3.4 mmol/L</span></div>
+    </div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #ffffff; border: 1px solid #e7e5e0; border-radius: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 14px; font-weight: 600; color: #1c1917">HDL cholesterol</span>
+          <span style="font-size: 12px; color: #78716c">mmol/L</span>
+        </div>
+        
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap">
+        <span style="font-size: 26px; font-weight: 600; line-height: 1; color: #1c1917">1.1</span>
+        <span style="font-size: 12px; color: #57534e">1 result — add another report to see a trend</span>
+      </div>
+      <svg width="294" height="64" viewBox="0 0 294 64" role="img" aria-label="HDL cholesterol over time" style="display: block"><rect x="6" y="7" width="282" height="43.4" fill="#eceae4"></rect><line x1="6" x2="288" y1="50.4" y2="50.4" stroke="#d3cfc6" stroke-width="1"></line><circle cx="147" cy="13.6" r="4" fill="#2a78d6" stroke="#ffffff" stroke-width="2"></circle></svg>
+      <div style="display: flex; justify-content: space-between; font-size: 11px; color: #78716c"><span>07 Aug 2026</span><span>&gt; 1 mmol/L</span></div>
+    </div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #ffffff; border: 1px solid #e7e5e0; border-radius: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 14px; font-weight: 600; color: #1c1917">Triglycerides</span>
+          <span style="font-size: 12px; color: #78716c">mmol/L</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px 3px 6px; border-radius: 999px; background: #fbeaea; color: #8f1f1f; font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 10V2M2.5 5.5L6 2l3.5 3.5" stroke="#d03b3b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>High</span></span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap">
+        <span style="font-size: 26px; font-weight: 600; line-height: 1; color: #1c1917">2.1</span>
+        <span style="font-size: 12px; color: #57534e">1 result — add another report to see a trend</span>
+      </div>
+      <svg width="294" height="64" viewBox="0 0 294 64" role="img" aria-label="Triglycerides over time" style="display: block"><rect x="6" y="50.4" width="282" height="6.6" fill="#eceae4"></rect><line x1="6" x2="288" y1="50.4" y2="50.4" stroke="#d3cfc6" stroke-width="1"></line><circle cx="147" cy="13.6" r="4" fill="#d03b3b" stroke="#ffffff" stroke-width="2"></circle></svg>
+      <div style="display: flex; justify-content: space-between; font-size: 11px; color: #78716c"><span>07 Aug 2026</span><span>&lt; 1.7 mmol/L</span></div>
+    </div>
+    </div>
+  </section>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>
