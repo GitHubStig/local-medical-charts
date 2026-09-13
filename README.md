@@ -1,0 +1,92 @@
+# Medical Charts
+
+Chart lab results over time from scanned medical reports. A local pipeline OCRs
+report PDFs with a local vision model into versioned JSON, and a desktop app
+(Deno Desktop + Vue) charts every test across reports and labs.
+
+**Deno is the only thing you need to install.** No Node.js, no npm.
+
+## Getting started
+
+```sh
+deno install      # installs everything from deno.lock — never use npm install
+deno task dev     # app in a browser with hot reload
+deno task build   # production build into app/dist
+deno task test    # pipeline tests
+```
+
+| Task                           | What it does                                                                  |
+| ------------------------------ | ----------------------------------------------------------------------------- |
+| `deno task extract <file.pdf>` | Split a report PDF into page images (`--embedded` for scanned PDFs)           |
+| `deno task ocr`                | OCR page images in `2.images` into JSON in `3.data` with a local Ollama model |
+| `deno task map`                | Suggest catalog matches for test names the catalog doesn't know               |
+| `deno task upgrade`            | Upgrade stored reports to the current schema version and catalog              |
+| `deno task dev` / `build`      | Run or build the app                                                          |
+| `deno task test`               | Run the tests                                                                 |
+
+## Dependencies and supply-chain safety
+
+Malicious package versions (for example the Shai-Hulud npm worm) usually spread
+through a freshly published patch release that installs automatically and runs
+an install script. This repo is set up so that can't happen silently:
+
+| Protection          | Where                                       | What it does                                                                                                      |
+| ------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Exact versions      | `deno.json` `imports`, `app/package.json`   | No `^` or `~` ranges, so a direct dependency never moves on its own                                               |
+| Lockfile            | `deno.lock`                                 | Pins every package, including indirect ones, with an integrity hash                                               |
+| Frozen lockfile     | `deno.json` `"lock": { "frozen": true }`    | An install that would change `deno.lock` fails instead of updating it                                             |
+| Minimum package age | `deno.json` `"minimumDependencyAge": "P7D"` | Refuses any version published less than 7 days ago; bad releases are usually caught and pulled within that window |
+| No install scripts  | Deno default                                | Deno never runs npm `postinstall` scripts unless `--allow-scripts` is passed. Don't pass it                       |
+| npm fallback        | `app/.npmrc`                                | If someone runs npm anyway: no install scripts, no saved ranges                                                   |
+
+**Always install with `deno install`.** npm ignores `deno.lock`, so
+`npm install` would resolve every indirect dependency afresh.
+
+### Updating dependencies
+
+Updates are deliberate. The trade-off for the protections above is that you run
+these steps yourself:
+
+1. **See what's newer.**
+   ```sh
+   deno outdated
+   ```
+2. **Update.** `--frozen=false` is required: it's the explicit permission to
+   change `deno.lock`.
+   ```sh
+   deno update --latest --frozen=false             # everything
+   deno update --latest --frozen=false npm:vite    # or one package
+   ```
+   Versions stay exact. For `app/package.json` you can also edit a version by
+   hand, then run `deno install --frozen=false`.
+
+   If you forget `--frozen=false`, the command fails _after_ already writing the
+   new version into `deno.json` or `app/package.json`, leaving them out of step
+   with `deno.lock`. Rerun it with `--frozen=false`, or `git checkout` the file.
+3. **If a version is refused as too new**, it was published less than 7 days
+   ago. Wait and try again. That refusal is the protection working.
+4. **Review the lockfile diff** before committing. It shows every package that
+   changed, including indirect ones you never chose.
+   ```sh
+   git diff deno.lock
+   ```
+   Be suspicious of unexpected new packages, and read the changelog of anything
+   with a major version bump.
+5. **Check nothing broke.**
+   ```sh
+   deno task test
+   deno task build
+   ```
+6. **Commit** `deno.json`, `app/package.json` and `deno.lock` together.
+
+### Taking a version younger than 7 days
+
+Only for an urgent fix, such as a security patch you actually need. Override the
+age rule for that one command:
+
+```sh
+deno update --latest --frozen=false --minimum-dependency-age=0 npm:some-package
+```
+
+Later installs use `deno.lock` as normal; the 7-day rule applies again to the
+next update. Say in the commit message why you took a version that young.

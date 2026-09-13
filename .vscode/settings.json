@@ -1,0 +1,5 @@
+{
+  "deno.enable": true,
+  "deno.enablePaths": ["src", "desktop"],
+  "editor.formatOnSave": false
+}
