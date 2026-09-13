@@ -1,10 +1,16 @@
 import { assertEquals } from "@std/assert";
 import {
+  ageOn,
+  dateAndTime,
+  dayMonthYear,
   displayName,
+  displaySex,
   initials,
+  maskId,
   monthSpan,
   monthYear,
   plural,
+  timestamp,
 } from "../app/src/lib/format.ts";
 
 // Synthetic names only.
@@ -40,4 +46,40 @@ Deno.test("initials take the first and last words", () => {
 Deno.test("plural picks the right word", () => {
   assertEquals(plural(1, "report"), "1 report");
   assertEquals(plural(4, "report"), "4 reports");
+});
+
+Deno.test("dates and times read straight from the printed text", () => {
+  assertEquals(dayMonthYear("2026-03-08T08:40:00"), "8 Mar 2026");
+  assertEquals(dateAndTime("2026-03-18T08:40:00"), "18 Mar 2026, 08:40");
+  assertEquals(dateAndTime("1990-08-15"), "15 Aug 1990");
+  assertEquals(dateAndTime(null), null);
+});
+
+// Exact wording comes from the engine's Intl; these expectations match Deno (V8).
+Deno.test("timestamps are shown in the given time zone", () => {
+  assertEquals(
+    timestamp("2026-03-19T13:14:00.000Z", "UTC"),
+    "19 Mar 2026, 13:14",
+  );
+  assertEquals(
+    timestamp("2026-03-19T13:14:00.000Z", "Asia/Singapore"),
+    "19 Mar 2026, 21:14",
+  );
+  assertEquals(timestamp("nonsense"), null);
+});
+
+Deno.test("age counts whole years, turning over on the birthday", () => {
+  const onBirthday = new Date(2026, 7, 15);
+  assertEquals(ageOn("1990-08-15", onBirthday), 36);
+  assertEquals(ageOn("1990-08-16", onBirthday), 35);
+  assertEquals(ageOn(null, onBirthday), null);
+});
+
+Deno.test("sex and ID numbers are shown tidily", () => {
+  assertEquals(displaySex("FEMALE"), "Female");
+  assertEquals(displaySex("m"), "Male");
+  assertEquals(displaySex(null), null);
+  assertEquals(maskId("X1234567"), "•••• 4567");
+  assertEquals(maskId("AB12"), "AB12");
+  assertEquals(maskId(null), null);
 });
