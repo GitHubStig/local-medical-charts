@@ -3,3 +3,5 @@
 1.reports/
 2.images/
 3.data/
+node_modules/
+app/dist/
