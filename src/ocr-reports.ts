@@ -2,26 +2,30 @@
  * ocr-reports — OCR lab-report page images into structured JSON.
  *
  * Each image in "2.images" is sent to a local Ollama vision model, which
- * transcribes it under the rules in src/ocr-prompt.md. The reply is validated
- * against the Zod schema, written per page for debugging, then merged into one
- * report per group of pages in "3.data".
+ * transcribes it under the rules in src/ocr-prompt.md. Replies are validated
+ * against the Zod schema and cached per page in "3.data". Pages are then merged
+ * into one report per group, with every result matched against the analyte
+ * catalog in src/analytes.json.
  *
  * Usage:
  *   deno task ocr
  *   deno task ocr --prefix "2026 March"
+ *   deno task ocr --merge-only      # re-merge cached pages after a catalog edit
  */
 import { parseArgs } from "@std/cli/parse-args";
 import { ensureDir, exists } from "@std/fs";
 import { basename, extname, fromFileUrl, join, resolve } from "@std/path";
 import { encodeBase64 } from "@std/encoding/base64";
 import { encodeHex } from "@std/encoding/hex";
-import {
-  type PageExtraction,
-  pageExtractionJsonSchema,
-  PageExtractionSchema,
-  type Report,
-} from "./schema.ts";
+import { loadCatalog } from "./catalog.ts";
 import { buildReport } from "./normalize.ts";
+import { assertModelAvailable, chatJson, type OllamaConfig } from "./ollama.ts";
+import {
+  PageExtractionSchema,
+  type PageFile,
+  PageFileSchema,
+  ReportSchema,
+} from "./schema.ts";
 
 const DEFAULTS = {
   input: "2.images",
@@ -46,6 +50,7 @@ OPTIONS:
       --retries <number>  Retries per page on invalid output (default: ${DEFAULTS.retries})
       --context <number>  Model context window (default: ${DEFAULTS.context})
   -f, --force             Re-OCR pages that already have a .page.json
+      --merge-only        Only re-merge cached pages (after editing the catalog)
       --pages-only        Write per-page JSON but skip the merged report
   -n, --dry-run           List what would be processed, call nothing
   -h, --help              Show this help
@@ -53,6 +58,7 @@ OPTIONS:
 EXAMPLES:
   deno run -RWN src/ocr-reports.ts --prefix "2026 March"
   deno run -RWN src/ocr-reports.ts --model gemma4:31b-mlx --force
+  deno run -RWN src/ocr-reports.ts --merge-only
 `;
 
 class CliError extends Error {}
@@ -87,9 +93,10 @@ async function findGroups(dir: string, prefix?: string): Promise<Group[]> {
       continue;
     }
     const [, name, page] = match;
-    const pages = groups.get(name) ?? [];
-    pages.push({ path: join(dir, entry.name), page: Number(page) });
-    groups.set(name, pages);
+    groups.set(name, [
+      ...(groups.get(name) ?? []),
+      { path: join(dir, entry.name), page: Number(page) },
+    ]);
   }
 
   return [...groups.entries()]
@@ -100,126 +107,6 @@ async function findGroups(dir: string, prefix?: string): Promise<Group[]> {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-type OllamaOptions = {
-  host: string;
-  model: string;
-  context: number;
-  retries: number;
-  prompt: string;
-};
-
-async function assertModelAvailable(opts: OllamaOptions) {
-  let response: Response;
-  try {
-    response = await fetch(`${opts.host}/api/tags`);
-  } catch (cause) {
-    throw new CliError(
-      `cannot reach Ollama at ${opts.host} — is it running? (${
-        cause instanceof Error ? cause.message : cause
-      })`,
-    );
-  }
-  const { models } = await response.json() as {
-    models: { name: string; capabilities?: string[] }[];
-  };
-  const names = models.map((m) => m.name);
-  if (!names.includes(opts.model)) {
-    throw new CliError(
-      `model ${opts.model} not found on ${opts.host}. Available: ${
-        names.join(", ")
-      }`,
-    );
-  }
-}
-
-async function ocrPage(
-  image: Page,
-  pageCount: number,
-  opts: OllamaOptions,
-): Promise<PageExtraction> {
-  const encoded = encodeBase64(await Deno.readFile(image.path));
-  const prompt = opts.prompt
-    .replaceAll("{{PAGE}}", String(image.page))
-    .replaceAll("{{PAGE_COUNT}}", String(pageCount));
-  const format = pageExtractionJsonSchema();
-
-  let feedback = "";
-  for (let attempt = 0; attempt <= opts.retries; attempt++) {
-    const started = Date.now();
-    let response: Response;
-    try {
-      response = await fetch(`${opts.host}/api/chat`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          model: opts.model,
-          stream: false,
-          // The model can think; thinking only pollutes a transcription task.
-          think: false,
-          format,
-          options: { temperature: 0, num_ctx: opts.context },
-          messages: [{
-            role: "user",
-            content: feedback ? `${prompt}\n\n${feedback}` : prompt,
-            images: [encoded],
-          }],
-        }),
-      });
-    } catch (cause) {
-      throw new CliError(
-        `request to ${opts.host} failed: ${
-          cause instanceof Error ? cause.message : cause
-        }`,
-      );
-    }
-
-    if (!response.ok) {
-      throw new CliError(
-        `Ollama returned ${response.status}: ${(await response.text()).trim()}`,
-      );
-    }
-
-    const body = await response.json();
-    const elapsed = ((Date.now() - started) / 1000).toFixed(1);
-    const content = body.message?.content ?? "";
-
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(content);
-    } catch {
-      feedback = "Your previous reply was not valid JSON. Return JSON only.";
-      console.warn(`    attempt ${attempt + 1} (${elapsed}s): invalid JSON`);
-      continue;
-    }
-
-    const result = PageExtractionSchema.safeParse(parsed);
-    if (result.success) {
-      console.log(
-        `    ${elapsed}s, ${result.data.tests.length} test row(s)${
-          result.data.warnings.length
-            ? `, ${result.data.warnings.length} warning(s)`
-            : ""
-        }`,
-      );
-      return result.data;
-    }
-
-    const issues = result.error.issues
-      .slice(0, 5)
-      .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-      .join("; ");
-    feedback =
-      `Your previous reply did not match the schema (${issues}). Fix those fields and return the whole JSON again.`;
-    console.warn(`    attempt ${attempt + 1} (${elapsed}s): ${issues}`);
-  }
-
-  throw new CliError(
-    `${basename(image.path)}: no valid response after ${
-      opts.retries + 1
-    } attempt(s)`,
-  );
-}
-
 async function loadPrompt(): Promise<{ text: string; hash: string }> {
   const path = fromFileUrl(new URL("./ocr-prompt.md", import.meta.url));
   const text = await Deno.readTextFile(path);
@@ -228,6 +115,41 @@ async function loadPrompt(): Promise<{ text: string; hash: string }> {
     new TextEncoder().encode(text),
   );
   return { text, hash: encodeHex(new Uint8Array(digest)).slice(0, 12) };
+}
+
+async function ocrPage(
+  image: Page,
+  pageCount: number,
+  config: OllamaConfig,
+  prompt: { text: string; hash: string },
+): Promise<PageFile> {
+  const { data, seconds } = await chatJson(config, {
+    label: basename(image.path),
+    prompt: prompt.text
+      .replaceAll("{{PAGE}}", String(image.page))
+      .replaceAll("{{PAGE_COUNT}}", String(pageCount)),
+    images: [encodeBase64(await Deno.readFile(image.path))],
+    schema: PageExtractionSchema,
+  });
+
+  const rows = data.tests.length;
+  const results = data.tests.reduce((n, t) => n + t.measurements.length, 0);
+  console.log(
+    `    ${seconds.toFixed(1)}s, ${rows} row(s), ${results} result(s)${
+      data.warnings.length ? `, ${data.warnings.length} warning(s)` : ""
+    }`,
+  );
+
+  return {
+    model: config.model,
+    promptHash: prompt.hash,
+    extractedAt: new Date().toISOString(),
+    extraction: data,
+  };
+}
+
+function distinct(values: string[]): string {
+  return [...new Set(values)].join(", ");
 }
 
 async function main() {
@@ -241,7 +163,7 @@ async function main() {
       "retries",
       "context",
     ],
-    boolean: ["help", "force", "pages-only", "dry-run"],
+    boolean: ["help", "force", "merge-only", "pages-only", "dry-run"],
     alias: {
       i: "input",
       o: "output",
@@ -266,6 +188,9 @@ async function main() {
   const context = Number(flags.context);
   if (!Number.isInteger(context) || context <= 0) {
     fail(`invalid context: ${flags.context}`);
+  }
+  if (flags["merge-only"] && (flags.force || flags["pages-only"])) {
+    fail("--merge-only cannot be combined with --force or --pages-only");
   }
 
   const inputDir = resolve(flags.input);
@@ -293,74 +218,102 @@ async function main() {
     return;
   }
 
+  const catalog = await loadCatalog();
   const prompt = await loadPrompt();
-  const opts: OllamaOptions = {
+  const config: OllamaConfig = {
     host: flags.host.replace(/\/$/, ""),
     model: flags.model,
     context,
     retries,
-    prompt: prompt.text,
   };
-  await assertModelAvailable(opts);
+  if (!flags["merge-only"]) await assertModelAvailable(config);
   await ensureDir(outputDir);
 
-  const written: string[] = [];
+  let written = 0;
+  let unmappedTotal = 0;
+
   for (const group of groups) {
     console.log(`\n${group.name} — ${group.pages.length} page(s)`);
-    const extractions: PageExtraction[] = [];
+    const files: PageFile[] = [];
 
     for (const image of group.pages) {
       const pagePath = join(outputDir, `${group.name}-${image.page}.page.json`);
       const cached = !flags.force && await exists(pagePath)
-        ? PageExtractionSchema.safeParse(
+        ? PageFileSchema.safeParse(
           JSON.parse(await Deno.readTextFile(pagePath)),
         )
         : null;
 
       if (cached?.success) {
         console.log(`  p${image.page} cached`);
-        extractions.push(cached.data);
+        files.push(cached.data);
         continue;
+      }
+      if (flags["merge-only"]) {
+        throw new CliError(
+          `${basename(pagePath)} ${
+            cached ? "was written by an older schema" : "is missing"
+          } — run without --merge-only to OCR it`,
+        );
       }
 
       console.log(`  p${image.page} ${basename(image.path)}`);
-      const extraction = await ocrPage(image, group.pages.length, opts);
-      await Deno.writeTextFile(
-        pagePath,
-        JSON.stringify(extraction, null, 2) + "\n",
-      );
-      written.push(pagePath);
-      extractions.push(extraction);
+      const file = await ocrPage(image, group.pages.length, config, prompt);
+      await Deno.writeTextFile(pagePath, JSON.stringify(file, null, 2) + "\n");
+      written++;
+      files.push(file);
     }
 
     if (flags["pages-only"]) continue;
 
-    const report: Report = buildReport(extractions, {
-      report: group.name,
-      images: group.pages.map((p) => basename(p.path)),
-      pages: group.pages.length,
-      model: opts.model,
-      host: opts.host,
-      promptHash: prompt.hash,
-      extractedAt: new Date().toISOString(),
-    });
+    const report = ReportSchema.parse(
+      buildReport(
+        files.map((f) => f.extraction),
+        {
+          report: group.name,
+          images: group.pages.map((p) => basename(p.path)),
+          pages: group.pages.length,
+          model: distinct(files.map((f) => f.model)),
+          promptHash: distinct(files.map((f) => f.promptHash)),
+          catalogHash: catalog.hash,
+          extractedAt: files.map((f) => f.extractedAt).sort().at(-1) ?? "",
+          mergedAt: new Date().toISOString(),
+        },
+        catalog,
+      ),
+    );
 
     const reportPath = join(outputDir, `${group.name}.json`);
     await Deno.writeTextFile(
       reportPath,
       JSON.stringify(report, null, 2) + "\n",
     );
-    written.push(reportPath);
+    written++;
 
+    const matched = report.tests.filter((t) => t.analyte !== null).length;
+    const flagged = report.tests.filter((t) => t.flag !== null).length;
     console.log(
-      `  → ${basename(reportPath)}: ${report.tests.length} test(s)${
-        report.warnings.length ? `, ${report.warnings.length} warning(s)` : ""
-      }`,
+      `  → ${
+        basename(reportPath)
+      }: ${report.tests.length} result(s), ${matched} matched to the catalog, ${flagged} flagged`,
     );
+    for (const u of report.unmapped) {
+      console.log(
+        `    ? ${u.name} [${u.unit ?? "no unit"}, ${
+          u.specimen ?? "specimen unknown"
+        }]: ${u.reason}`,
+      );
+    }
     for (const warning of report.warnings) console.log(`    ! ${warning}`);
+    unmappedTotal += report.unmapped.length;
   }
 
-  console.log(`\nwrote ${written.length} file(s) to ${flags.output}`);
+  console.log(`\nwrote ${written} file(s) to ${flags.output}`);
+  if (unmappedTotal > 0) {
+    console.log(
+      `${unmappedTotal} test name(s) not in the catalog — review them with: deno task map`,
+    );
+  }
 }
 
 if (import.meta.main) {
