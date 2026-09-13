@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import type { Series } from "../lib/series.ts";
 import type { TestCardData } from "../lib/test-grid.ts";
 import { plural } from "../lib/format.ts";
 import { FLAGS } from "../lib/flags.ts";
 import FlagPill from "./FlagPill.vue";
+import TestChart from "./TestChart.vue";
 
-defineProps<{ card: TestCardData }>();
+defineProps<{ card: TestCardData; series?: Series }>();
 </script>
 
 <template>
@@ -31,9 +33,12 @@ defineProps<{ card: TestCardData }>();
       </span>
     </div>
 
-    <div class="mt-auto flex items-center justify-between gap-3 text-[11px] text-muted">
+    <TestChart v-if="series?.domain" :series="series" class="mt-auto" />
+
+    <div class="flex items-center justify-between gap-3 text-[11px] text-muted" :class="{ 'mt-auto': !series?.domain }">
       <span>{{ card.span }}</span>
       <span v-if="card.range">Lab range {{ card.range }}</span>
+      <span v-else-if="series?.bandedRange">Banded range</span>
     </div>
   </article>
 </template>

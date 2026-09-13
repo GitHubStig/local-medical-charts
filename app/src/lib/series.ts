@@ -79,7 +79,7 @@ const LONE_READING_PADDING = 30 * DAY;
  * Report dates carry no time zone: they're the lab's wall-clock time. Doing the
  * arithmetic in UTC keeps them exactly as printed, wherever the app runs.
  */
-function toMs(date: string): number {
+export function dateMs(date: string): number {
   const m = date.match(/^(\d{4}-\d{2}-\d{2})(T\d{2}:\d{2}(?::\d{2})?)?/);
   return m ? Date.parse(`${m[1]}${m[2] ?? "T00:00"}Z`) : NaN;
 }
@@ -89,7 +89,7 @@ function fromMs(ms: number): string {
 }
 
 function midpoint(a: string, b: string): string {
-  return fromMs((toMs(a) + toMs(b)) / 2);
+  return fromMs((dateMs(a) + dateMs(b)) / 2);
 }
 
 function isComparator(op: string | null): op is Comparator {
@@ -144,7 +144,9 @@ function buildOne(
       });
       continue;
     }
-    if (result.collectedAt === null || Number.isNaN(toMs(result.collectedAt))) {
+    if (
+      result.collectedAt === null || Number.isNaN(dateMs(result.collectedAt))
+    ) {
       unplotted.push({
         reportId: result.reportId,
         reason: "No collection date",
@@ -234,7 +236,7 @@ function axisDomain(
   points: readonly SeriesPoint[],
   limits: readonly ({ min: number | null; max: number | null } | null)[],
 ): NonNullable<Series["domain"]> {
-  const times = points.map((p) => toMs(p.date));
+  const times = points.map((p) => dateMs(p.date));
   const earliest = Math.min(...times), latest = Math.max(...times);
   const padX = latest === earliest
     ? LONE_READING_PADDING

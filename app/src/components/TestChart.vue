@@ -1,0 +1,89 @@
+<script setup lang="ts">
+import { useElementSize } from "@vueuse/core";
+import { onBeforeUnmount, ref, shallowRef, watch } from "vue";
+import { useTheme } from "../composables/useTheme.ts";
+import type { ChartPalette } from "../lib/charts/palette.ts";
+import type { ChartTooltip, RenderedChart } from "../lib/charts/types.ts";
+import type { Series } from "../lib/series.ts";
+
+const props = withDefaults(defineProps<{ series: Series; height?: number }>(), {
+  height: 64,
+});
+
+const element = ref<HTMLElement | null>(null);
+const { width } = useElementSize(element);
+const { resolved } = useTheme();
+const tooltip = ref<ChartTooltip>(null);
+const failed = ref<string | null>(null);
+const chart = shallowRef<RenderedChart | null>(null);
+
+/** The theme's chart colours, as they are right now. */
+function readPalette(): ChartPalette {
+  const css = getComputedStyle(document.documentElement);
+  const token = (name: string) => css.getPropertyValue(`--mc-${name}`).trim();
+  return {
+    series: token("series"),
+    band: token("band"),
+    bandEdge: token("band-edge"),
+    critical: token("critical"),
+    surface: token("surface"),
+  };
+}
+
+// Each render supersedes the last, so a slow one can't draw over a newer one.
+let generation = 0;
+
+async function draw() {
+  const target = element.value;
+  const w = Math.floor(width.value);
+  if (!target || w <= 0) return;
+  const mine = ++generation;
+  try {
+    // Loaded on first use: Vega stays out of the main bundle.
+    const { vegaLite } = await import("../lib/charts/vega-lite.ts");
+    if (mine !== generation) return;
+    chart.value?.destroy();
+    chart.value = null;
+    const rendered = await vegaLite.render(target, props.series, {
+      palette: readPalette(),
+      width: w,
+      height: props.height,
+      onTooltip: (next) => (tooltip.value = next),
+    });
+    if (mine !== generation) return rendered.destroy();
+    chart.value = rendered;
+    failed.value = null;
+  } catch (err) {
+    failed.value = err instanceof Error ? err.message : String(err);
+  }
+}
+
+// Redraw for new data, a new width, or a theme switch (after <html data-theme> changes).
+watch([() => props.series, width, resolved], draw, { flush: "post" });
+
+onBeforeUnmount(() => {
+  generation++;
+  chart.value?.destroy();
+});
+</script>
+
+<template>
+  <div
+    role="img"
+    :aria-label="`${series.name} over time`"
+    class="relative"
+    :style="{ height: `${height}px` }"
+  >
+    <div ref="element" class="size-full" aria-hidden="true"></div>
+    <p v-if="failed" class="absolute inset-0 flex items-center text-xs text-muted">
+      Chart unavailable: {{ failed }}
+    </p>
+    <div
+      v-if="tooltip"
+      class="pointer-events-none fixed z-40 -translate-x-1/2 -translate-y-full rounded-md bg-ink px-2 py-1 text-xs whitespace-nowrap text-surface shadow-md"
+      :style="{ left: `${tooltip.x}px`, top: `${tooltip.y - 10}px` }"
+    >
+      {{ tooltip.text }}
+    </div>
+  </div>
+</template>
