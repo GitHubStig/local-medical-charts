@@ -92,6 +92,5 @@ result over time, across labs, entirely on your own computer.
 ## Later, maybe
 
 - Packaged releases for download.
-- A system notification when a long reading finishes.
 - Comparing two people's results side by side.
 - Per-model reading prompts, and support for smaller models.

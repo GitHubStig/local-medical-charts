@@ -52,6 +52,8 @@ export type ImportQueueDeps = {
   openReader: () => Promise<PageReader>;
   catalog: CatalogIndex;
   now?: () => Date;
+  /** Told when an import becomes ready or fails; not when it's cancelled or discarded. */
+  onFinished?: (job: ImportJob) => void;
 };
 
 export class ImportQueue {
@@ -175,6 +177,15 @@ export class ImportQueue {
     };
   }
 
+  #finished(job: Job): void {
+    try {
+      this.#deps.onFinished?.(this.#snapshot(job));
+    } catch (err) {
+      // Telling someone is a courtesy; the reading itself is already done.
+      console.error("Couldn't announce a finished import:", err);
+    }
+  }
+
   #pump(): void {
     if (this.#running) return;
     const next = [...this.#jobs.values()].find((j) => j.status === "waiting");
@@ -243,6 +254,7 @@ export class ImportQueue {
       ));
       job.status = "ready";
       job.finishedAt = this.#iso();
+      this.#finished(job);
     } catch (err) {
       if (!current()) return;
       job.status = "failed";
@@ -252,6 +264,7 @@ export class ImportQueue {
         : importMessages.unexpected(
           err instanceof Error ? err.message : String(err),
         );
+      this.#finished(job);
     } finally {
       if (job.controller === controller) job.controller = null;
     }

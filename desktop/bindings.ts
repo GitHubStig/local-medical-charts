@@ -12,6 +12,7 @@ import type {
   StartupStatus,
 } from "./contract.ts";
 import { ImportError, importMessages } from "./imports/messages.ts";
+import { type ReadingNotice, readingNotice } from "./imports/notice.ts";
 import { type NamedBytes, unpackFiles } from "./imports/packed-files.ts";
 import { ImportQueue } from "./imports/queue.ts";
 import type { PageReader } from "./imports/reader.ts";
@@ -87,6 +88,8 @@ export function createBindings(deps: {
   ollama: OllamaService;
   /** Opens a reader for report pages with the saved address and model; tests pass a stand-in. */
   pageReader: (host: string, model: string) => Promise<PageReader>;
+  /** Shows a notice when a reading finishes, while the setting is on; desktop/main.ts decides if the window is behind. */
+  notify?: (notice: ReadingNotice) => void;
   now?: () => Date;
 }): DesktopBindings {
   const { store, catalog, startup, ollama, pageReader } = deps;
@@ -102,6 +105,12 @@ export function createBindings(deps: {
       }),
     catalog,
     now,
+    onFinished: (job) => {
+      const notice = readingNotice(job);
+      if (notice && deps.notify && store.getSettings().notifyWhenRead) {
+        deps.notify(notice);
+      }
+    },
   });
 
   return {

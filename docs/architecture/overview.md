@@ -85,7 +85,7 @@ every report, so a catalog change triggers a re-merge.
 | `patients` | One row per person, keyed by normalised ID number (or name and date of birth)                 |
 | `reports`  | The upload **exactly as received**, the upgraded report, schema version, catalog hash, status |
 | `results`  | One row per result, rebuilt from the upgraded report, so charts query without parsing JSON    |
-| `settings` | Theme, selected patient, chart library, Ollama address and model                              |
+| `settings` | Theme, selected patient, chart library, Ollama address and model, notifications               |
 
 On launch, any report whose format or catalog is out of date is upgraded again
 **from its original**. A report that fails is kept and marked failed, never
@@ -120,6 +120,10 @@ sequenceDiagram
   ([ADR 0012](../adr/0012-review-before-saving-imports-in-memory.md)).
 - File bytes cross the binding as their own argument: nested inside an object, a
   `Uint8Array` doesn't survive.
+- When an import becomes ready or fails while the window is behind, a system
+  notification says so in generic words (no names or results), if the setting is
+  on. Clicking it opens that import's review, or the imports panel after a
+  failure ([feature 010](../features/010-reading-notifications/spec.md)).
 
 ## The app (`app/`)
 

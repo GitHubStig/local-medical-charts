@@ -42,6 +42,7 @@ Deno.test("fake bindings: settings persist in the storage they're given", async 
     chartLibrary: "vega-lite",
     ollamaHost: "http://localhost:11434",
     ocrModel: null,
+    notifyWhenRead: true,
   });
 });
 

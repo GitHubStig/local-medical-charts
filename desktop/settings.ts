@@ -29,6 +29,8 @@ export type Settings = {
   ollamaHost: string;
   /** The Ollama model that reads report pages; null until one is chosen. */
   ocrModel: string | null;
+  /** Show a system notification when a reading finishes while the window isn't in front. */
+  notifyWhenRead: boolean;
 };
 
 export const DEFAULT_OLLAMA_HOST = "http://localhost:11434";
@@ -39,6 +41,7 @@ export const DEFAULT_SETTINGS: Settings = {
   chartLibrary: "vega-lite",
   ollamaHost: DEFAULT_OLLAMA_HOST,
   ocrModel: null,
+  notifyWhenRead: true,
 };
 
 export class SettingsError extends Error {
@@ -113,6 +116,11 @@ export function parseSettingsPatch(value: unknown): Partial<Settings> {
         throw new SettingsError("ocrModel must be a model name or null");
       }
       patch.ocrModel = entry;
+    } else if (key === "notifyWhenRead") {
+      if (typeof entry !== "boolean") {
+        throw new SettingsError("notifyWhenRead must be true or false");
+      }
+      patch.notifyWhenRead = entry;
     } else {
       throw new SettingsError(`unknown setting "${key}"`);
     }
@@ -137,5 +145,8 @@ export function normalizeSettings(stored: Record<string, unknown>): Settings {
     ocrModel: isModelName(stored.ocrModel)
       ? stored.ocrModel
       : DEFAULT_SETTINGS.ocrModel,
+    notifyWhenRead: typeof stored.notifyWhenRead === "boolean"
+      ? stored.notifyWhenRead
+      : DEFAULT_SETTINGS.notifyWhenRead,
   };
 }

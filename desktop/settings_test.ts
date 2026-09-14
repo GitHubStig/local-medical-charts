@@ -120,3 +120,23 @@ Deno.test("the Ollama address is tidied to its origin and model names are checke
     DEFAULT_SETTINGS,
   );
 });
+
+Deno.test("notifications when a reading finishes are on by default and take true or false", () => {
+  assertEquals(DEFAULT_SETTINGS.notifyWhenRead, true);
+  assertEquals(parseSettingsPatch({ notifyWhenRead: false }), {
+    notifyWhenRead: false,
+  });
+  assertThrows(
+    () => parseSettingsPatch({ notifyWhenRead: "no" }),
+    SettingsError,
+    "true or false",
+  );
+  assertEquals(
+    normalizeSettings({ notifyWhenRead: false }).notifyWhenRead,
+    false,
+  );
+  assertEquals(
+    normalizeSettings({ notifyWhenRead: "yes" }).notifyWhenRead,
+    true,
+  );
+});

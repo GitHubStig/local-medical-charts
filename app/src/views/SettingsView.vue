@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import DataSettings from "../components/DataSettings.vue";
 import Icon from "../components/Icon.vue";
+import NotificationSettings from "../components/NotificationSettings.vue";
 import OcrSettings from "../components/OcrSettings.vue";
 import TopBar from "../components/TopBar.vue";
 import { useLibrary } from "../composables/useLibrary.ts";
@@ -24,6 +25,7 @@ const { patients } = useLibrary();
         <h1 class="text-[28px] font-semibold tracking-tight">Settings</h1>
       </div>
       <OcrSettings class="max-w-[880px]" />
+      <NotificationSettings class="max-w-[880px]" />
       <DataSettings class="max-w-[880px]" />
     </main>
   </div>

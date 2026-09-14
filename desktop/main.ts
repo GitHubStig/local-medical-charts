@@ -10,6 +10,7 @@ import catalogJson from "../src/analytes.json" with { type: "json" };
 import { catalogFromJson } from "../src/catalog.ts";
 import { SCHEMA_VERSION } from "../src/schema.ts";
 import { createBindings, unavailableBindings } from "./bindings.ts";
+import type { ReadingNotice } from "./imports/notice.ts";
 import { ollamaPageReader } from "./imports/reader.ts";
 import { createOllamaService } from "./ocr/ollama.ts";
 import type { DesktopBindings, StartupStatus } from "./contract.ts";
@@ -42,6 +43,29 @@ const win = new Deno.BrowserWindow<DesktopBindings>({
   height: 900,
 });
 
+// A notification is only worth sending while the window is behind. It opens in front.
+let windowInFront = true;
+win.addEventListener("focus", () => (windowInFront = true));
+win.addEventListener("blur", () => (windowInFront = false));
+
+/** A system notification for a finished reading; clicking it brings the window back to that import. */
+async function showNotice(notice: ReadingNotice): Promise<void> {
+  if (windowInFront) return;
+  if (Notification.permission === "default") {
+    await Notification.requestPermission();
+  }
+  if (Notification.permission !== "granted") return;
+  const shown = new Notification(notice.title, {
+    body: notice.body,
+    tag: notice.tag,
+  });
+  shown.addEventListener("click", () => {
+    win.show();
+    win.focus();
+    win.executeJs(`location.hash = ${JSON.stringify(notice.href)}`);
+  });
+}
+
 // Imported as a module, so the catalog is part of the app rather than a file
 // looked up at runtime. Same content hash as the CLI's loadCatalog().
 const catalog = await catalogFromJson(catalogJson, "src/analytes.json");
@@ -63,6 +87,11 @@ try {
     startup,
     ollama: createOllamaService(),
     pageReader: ollamaPageReader,
+    notify: (notice) => {
+      showNotice(notice).catch((err) =>
+        console.error("Couldn't show a notification:", err)
+      );
+    },
   });
 } catch (err) {
   // Keep the window usable so the page can explain what went wrong.
