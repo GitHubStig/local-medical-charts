@@ -4,6 +4,7 @@ import { computed, ref } from "vue";
 import AppLogo from "../components/AppLogo.vue";
 import FilePickerButton from "../components/FilePickerButton.vue";
 import ImportResults from "../components/ImportResults.vue";
+import SettingsLink from "../components/SettingsLink.vue";
 import ThemeToggle from "../components/ThemeToggle.vue";
 import { useLibrary } from "../composables/useLibrary.ts";
 import Icon from "../components/Icon.vue";
@@ -28,8 +29,9 @@ const failedImport = computed(() => lastImport.value?.length ? lastImport.value 
     ref="page"
     class="relative flex min-h-screen flex-col items-center justify-center px-6 py-16"
   >
-    <div class="absolute right-6 top-6">
+    <div class="absolute right-6 top-6 flex items-center gap-3">
       <ThemeToggle />
+      <SettingsLink />
     </div>
 
     <main class="flex w-full max-w-[640px] flex-col items-center gap-8">
