@@ -13,11 +13,13 @@ type HoverEvent = {
 };
 
 export const plotly: ChartBackend = {
-  async render(element, series, { palette, width, height, onTooltip }) {
-    const { data, layout, config } = plotlyFigure(series, palette, {
-      width,
-      height,
-    });
+  async render(element, series, { palette, width, height, axes, onTooltip }) {
+    const { data, layout, config } = plotlyFigure(
+      series,
+      palette,
+      { width, height },
+      axes,
+    );
     const plot = await Plotly.newPlot(element, data, layout, config);
     plot.on("plotly_hover", (hover: HoverEvent) => {
       const text = hover.points?.[0]?.customdata;

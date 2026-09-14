@@ -17,7 +17,13 @@ const PALETTE = {
   bandEdge: "#d3cfc6",
   critical: "#d03b3b",
   surface: "#ffffff",
+  muted: "#77706b",
+  grid: "#eeece7",
+  axis: "#d6d2ca",
+  font: "IBM Plex Sans, sans-serif",
 };
+/** The zoomed view's chart, with axes. */
+const LARGE = { width: 1088, height: 320 };
 const SIZE = { width: 282, height: 52 };
 
 async function alexSeries(key: string): Promise<Series> {
@@ -106,4 +112,39 @@ Deno.test("the spec renders with Vega: bands, line and every marker", async () =
   // October 2025 was low: its marker is the critical colour.
   assertEquals(fills(PALETTE.critical), 1);
   assertEquals(fills(PALETTE.series), 3);
+});
+
+Deno.test("the large chart gets value and date axes, and names the latest range", async () => {
+  const alt = await alexSeries("alt");
+  const spec = vegaLiteSpec(alt, PALETTE, LARGE, true);
+  const all = layers(spec);
+  const [bands, , line] = all;
+  assertEquals(line.encoding.y.scale.domain, [0, 60]);
+  assertEquals(line.encoding.y.axis.values, [0, 20, 40, 60]);
+  assertEquals(line.encoding.x.axis.values.length, 4);
+  // Harbour's open-bottomed < 35 now reaches the scale's 0.
+  assertEquals(bands.data.values.at(-1).low, 0);
+  const label = all.at(-1);
+  assertEquals(
+    [label.mark.type, label.data.values],
+    ["text", [{ text: "< 35", y: 17.5 }]],
+  );
+
+  const svg = await vegaLiteSvg(spec);
+  for (const text of ["12 Nov 2024", "Northside Pathology", "60", "&lt; 35"]) {
+    assert(svg.includes(text), `the chart shows ${text}`);
+  }
+});
+
+Deno.test("every sample's large chart compiles without Vega-Lite warnings", async () => {
+  const b = createFakeBindings({ reports: SAMPLE_REPORTS });
+  for (const patient of await b.listPatients()) {
+    const series = buildSeries((await b.getDashboard(patient.id))!);
+    for (const s of series.values()) {
+      const { warnings } = compileVegaLite(
+        vegaLiteSpec(s, PALETTE, LARGE, true),
+      );
+      assertEquals(warnings, [], s.key);
+    }
+  }
 });

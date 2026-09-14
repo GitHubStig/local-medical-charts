@@ -3,14 +3,11 @@
  * is in use.
  */
 import type { ChartBackend } from "./types.ts";
-import { PADDING, vegaLiteSpec, vegaView } from "./vega-lite-spec.ts";
+import { vegaLiteSpec, vegaView } from "./vega-lite-spec.ts";
 
 export const vegaLite: ChartBackend = {
-  async render(element, series, { palette, width, height, onTooltip }) {
-    const spec = vegaLiteSpec(series, palette, {
-      width: width - PADDING * 2,
-      height: height - PADDING * 2,
-    });
+  async render(element, series, { palette, width, height, axes, onTooltip }) {
+    const spec = vegaLiteSpec(series, palette, { width, height }, axes);
     const view = vegaView(spec, element);
     view.tooltip((
       _handler: unknown,

@@ -13,7 +13,13 @@ const PALETTE = {
   bandEdge: "#d3cfc6",
   critical: "#d03b3b",
   surface: "#ffffff",
+  muted: "#77706b",
+  grid: "#eeece7",
+  axis: "#d6d2ca",
+  font: "IBM Plex Sans, sans-serif",
 };
+/** The zoomed view's chart, with axes. */
+const LARGE = { width: 1088, height: 320 };
 const SIZE = { width: 294, height: 64 };
 
 async function alexSeries(key: string): Promise<Series> {
@@ -81,4 +87,27 @@ Deno.test("every sample chart builds a Plotly figure with every reading", async 
       assertEquals(plotted, s.points.length, s.key);
     }
   }
+});
+
+Deno.test("the large chart gets value and date axes, and names the latest range", async () => {
+  const alt = await alexSeries("alt");
+  const { layout } = plotlyFigure(alt, PALETTE, LARGE, true) as Loose;
+  assertEquals(layout.margin, { t: 12, r: 72, b: 44, l: 48, pad: 0 });
+  assertEquals(
+    [layout.yaxis.visible, layout.yaxis.range, layout.yaxis.tickvals],
+    [true, [0, 60], [0, 20, 40, 60]],
+  );
+  assertEquals(layout.xaxis.tickvals.length, 4);
+  assertEquals(layout.xaxis.ticktext[0], "12 Nov 2024<br>Northside Pathology");
+  // Plotly reads label text as HTML, so "<" is escaped.
+  assertEquals(
+    layout.annotations.map((a: Loose) => [a.text, a.y, a.yref, a.xref]),
+    [["&lt; 35", 17.5, "y", "paper"]],
+  );
+
+  const card = plotlyFigure(alt, PALETTE, SIZE) as Loose;
+  assertEquals(
+    [card.layout.xaxis.visible, card.layout.annotations],
+    [false, []],
+  );
 });

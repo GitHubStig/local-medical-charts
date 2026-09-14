@@ -16,7 +16,13 @@ const PALETTE = {
   bandEdge: "#d3cfc6",
   critical: "#d03b3b",
   surface: "#ffffff",
+  muted: "#77706b",
+  grid: "#eeece7",
+  axis: "#d6d2ca",
+  font: "IBM Plex Sans, sans-serif",
 };
+/** The zoomed view's chart, with axes. */
+const LARGE = { width: 1088, height: 320 };
 const SIZE = { width: 294, height: 64 };
 
 async function alexSeries(key: string): Promise<Series> {
@@ -87,4 +93,31 @@ Deno.test("the option renders with ECharts: bands, line and every marker", async
   // October 2025 was low: its marker is the critical colour.
   assertEquals(count(`fill="${PALETTE.critical}"`), 1);
   assertEquals(count(`fill="${PALETTE.series}"`), 3);
+});
+
+Deno.test("the large chart gets value and date axes, and names the latest range", async () => {
+  const alt = await alexSeries("alt");
+  const option = echartsOption(alt, PALETTE, LARGE, true) as Loose;
+  assertEquals(
+    [
+      option.yAxis.show,
+      option.yAxis.min,
+      option.yAxis.max,
+      option.yAxis.interval,
+    ],
+    [true, 0, 60, 20],
+  );
+  const [first] = option.xAxis.axisLabel.customValues;
+  assertEquals(option.xAxis.axisLabel.customValues.length, 4);
+  assertEquals(
+    option.xAxis.axisLabel.formatter(first),
+    "12 Nov 2024\nNorthside Pathology",
+  );
+  const [from] = option.series[0].markArea.data.at(-1);
+  assertEquals([from.yAxis, from.label.formatter], [0, "< 35"]);
+
+  const svg = echartsSvg(alt, PALETTE, LARGE, true);
+  for (const text of ["12 Nov 2024", "Northside Pathology", "60", "&lt; 35"]) {
+    assert(svg.includes(text), `the chart shows ${text}`);
+  }
 });
