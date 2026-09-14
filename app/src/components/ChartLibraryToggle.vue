@@ -23,7 +23,7 @@ const labelId = useId();
     <div
       role="radiogroup"
       :aria-labelledby="labelId"
-      class="flex max-w-full gap-0.5 overflow-x-auto rounded-[9px] bg-chip p-[3px]"
+      class="flex max-w-full gap-0.5 overflow-x-auto rounded-[9px] bg-chip p-0.75"
     >
       <button
         v-for="library in CHART_LIBRARIES"
@@ -31,7 +31,7 @@ const labelId = useId();
         type="button"
         role="radio"
         :aria-checked="chartLibrary === library"
-        class="flex h-[38px] items-center rounded-md px-3 text-[13px] whitespace-nowrap transition-colors"
+        class="flex h-9.5 items-center rounded-md px-3 text-[13px] whitespace-nowrap transition-colors"
         :class="chartLibrary === library
           ? 'bg-surface font-semibold text-ink shadow-sm'
           : 'font-medium text-ink-2 hover:text-ink'"

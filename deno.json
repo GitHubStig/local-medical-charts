@@ -17,7 +17,8 @@
     "test": "deno test --allow-read --allow-write --allow-env=NODE_ENV --allow-net=127.0.0.1 src/ desktop/",
     "map": "deno run --allow-read --allow-write --allow-net src/map-analytes.ts",
     "upgrade": "deno run --allow-read --allow-write src/upgrade-reports.ts",
-    "samples": "deno run --allow-read --allow-write scripts/generate-samples.ts"
+    "samples": "deno run --allow-read --allow-write scripts/generate-samples.ts",
+    "classes": "cd app && deno run --allow-read --allow-write=src tailwind-classes.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1.0.19",

@@ -26,7 +26,7 @@ const LABELS: Record<Theme, string> = {
   <div
     role="radiogroup"
     aria-label="Colour theme"
-    class="flex gap-0.5 rounded-[9px] bg-chip p-[3px]"
+    class="flex gap-0.5 rounded-[9px] bg-chip p-0.75"
   >
     <button
       v-for="option in THEMES"
@@ -35,9 +35,9 @@ const LABELS: Record<Theme, string> = {
       role="radio"
       :aria-checked="theme === option"
       :title="compact ? `${LABELS[option]} theme` : undefined"
-      class="flex h-[38px] items-center justify-center gap-1.5 rounded-md text-[13px] transition-colors"
+      class="flex h-9.5 items-center justify-center gap-1.5 rounded-md text-[13px] transition-colors"
       :class="[
-        compact ? 'w-[38px]' : 'px-3',
+        compact ? 'w-9.5' : 'px-3',
         theme === option
           ? 'bg-surface font-semibold text-ink shadow-sm'
           : 'font-medium text-ink-2 hover:text-ink',

@@ -32,6 +32,7 @@ deno task dev       # the app in a browser, on fictional sample data (fake bindi
 deno task desktop   # build, then open the desktop window (database in .data/)
 deno task test      # all tests (Deno, no browser)
 deno task build     # production build of the Vue app into app/dist
+deno task classes   # Tailwind classes in canonical form; --write fixes them
 deno fmt && deno lint
 ```
 
@@ -102,12 +103,19 @@ convention; the owner chose to keep this layout.
 - **Prefer platform APIs** (`Intl`, native `<dialog>`, `URL`, Web Streams) even
   if engines differ slightly; only work around a difference that breaks meaning
   or layout. ([ADR 0014](docs/adr/0014-prefer-platform-apis.md))
+- **Tailwind classes in their canonical form.** Use the spacing scale
+  (`max-w-220`, `h-9.5`, `p-0.75`), not pixels in brackets (`max-w-[880px]`);
+  keep brackets only where Tailwind has no equivalent (`text-[13px]`).
+  `deno task classes` finds the rest, as the Tailwind VS Code extension's
+  `suggestCanonicalClasses` warning does, and `--write` fixes them. See
+  [docs/development.md](docs/development.md#styling).
 - Match the surrounding code: its naming, comment density and idioms. Comments
   explain why, in plain words.
 
 ## Verifying changes
 
-- `deno fmt`, `deno lint`, `deno task test` and `deno task build` must pass.
+- `deno fmt`, `deno lint`, `deno task test`, `deno task build` and
+  `deno task classes` must pass.
 - `vue-tsc` doesn't run under Deno. Type-check TypeScript modules with `tsc`
   against `app/tsconfig.json` where it matters; `.vue` files are checked by the
   VS Code Vue extension.

@@ -124,7 +124,7 @@ const FILING_ICON = {
   <div class="min-h-screen">
     <TopBar />
 
-    <main class="mx-auto flex max-w-[1440px] flex-col gap-5 px-4 pt-6 pb-14 sm:px-10">
+    <main class="mx-auto flex max-w-360 flex-col gap-5 px-4 pt-6 pb-14 sm:px-10">
       <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div class="flex min-w-0 flex-col gap-2">
           <a
@@ -256,7 +256,7 @@ const FILING_ICON = {
             <dl class="grid gap-x-5 gap-y-4 border-b border-line px-5 py-4.5 sm:grid-cols-2 2xl:grid-cols-4">
               <div v-for="item in details" :key="item.label" class="flex min-w-0 flex-col gap-1">
                 <dt class="text-xs font-medium text-muted">{{ item.label }}</dt>
-                <dd class="text-sm break-words">{{ item.value }}</dd>
+                <dd class="text-sm wrap-break-word">{{ item.value }}</dd>
               </div>
             </dl>
 

@@ -13,7 +13,7 @@ const { patients } = useLibrary();
   <div class="min-h-screen">
     <TopBar active="settings" />
 
-    <main class="mx-auto flex max-w-[1440px] flex-col gap-6 px-4 pt-6 pb-14 sm:px-10">
+    <main class="mx-auto flex max-w-360 flex-col gap-6 px-4 pt-6 pb-14 sm:px-10">
       <div class="flex flex-col gap-2">
         <a
           href="#/"
@@ -24,9 +24,9 @@ const { patients } = useLibrary();
         </a>
         <h1 class="text-[28px] font-semibold tracking-tight">Settings</h1>
       </div>
-      <OcrSettings class="max-w-[880px]" />
-      <NotificationSettings class="max-w-[880px]" />
-      <DataSettings class="max-w-[880px]" />
+      <OcrSettings class="max-w-220" />
+      <NotificationSettings class="max-w-220" />
+      <DataSettings class="max-w-220" />
     </main>
   </div>
 </template>

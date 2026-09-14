@@ -51,7 +51,7 @@ function chooseModel(event: Event) {
   >
     <div class="flex flex-col gap-1.5">
       <h2 :id="headingId" class="text-[17px] font-semibold">Reading PDFs and photos</h2>
-      <p class="max-w-[640px] text-sm leading-normal text-ink-2">
+      <p class="max-w-160 text-sm leading-normal text-ink-2">
         Reports you add as PDFs or photos are read by a vision model in Ollama, running on this computer. Pages never
         leave it.
       </p>
@@ -68,7 +68,7 @@ function chooseModel(event: Event) {
         autocomplete="off"
         :aria-describedby="hostHelpId"
         :aria-invalid="saveError ? 'true' : undefined"
-        class="h-11 w-full max-w-[420px] rounded-lg border bg-surface px-3.5 font-mono text-[13px] text-ink"
+        class="h-11 w-full max-w-105 rounded-lg border bg-surface px-3.5 font-mono text-[13px] text-ink"
         :class="saveError ? 'border-danger' : 'border-line focus:border-line-strong'"
         @change="setHost(hostDraft)"
         @keydown.enter.prevent="($event.target as HTMLInputElement).blur()"
@@ -80,7 +80,7 @@ function chooseModel(event: Event) {
 
     <div class="flex flex-col gap-2">
       <label :for="modelId" class="text-[13px] font-semibold">Model</label>
-      <div class="flex max-w-[820px] items-center gap-2.5">
+      <div class="flex max-w-205 items-center gap-2.5">
         <div class="relative min-w-0 flex-1">
           <select
             :id="modelId"

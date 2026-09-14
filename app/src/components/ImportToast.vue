@@ -57,12 +57,12 @@ watch(lastImport, () => showing.value++);
         <ul class="flex max-h-[min(22rem,50vh)] flex-col gap-2.5 overflow-y-auto pr-4 pb-4 pl-11">
           <li v-for="row in toast.rows" :key="row.key" class="flex min-w-0 flex-col gap-0.5 text-[13px]">
             <span class="truncate font-medium" :title="row.fileName">{{ row.fileName }}</span>
-            <span :class="row.tone === 'rejected' ? 'break-words text-danger' : 'text-ink-2'">
+            <span :class="row.tone === 'rejected' ? 'wrap-break-word text-danger' : 'text-ink-2'">
               {{ row.detail }}
             </span>
             <span v-for="warning in row.warnings" :key="warning" class="mt-0.5 flex gap-1.5 text-ink-2">
               <Icon name="alert-circle" :size="14" class="mt-0.5 shrink-0 text-danger" />
-              <span class="break-words">{{ warning }}</span>
+              <span class="wrap-break-word">{{ warning }}</span>
             </span>
           </li>
         </ul>
@@ -70,7 +70,7 @@ watch(lastImport, () => showing.value++);
         <!-- The countdown to closing; it pauses while the card is pointed at or focused. -->
         <div v-if="!toast.sticky" class="absolute inset-x-0 bottom-0 h-0.5 bg-hairline" aria-hidden="true">
           <div
-            class="h-full origin-left bg-series [animation:toast-countdown_8s_linear_forwards] group-hover:[animation-play-state:paused] group-focus-within:[animation-play-state:paused]"
+            class="h-full origin-left bg-series animate-[toast-countdown_8s_linear_forwards] group-hover:[animation-play-state:paused] group-focus-within:[animation-play-state:paused]"
             @animationend="dismissImport"
           ></div>
         </div>

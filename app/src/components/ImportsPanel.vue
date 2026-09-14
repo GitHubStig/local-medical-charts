@@ -61,7 +61,7 @@ const quiet =
         <h2 class="text-[15px] font-semibold" aria-live="polite">{{ panelHeading(jobs) }}</h2>
         <p v-if="activeCount" class="text-sm text-ink-2">
           Reading a page at a time<template v-if="readingModel">
-            with <span class="font-mono text-[13px] break-words">{{ readingModel }}</span></template>.
+            with <span class="font-mono text-[13px] wrap-break-word">{{ readingModel }}</span></template>.
           Keep using the app meanwhile. Nothing is saved until you review it.
         </p>
         <p v-else class="text-sm text-ink-2">Nothing is saved until you review it.</p>
@@ -87,11 +87,11 @@ const quiet =
         </li>
         <li v-for="item in refused" :key="item.fileName + item.error" class="flex gap-2.5">
           <Icon name="alert-circle" class="mt-0.5 shrink-0 text-danger" />
-          <span class="break-words text-danger">{{ item.error }}</span>
+          <span class="wrap-break-word text-danger">{{ item.error }}</span>
         </li>
         <li v-if="error" class="flex gap-2.5">
           <Icon name="alert-circle" class="mt-0.5 shrink-0 text-danger" />
-          <span class="break-words text-danger">{{ error }}</span>
+          <span class="wrap-break-word text-danger">{{ error }}</span>
         </li>
       </ul>
       <button
@@ -131,7 +131,7 @@ const quiet =
         <div
           v-for="status in [statuses.get(job.id)!]"
           :key="status.tone"
-          class="order-last col-span-2 flex min-w-0 flex-col gap-2 text-[13px] @3xl:order-none @3xl:col-span-1"
+          class="order-last col-span-2 flex min-w-0 flex-col gap-2 text-[13px] @3xl:order-0 @3xl:col-span-1"
         >
           <template v-if="status.tone === 'reading'">
             <span class="flex justify-between gap-3">
@@ -157,7 +157,7 @@ const quiet =
           </span>
           <span v-else-if="status.tone === 'problem'" class="flex gap-2 text-danger">
             <Icon name="alert-circle" class="mt-0.5 shrink-0" />
-            <span class="break-words">{{ status.text }}</span>
+            <span class="wrap-break-word">{{ status.text }}</span>
           </span>
           <span v-else class="text-muted">{{ status.text }}</span>
         </div>

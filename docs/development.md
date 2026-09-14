@@ -26,7 +26,28 @@ deno fmt
 deno lint
 deno task test
 deno task build
+deno task classes
 ```
+
+`deno task classes` runs the same check as the Tailwind VS Code extension's
+`suggestCanonicalClasses` warning over every `.vue` file (see
+[Styling](#styling)); `deno task classes --write` rewrites what it finds.
+
+## Styling
+
+The app uses Tailwind 4 ([ADR 0006](adr/0006-vue-with-vite-under-deno.md)).
+Class names are written in Tailwind's canonical form, the one the Tailwind VS
+Code extension suggests:
+
+- **Sizes and spacing use the spacing scale.** `--spacing` is 0.25rem (4 px), so
+  880 px is `max-w-220`, 38 px is `h-9.5` and 3 px is `p-0.75`. Mockups give
+  sizes in pixels: divide by 4.
+- **Brackets only when nothing else fits**, such as `text-[13px]` (between
+  `text-xs` and `text-sm`) or `rounded-[9px]`.
+- **Current names, not older aliases**: `wrap-break-word`, not `break-words`.
+
+The root font size is left at the browser default, so scale values match the
+mockups' pixels exactly.
 
 ## Versions during development
 
