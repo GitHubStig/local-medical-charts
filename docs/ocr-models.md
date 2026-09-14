@@ -151,6 +151,37 @@ time.
   with 0 of 13 rows on two pages (patient name and ID only) and failed the
   third. Their real-scan runs were skipped.
 
+## Page resolution
+
+The same three fictional pages, drawn at 100, 150, 200 and 300 dpi (827 × 1170
+to 2481 × 3509 pixels), each read once with the current prompt and schema, one
+request at a time. The 150 dpi pages are the ones used everywhere above.
+
+| Model and dpi         | Values, ranges, flags (of 39) | Header (of 12) | Input per page | Reading the input | Time per page |
+| --------------------- | ----------------------------- | -------------- | -------------- | ----------------- | ------------- |
+| `qwen3-vl:4b` 100     | 38, 38, 38                    | 11             | 3,724 tokens   | 3.4 s             | 25 s          |
+| `qwen3-vl:4b` 150     | 39, 39, 39                    | 11             | 4,816 tokens   | 6.5 s             | 29 s          |
+| `qwen3-vl:4b` 200     | 39, 39, 39                    | 11             | 6,467 tokens   | 13.7 s            | 39 s          |
+| `qwen3-vl:4b` 300     | 39, 39, 39                    | 11             | 6,699 tokens   | 15.0 s            | 42 s          |
+| `qwen3.8:27b-mlx` 100 | 39, 39, 39                    | 12             | 3,709 tokens   | 11.2 s            | 58 s          |
+| `qwen3.8:27b-mlx` 150 | 39, 39, 39                    | 12             | 4,892 tokens   | 17.7 s            | 68 s          |
+| `qwen3.8:27b-mlx` 200 | 39, 39, 39                    | 12             | 6,543 tokens   | 28.2 s            | 82 s          |
+| `qwen3.8:27b-mlx` 300 | 39, 39, 39                    | 12             | 11,327 tokens  | 66.0 s            | 120 s         |
+
+- **Accuracy** didn't improve above 150 dpi for either model. At 100 dpi the
+  large model was still perfect, but the small one misread a value, a range and
+  a flag.
+- **Time** grows with resolution, mostly in reading the input. Each model wrote
+  the same reply at every resolution (about 1,590 and 1,790 tokens).
+- **`qwen3-vl:4b` seems to cap the image**: 300 dpi took barely more input than
+  200. **`qwen3.8:27b-mlx` doesn't**: at 300 dpi a page took 11,327 of the
+  16,384 context tokens and twice as long as at 150 dpi. A longer page's reply
+  could run out of room.
+- The app renders pages at 150 dpi, which fits these results. Scans are kept as
+  the scanner made them, up to 3,508 pixels on the long side (300 dpi A4), so a
+  300 dpi scan costs the large model about twice the time of a 150 dpi one.
+- Clean pages only: noisy scans and photos may need more pixels than these do.
+
 ## Ideas not yet tried
 
 1. **Two steps:** `glm-ocr` transcribes the page, then a small text-only model
@@ -159,3 +190,6 @@ time.
 2. **`qwen3-vl:4b` on smaller machines:** check it actually loads and keeps its
    speed on a 12 GB graphics card and an 8 GB Mac.
 3. Harder pages (phone photos, skew, compression) to separate the large models.
+4. **Real scans at lower resolution:** read the real scans as they are and
+   shrunk to 150 dpi, to see whether a lower limit for scans (now 3,508 pixels)
+   saves time without losing values on noisier pages.
