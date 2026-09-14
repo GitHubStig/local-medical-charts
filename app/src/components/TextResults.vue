@@ -9,12 +9,18 @@ import Icon from "./Icon.vue";
 const props = defineProps<{
   columns: readonly TextColumn[];
   rows: readonly TextRow[];
+  /** The filters in words while they're on but out of sight (Tests is folded); otherwise null. */
+  filteredBy?: string | null;
 }>();
+const emit = defineEmits<{ clear: [] }>();
 
-// "Urinalysis · 6 tests"
+// "Urinalysis · 6 tests", or "… · filtered"
 const summary = computed(() =>
-  [...new Set(props.rows.map((row) => row.group)), plural(props.rows.length, "test")]
-    .join(" · ")
+  [
+    ...new Set(props.rows.map((row) => row.group)),
+    plural(props.rows.length, "test"),
+    props.filteredBy ? "filtered" : null,
+  ].filter(Boolean).join(" · ")
 );
 </script>
 
@@ -25,14 +31,32 @@ const summary = computed(() =>
     >
       <span class="flex items-center gap-2.5">
         <Icon name="chevron-down" class="-rotate-90 text-ink-2 transition-transform group-open/text:rotate-0" />
-        <h3 class="text-[15px] font-semibold">Text results</h3>
+        <h2 class="text-[15px] font-semibold">Text results</h2>
         <span class="text-[13px] text-muted">{{ summary }}</span>
       </span>
       <span class="text-xs text-muted">Results reported as words, not numbers</span>
     </summary>
 
+    <p
+      v-if="filteredBy"
+      class="flex flex-wrap items-center gap-x-2 border-t border-line px-5 py-1 text-[13px] text-ink-2"
+    >
+      Filtered in Tests: {{ filteredBy }}
+      <button
+        type="button"
+        class="min-h-11 rounded-lg px-2 font-medium text-ink underline underline-offset-2"
+        @click="emit('clear')"
+      >
+        Clear filters
+      </button>
+    </p>
+
+    <p v-if="rows.length === 0" class="border-t border-line px-5 py-4 text-sm text-ink-2">
+      No text results match.
+    </p>
+
     <!-- Scrolls sideways once there are more reports than fit. -->
-    <div class="overflow-x-auto border-t border-line">
+    <div v-else class="overflow-x-auto border-t border-line">
       <table class="w-full border-collapse text-left text-sm">
         <thead>
           <tr class="border-b border-line text-xs whitespace-nowrap text-muted">
