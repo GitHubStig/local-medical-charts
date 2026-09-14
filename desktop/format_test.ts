@@ -5,6 +5,7 @@ import {
   dayMonthYear,
   displayName,
   displaySex,
+  formatDuration,
   formatMeasurement,
   initials,
   maskId,
@@ -93,4 +94,11 @@ Deno.test("measurements show their comparator and unit", () => {
     "≥ 90 mL/min/1.73m²",
   );
   assertEquals(formatMeasurement(1.23456, null, null), "1.23");
+});
+
+Deno.test("durations are whole seconds, worded by Intl", () => {
+  assertEquals(formatDuration(124_400), "2 min, 4 sec");
+  assertEquals(formatDuration(9_000), "9 sec");
+  assertEquals(formatDuration(3_723_000), "1 hr, 2 min, 3 sec");
+  assertEquals(formatDuration(200), "0 sec");
 });

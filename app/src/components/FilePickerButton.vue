@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { ACCEPT } from "../lib/uploads.ts";
 
-// A button that opens the webview's file picker for report files. The input is a
+// A button that opens the webview's file picker for reports: PDFs, photos or JSON. The input is a
 // real element in the page, which is what Deno Desktop supports for picking files.
 defineOptions({ inheritAttrs: false });
 defineProps<{ disabled?: boolean }>();
@@ -20,7 +21,7 @@ function onChange() {
   <input
     ref="input"
     type="file"
-    accept=".json,application/json"
+    :accept="ACCEPT"
     multiple
     class="sr-only"
     tabindex="-1"

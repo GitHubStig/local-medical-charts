@@ -2,11 +2,13 @@
 import { useDropZone } from "@vueuse/core";
 import { computed, ref } from "vue";
 import ImportResults from "../components/ImportResults.vue";
+import ImportsPanel from "../components/ImportsPanel.vue";
 import PatientSummary from "../components/PatientSummary.vue";
 import SingleReportNotice from "../components/SingleReportNotice.vue";
 import ReportsSection from "../components/ReportsSection.vue";
 import TestGrid from "../components/TestGrid.vue";
 import TopBar from "../components/TopBar.vue";
+import { useImports } from "../composables/useImports.ts";
 import { useLibrary } from "../composables/useLibrary.ts";
 import { patientOverview } from "../lib/dashboard.ts";
 import Icon from "../components/Icon.vue";
@@ -15,10 +17,10 @@ const {
   selectedPatientId,
   dashboard,
   lastImport,
-  importFiles,
   deleteReport,
   dismissImport,
 } = useLibrary();
+const { addFiles } = useImports();
 
 // Only show a dashboard that belongs to the selected patient, never a stale one
 // while the next is loading.
@@ -40,7 +42,7 @@ function confirmRemove(reportId: number) {
 // More reports can be dropped anywhere on the dashboard, as on the welcome screen.
 const page = ref<HTMLElement | null>(null);
 const { isOverDropZone } = useDropZone(page, {
-  onDrop: (files) => files && importFiles(files),
+  onDrop: (files) => files && addFiles(files),
   preventDefaultForUnhandled: true,
 });
 </script>
@@ -50,6 +52,8 @@ const { isOverDropZone } = useDropZone(page, {
     <TopBar />
 
     <main class="mx-auto flex max-w-[1440px] flex-col gap-7 px-4 pt-8 pb-14 sm:px-10">
+      <ImportsPanel />
+
       <div
         v-if="lastImport"
         role="status"

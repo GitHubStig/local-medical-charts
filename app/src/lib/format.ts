@@ -145,3 +145,32 @@ export function maskId(id: string | null): string | null {
   if (!compact) return null;
   return compact.length <= 4 ? compact : `•••• ${compact.slice(-4)}`;
 }
+
+// Engines have Intl.DurationFormat, but the TypeScript the app is checked with
+// doesn't list it yet.
+const { DurationFormat } = Intl as typeof Intl & {
+  DurationFormat: new (
+    locale: string,
+    options: Record<string, string>,
+  ) => { format(duration: Record<string, number>): string };
+};
+
+const DURATION = new DurationFormat("en", { style: "short" });
+/** Zero units are left out, so a zero duration needs seconds shown on purpose. */
+const ZERO_DURATION = new DurationFormat("en", {
+  style: "short",
+  secondsDisplay: "always",
+});
+
+/**
+ * Time taken, to the second: 124 000 ms → "2 min, 4 sec". Worded by the
+ * engine's Intl.DurationFormat, so it can vary slightly between engines.
+ */
+export function formatDuration(ms: number): string {
+  const total = Math.max(0, Math.round(ms / 1000));
+  return DURATION.format({
+    hours: Math.floor(total / 3600),
+    minutes: Math.floor((total % 3600) / 60),
+    seconds: total % 60,
+  }) || ZERO_DURATION.format({ seconds: 0 });
+}

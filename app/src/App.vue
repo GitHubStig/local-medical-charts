@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import AppLogo from "./components/AppLogo.vue";
+import PhotoOrderDialog from "./components/PhotoOrderDialog.vue";
+import { useImports } from "./composables/useImports.ts";
 import { startLibrary, useLibrary } from "./composables/useLibrary.ts";
 import { useRoute } from "./composables/useRoute.ts";
 import DashboardView from "./views/DashboardView.vue";
@@ -9,6 +11,7 @@ import WelcomeView from "./views/WelcomeView.vue";
 
 const { phase, status, patients, error } = useLibrary();
 const { route } = useRoute();
+const { pendingPhotos, confirmPhotos, cancelPhotos } = useImports();
 
 onMounted(startLibrary);
 </script>
@@ -35,4 +38,11 @@ onMounted(startLibrary);
   <!-- Data already stored goes straight to the dashboard; otherwise, the welcome screen. -->
   <DashboardView v-else-if="patients.length > 0" />
   <WelcomeView v-else />
+
+  <PhotoOrderDialog
+    v-if="phase === 'ready' && pendingPhotos"
+    :photos="pendingPhotos"
+    @confirm="confirmPhotos"
+    @cancel="cancelPhotos"
+  />
 </template>
