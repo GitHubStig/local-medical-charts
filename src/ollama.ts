@@ -106,17 +106,21 @@ async function streamReply(
   }
 
   let content = "";
+  // Some models' Ollama templates (qwen3-vl) put the whole formatted reply in
+  // `thinking`, even with thinking switched off; it's used when content is empty.
+  let thinking = "";
   let doneReason: string | undefined;
   // Ollama streams one JSON object per line.
   const take = (line: string) => {
     if (!line.trim()) return;
     const part = JSON.parse(line) as {
-      message?: { content?: string };
+      message?: { content?: string; thinking?: string };
       done_reason?: string;
       error?: string;
     };
     if (part.error) throw new Error(`Ollama: ${part.error}`);
     content += part.message?.content ?? "";
+    thinking += part.message?.thinking ?? "";
     doneReason = part.done_reason ?? doneReason;
   };
 
@@ -133,7 +137,7 @@ async function streamReply(
         take(buffer.slice(0, nl));
         buffer = buffer.slice(nl + 1);
       }
-      if (++chunks % 25 === 0 && isRepeating(content)) {
+      if (++chunks % 25 === 0 && isRepeating(content || thinking)) {
         stop.abort();
         return { content, seconds: seconds(), stopped: "repeating" };
       }
@@ -146,7 +150,7 @@ async function streamReply(
     throw err;
   }
   return {
-    content,
+    content: content.trim() ? content : thinking,
     seconds: seconds(),
     stopped: doneReason === "length" ? "length" : "done",
   };
