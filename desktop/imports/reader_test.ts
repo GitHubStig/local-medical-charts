@@ -152,3 +152,25 @@ Deno.test("a page that takes too long times out; a cancel is passed through", as
     assert(!(err instanceof ImportError), "a cancel isn't a reading failure");
   });
 });
+
+Deno.test("a model that keeps repeating itself is named, with what to do", async () => {
+  const row = '{"name":"Glucose","value":"5.2"},';
+  await withStandIn(
+    () =>
+      Response.json({
+        message: { content: `{"tests":[${row.repeat(3)}` },
+        done: true,
+        done_reason: "length",
+      }),
+    async (host) => {
+      const reader = await ollamaPageReader(host, "vision:27b");
+      await quietly(async () => {
+        await assertRejects(
+          () => reader.read(image, 3, 4, notCancelled()),
+          ImportError,
+          "vision:27b kept repeating itself on page 3 and was stopped. Try again, or choose another model in Settings.",
+        );
+      });
+    },
+  );
+});
