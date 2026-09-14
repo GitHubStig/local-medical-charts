@@ -8,6 +8,14 @@ import {
 } from "../app/src/lib/import-files.ts";
 import type { ImportOutcome } from "./contract.ts";
 
+/** How the tests' made-up outcomes describe their report: nothing to say. */
+const FILED = {
+  patientName: null,
+  collectedAt: null,
+  providerName: null,
+  resultCount: 0,
+};
+
 // Synthetic files only.
 
 Deno.test("prepareImport reads .json files and answers the rest itself, in order", async () => {
@@ -44,6 +52,7 @@ Deno.test("mergeOutcomes puts the bindings' answers back in picked order", async
       status: "added",
       patientId: 1,
       reportId: 1,
+      summary: FILED,
       warnings: [],
     },
     {
@@ -51,6 +60,7 @@ Deno.test("mergeOutcomes puts the bindings' answers back in picked order", async
       status: "duplicate",
       patientId: 1,
       reportId: 1,
+      summary: FILED,
       warnings: [],
     },
   ];
@@ -71,6 +81,7 @@ Deno.test("summaries count outcomes and warnings", () => {
       status: "added",
       patientId: 1,
       reportId: 1,
+      summary: FILED,
       warnings: ["check the ID"],
     },
     {
@@ -78,6 +89,7 @@ Deno.test("summaries count outcomes and warnings", () => {
       status: "added",
       patientId: 1,
       reportId: 2,
+      summary: FILED,
       warnings: [],
     },
     {
@@ -85,6 +97,7 @@ Deno.test("summaries count outcomes and warnings", () => {
       status: "duplicate",
       patientId: 1,
       reportId: 1,
+      summary: FILED,
       warnings: [],
     },
     { fileName: "d.txt", status: "rejected", error: "no" },

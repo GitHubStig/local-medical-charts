@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import AppLogo from "./components/AppLogo.vue";
+import ImportToast from "./components/ImportToast.vue";
 import PhotoOrderDialog from "./components/PhotoOrderDialog.vue";
 import { useImports } from "./composables/useImports.ts";
 import { startLibrary, useLibrary } from "./composables/useLibrary.ts";
 import { useRoute } from "./composables/useRoute.ts";
 import DashboardView from "./views/DashboardView.vue";
+import ReviewView from "./views/ReviewView.vue";
 import SettingsView from "./views/SettingsView.vue";
 import WelcomeView from "./views/WelcomeView.vue";
 
 const { phase, status, patients, error } = useLibrary();
 const { route } = useRoute();
+const reviewId = computed(() =>
+  route.value.name === "review" ? route.value.importId : null
+);
 const { pendingPhotos, confirmPhotos, cancelPhotos } = useImports();
 
 onMounted(startLibrary);
@@ -34,7 +39,8 @@ onMounted(startLibrary);
     </p>
   </main>
 
-  <SettingsView v-else-if="route === 'settings'" />
+  <SettingsView v-else-if="route.name === 'settings'" />
+  <ReviewView v-else-if="reviewId !== null" :key="reviewId" :import-id="reviewId" />
   <!-- Data already stored goes straight to the dashboard; otherwise, the welcome screen. -->
   <DashboardView v-else-if="patients.length > 0" />
   <WelcomeView v-else />
@@ -45,4 +51,5 @@ onMounted(startLibrary);
     @confirm="confirmPhotos"
     @cancel="cancelPhotos"
   />
+  <ImportToast v-if="phase === 'ready'" />
 </template>

@@ -4,7 +4,7 @@ import { computed, ref } from "vue";
 import AppLogo from "../components/AppLogo.vue";
 import FilePickerButton from "../components/FilePickerButton.vue";
 import Icon from "../components/Icon.vue";
-import ImportResults from "../components/ImportResults.vue";
+import ProgressLine from "../components/ProgressLine.vue";
 import ImportsPanel from "../components/ImportsPanel.vue";
 import SettingsLink from "../components/SettingsLink.vue";
 import ThemeToggle from "../components/ThemeToggle.vue";
@@ -12,7 +12,7 @@ import { useImports } from "../composables/useImports.ts";
 import { useLibrary } from "../composables/useLibrary.ts";
 import { useOcrSettings } from "../composables/useOcrSettings.ts";
 
-const { busy, lastImport, mode } = useLibrary();
+const { busy, mode } = useLibrary();
 const { addFiles, starting } = useImports();
 const { model } = useOcrSettings();
 
@@ -26,9 +26,6 @@ const { isOverDropZone } = useDropZone(page, {
   preventDefaultForUnhandled: true,
 });
 
-// Still on this screen after a JSON import means nothing could be filed.
-const failedImport = computed(() => lastImport.value?.length ? lastImport.value : null);
-
 const FORMATS = ["PDF", "JPG", "PNG", "WebP", "JSON"];
 </script>
 
@@ -37,6 +34,8 @@ const FORMATS = ["PDF", "JPG", "PNG", "WebP", "JSON"];
     ref="page"
     class="relative flex min-h-screen flex-col items-center justify-center px-6 py-16"
   >
+    <ProgressLine class="fixed inset-x-0 top-0 z-30" />
+
     <div class="absolute right-6 top-6 flex items-center gap-3">
       <ThemeToggle />
       <SettingsLink />
@@ -85,14 +84,6 @@ const FORMATS = ["PDF", "JPG", "PNG", "WebP", "JSON"];
       </section>
 
       <ImportsPanel />
-
-      <div
-        v-if="failedImport"
-        role="alert"
-        class="w-full rounded-xl border border-line bg-surface px-5 py-4"
-      >
-        <ImportResults :outcomes="failedImport" />
-      </div>
 
       <div class="flex flex-col items-center gap-3">
         <p class="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-center text-[13px] text-ink-2">

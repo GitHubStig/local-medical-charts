@@ -91,9 +91,12 @@ Deno.test("a saved model stays visible when Ollama doesn't list it, or can't be 
 });
 
 Deno.test("the address fragment picks the screen", () => {
-  assertEquals(parseRoute("#/settings"), "settings");
-  assertEquals(parseRoute("#settings"), "settings");
-  assertEquals(parseRoute(""), "home");
-  assertEquals(parseRoute("#/"), "home");
-  assertEquals(parseRoute("#/settings/more"), "home");
+  assertEquals(parseRoute("#/settings"), { name: "settings" });
+  assertEquals(parseRoute("#settings"), { name: "settings" });
+  assertEquals(parseRoute("#/review/12"), { name: "review", importId: 12 });
+  assertEquals(parseRoute(""), { name: "home" });
+  assertEquals(parseRoute("#/"), { name: "home" });
+  assertEquals(parseRoute("#/settings/more"), { name: "home" });
+  assertEquals(parseRoute("#/review/0"), { name: "home" });
+  assertEquals(parseRoute("#/review/abc"), { name: "home" });
 });

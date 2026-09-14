@@ -8,18 +8,21 @@
  *     implements it too.
  *
  * Arguments and results cross the boundary as JSON: plain objects, arrays,
- * strings, numbers, booleans, null and Uint8Array only — no undefined, Date,
- * Map or class instances. Every binding returns a Promise on both sides.
+ * strings, numbers, booleans and null — no undefined, Date, Map or class
+ * instances. A Uint8Array crosses intact as an argument of its own or in a
+ * result, but not nested inside an argument object, where it arrives as a plain
+ * object. Every binding returns a Promise on both sides.
  */
 import type { ReportWithoutPages } from "./report-data.ts";
 import type { ChartLibrary, Settings, Theme } from "./settings.ts";
 import type {
+  FiledReport,
+  ImportFileInfo,
+  ImportFiling,
   ImportJob,
   ImportPage,
   ImportStart,
   ImportStatus,
-  ImportUpload,
-  ImportUploadFile,
   OcrCheck,
   OcrModel,
   OcrModelList,
@@ -32,12 +35,13 @@ import type {
 
 export type {
   ChartLibrary,
+  FiledReport,
+  ImportFileInfo,
+  ImportFiling,
   ImportJob,
   ImportPage,
   ImportStart,
   ImportStatus,
-  ImportUpload,
-  ImportUploadFile,
   OcrCheck,
   OcrModel,
   OcrModelList,
@@ -85,11 +89,16 @@ export type ImportOutcome =
     reportId: number;
     /** e.g. the ID number matched a patient with a different name. */
     warnings: string[];
+    summary: FiledReport;
   }
   | { fileName: string; status: "rejected"; error: string };
 
 /** A read import, for a person to check before it's saved. */
-export type ImportReview = { job: ImportJob; report: ReportWithoutPages };
+export type ImportReview = {
+  job: ImportJob;
+  report: ReportWithoutPages;
+  filing: ImportFiling;
+};
 
 export type DesktopBindings = {
   /** Whether the database opened, and what the launch upgrade changed. */
@@ -113,11 +122,12 @@ export type DesktopBindings = {
    */
   testOcr(): Promise<OcrTest>;
   /**
-   * Starts reading PDFs or photos into reports, one upload per report, with the
-   * saved model. Each upload gets its own outcome. Reading carries on in the
-   * background, one import at a time: poll listImports to follow it.
+   * Starts reading one report, a PDF or photos of its pages in order, with the
+   * saved model. `bytes` holds every file's bytes back to back, in the order and
+   * sizes `files` lists (see desktop/imports/packed-files.ts). Reading carries on
+   * in the background, one import at a time: poll listImports to follow it.
    */
-  startImports(uploads: ImportUpload[]): Promise<ImportStart[]>;
+  startImport(files: ImportFileInfo[], bytes: Uint8Array): Promise<ImportStart>;
   /** Imports in the order added, until each is saved or discarded. */
   listImports(): Promise<ImportJob[]>;
   /** Stops a waiting or reading import, keeping pages already read. Null if there's no such import. */

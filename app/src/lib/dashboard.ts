@@ -101,7 +101,7 @@ export function reportRow(entry: DashboardReport): ReportRow {
   };
 }
 
-const DATE_LABELS = {
+export const DATE_LABELS = {
   collected: "Collected",
   received: "Received",
   requested: "Requested",

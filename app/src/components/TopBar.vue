@@ -5,6 +5,7 @@ import AppLogo from "./AppLogo.vue";
 import ChartLibraryToggle from "./ChartLibraryToggle.vue";
 import FilePickerButton from "./FilePickerButton.vue";
 import PatientPicker from "./PatientPicker.vue";
+import ProgressLine from "./ProgressLine.vue";
 import SettingsLink from "./SettingsLink.vue";
 import ThemeToggle from "./ThemeToggle.vue";
 import Icon from "./Icon.vue";
@@ -23,7 +24,7 @@ const { addFiles, starting } = useImports();
     of the screen, so there it scrolls away with the page.
   -->
   <header
-    class="z-20 flex min-h-18 flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-line bg-surface px-4 py-3.5 sm:px-10 md:sticky md:top-0"
+    class="relative z-20 flex min-h-18 flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-line bg-surface px-4 py-3.5 sm:px-10 md:sticky md:top-0"
   >
     <div class="flex min-w-0 items-center gap-5">
       <div class="flex items-center gap-2.5">
@@ -50,9 +51,11 @@ const { addFiles, starting } = useImports();
         @files="addFiles"
       >
         <Icon name="plus" />
-        <span class="max-lg:sr-only">Add reports</span>
+        <span class="max-lg:sr-only">{{ busy || starting ? "Adding…" : "Add reports" }}</span>
       </FilePickerButton>
       <SettingsLink :active="active === 'settings'" />
     </div>
+
+    <ProgressLine class="absolute inset-x-0 -bottom-px" />
   </header>
 </template>

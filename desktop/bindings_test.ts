@@ -7,6 +7,7 @@ import {
 import type { DesktopBindings, ImportJob, StartupStatus } from "./contract.ts";
 import type { PageReader } from "./imports/reader.ts";
 import type { OllamaService } from "./ocr/ollama.ts";
+import { packFiles } from "./imports/packed-files.ts";
 import { simplePdf } from "./ocr/simple-pdf.ts";
 import { defineContractTests } from "./contract_suite.ts";
 import { ReportStore } from "./store/store.ts";
@@ -185,9 +186,8 @@ Deno.test("real bindings: a PDF is read with the saved model, reviewed, then sav
   });
   try {
     await b.updateSettings({ ocrModel: "vision:27b" });
-    const [start] = await b.startImports([{
-      files: [{ name: "example-lab.pdf", bytes: examplePdf() }],
-    }]);
+    const pdf = packFiles([{ name: "example-lab.pdf", bytes: examplePdf() }]);
+    const start = await b.startImport(pdf.files, pdf.bytes);
     assert(start.ok);
 
     const [job] = await settledImports(b);
@@ -228,9 +228,8 @@ Deno.test("real bindings: without a model, an import fails and says where to cho
     pageReader: standInPageReader(opened),
   });
   try {
-    await b.startImports([{
-      files: [{ name: "example-lab.pdf", bytes: examplePdf() }],
-    }]);
+    const pdf = packFiles([{ name: "example-lab.pdf", bytes: examplePdf() }]);
+    await b.startImport(pdf.files, pdf.bytes);
     const [job] = await settledImports(b);
     assertEquals(job.status, "failed");
     assertEquals(
@@ -251,33 +250,43 @@ Deno.test("real bindings: without a model, an import fails and says where to cho
   }
 });
 
-Deno.test("real bindings: uploads that can't be read are refused one by one", async () => {
+Deno.test("real bindings: uploads are checked, and files that can't be read are refused in words", async () => {
   const { bindings: b, close } = realBindings();
   try {
-    const outcomes = await b.startImports([
-      { files: [{ name: "notes.txt", bytes: new TextEncoder().encode("hi") }] },
-      { files: [{ name: "example-lab.pdf", bytes: examplePdf() }] },
+    const notes = packFiles([
+      { name: "notes.txt", bytes: new TextEncoder().encode("hi") },
     ]);
-    assertEquals(outcomes.map((o) => o.ok), [false, true]);
+    const refused = await b.startImport(notes.files, notes.bytes);
     assert(
-      !outcomes[0].ok &&
-        outcomes[0].error === "notes.txt isn't a PDF, JPG, PNG or WebP file.",
+      !refused.ok &&
+        refused.error === "notes.txt isn't a PDF, JPG, PNG or WebP file.",
     );
 
+    // What a Uint8Array nested inside an object arrives as from the desktop page.
     await assertRejects(
       () =>
-        b.startImports(
-          [{ files: [{ name: "a.pdf", bytes: "nope" }] }] as never,
+        b.startImport(
+          [{ name: "a.pdf", size: 3 }],
+          { 0: 37, 1: 80, 2: 68 } as never,
         ),
       BindingError,
-      "{ files: [{ name, bytes }] }",
+      "bytes must be a Uint8Array",
+    );
+    await assertRejects(
+      () => b.startImport([{ name: "a.pdf" }] as never, new Uint8Array(3)),
+      BindingError,
+      "{ name, size }",
+    );
+    await assertRejects(
+      () => b.startImport([{ name: "a.pdf", size: 5 }], new Uint8Array(3)),
+      BindingError,
+      "add up to 5 bytes",
     );
     await assertRejects(
       () => b.getImportPage(1, 0),
       BindingError,
       "page must be a positive integer",
     );
-    await b.discardImport(2);
   } finally {
     close();
   }

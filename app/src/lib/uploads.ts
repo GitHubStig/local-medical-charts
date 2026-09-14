@@ -6,7 +6,7 @@
  *
  * Only File and Intl, so Deno tests can cover it.
  */
-import type { ImportUploadFile } from "../../../desktop/contract.ts";
+import { packFiles } from "../../../desktop/imports/packed-files.ts";
 
 /** For the file picker: report JSON, PDFs and the photo types Ollama reads. */
 export const ACCEPT = [
@@ -113,6 +113,12 @@ export function moveItem<T>(
   return copy;
 }
 
-export async function readUpload(file: File): Promise<ImportUploadFile> {
-  return { name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) };
+/** One upload's files as the startImport binding takes them: names and sizes, and the bytes. */
+export async function packUpload(files: readonly File[]) {
+  return packFiles(
+    await Promise.all(files.map(async (file) => ({
+      name: file.name,
+      bytes: new Uint8Array(await file.arrayBuffer()),
+    }))),
+  );
 }

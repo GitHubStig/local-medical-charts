@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useDropZone } from "@vueuse/core";
 import { computed, ref } from "vue";
-import ImportResults from "../components/ImportResults.vue";
 import ImportsPanel from "../components/ImportsPanel.vue";
 import PatientSummary from "../components/PatientSummary.vue";
 import SingleReportNotice from "../components/SingleReportNotice.vue";
@@ -11,14 +10,11 @@ import TopBar from "../components/TopBar.vue";
 import { useImports } from "../composables/useImports.ts";
 import { useLibrary } from "../composables/useLibrary.ts";
 import { patientOverview } from "../lib/dashboard.ts";
-import Icon from "../components/Icon.vue";
 
 const {
   selectedPatientId,
   dashboard,
-  lastImport,
   deleteReport,
-  dismissImport,
 } = useLibrary();
 const { addFiles } = useImports();
 
@@ -53,22 +49,6 @@ const { isOverDropZone } = useDropZone(page, {
 
     <main class="mx-auto flex max-w-[1440px] flex-col gap-7 px-4 pt-8 pb-14 sm:px-10">
       <ImportsPanel />
-
-      <div
-        v-if="lastImport"
-        role="status"
-        class="flex items-start justify-between gap-4 rounded-xl border border-line bg-surface px-5 py-4"
-      >
-        <ImportResults :outcomes="lastImport" />
-        <button
-          type="button"
-          class="-mt-2 -mr-2 flex size-11 shrink-0 items-center justify-center rounded-lg text-ink-2 hover:text-ink"
-          aria-label="Dismiss import results"
-          @click="dismissImport"
-        >
-          <Icon name="close" />
-        </button>
-      </div>
 
       <template v-if="current && overview">
         <PatientSummary :key="`summary-${current.patient.id}`" :overview="overview" />

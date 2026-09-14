@@ -60,6 +60,16 @@ export type AddReportResult = {
   patientId: number;
   /** Things worth a second look about how the report was filed. Empty for duplicates. */
   warnings: string[];
+  summary: FiledReport;
+};
+
+/** A stored report in a few words, for telling someone what they added. */
+export type FiledReport = {
+  /** As the report prints it. */
+  patientName: string | null;
+  collectedAt: string | null;
+  providerName: string | null;
+  resultCount: number;
 };
 
 export type UpgradeSummary = {
@@ -87,11 +97,11 @@ export type OcrCheckStep = "reachable" | "installed" | "reads-images";
 /** One step of Test connection. Steps after a failed one aren't run. */
 export type OcrCheck = { step: OcrCheckStep; ok: boolean; message: string };
 
-/** One file of an upload, as the page read it from disk. */
-export type ImportUploadFile = { name: string; bytes: Uint8Array };
-
-/** Files that make up one report: a single PDF, or photos of its pages in order. */
-export type ImportUpload = { files: ImportUploadFile[] };
+/**
+ * One file of an upload: a report's single PDF, or one of the photos of its
+ * pages. The bytes travel separately (see desktop/imports/packed-files.ts).
+ */
+export type ImportFileInfo = { name: string; size: number };
 
 /**
  * Where an import is. One import reads at a time; the others wait their turn.
@@ -131,6 +141,24 @@ export type ImportJob = {
 export type ImportStart =
   | { ok: true; job: ImportJob }
   | { ok: false; fileNames: string[]; error: string };
+
+/** Where a read report would be filed, worked out before it's saved. */
+export type ImportFiling = {
+  /** The patient it would go under; null when it has no ID number, or name and date of birth, to file it by. */
+  patient:
+    | {
+      kind: "existing";
+      id: number;
+      name: string | null;
+      matchedBy: "id-number" | "name-and-birth-date";
+    }
+    | { kind: "new"; name: string | null }
+    | null;
+  /** What saving would warn about, e.g. an ID number matching a patient with another name. */
+  warnings: string[];
+  /** A saved report for the same patient, lab and collection time: most likely this report again. */
+  similarReport: { id: number; fileName: string } | null;
+};
 
 /** A page image of an import, for showing beside its results. */
 export type ImportPage = {

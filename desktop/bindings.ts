@@ -6,11 +6,13 @@ import type { CatalogIndex } from "../src/catalog.ts";
 import type {
   DesktopBindings,
   ImportFile,
+  ImportFileInfo,
   ImportOutcome,
-  ImportUpload,
+  ImportStart,
   StartupStatus,
 } from "./contract.ts";
 import { ImportError, importMessages } from "./imports/messages.ts";
+import { type NamedBytes, unpackFiles } from "./imports/packed-files.ts";
 import { ImportQueue } from "./imports/queue.ts";
 import type { PageReader } from "./imports/reader.ts";
 import { pagesFromUpload } from "./imports/sources.ts";
@@ -43,22 +45,26 @@ function requireFiles(value: unknown): ImportFile[] {
   return value as ImportFile[];
 }
 
-function requireUploads(value: unknown): ImportUpload[] {
-  const valid = Array.isArray(value) &&
-    value.every((u) =>
-      u !== null && typeof u === "object" &&
-      Array.isArray((u as ImportUpload).files) &&
-      (u as ImportUpload).files.every((f) =>
-        f !== null && typeof f === "object" && typeof f.name === "string" &&
-        f.bytes instanceof Uint8Array
-      )
+/** An upload's files, checked and unpacked from their names, sizes and bytes. */
+function requireUpload(files: unknown, bytes: unknown): NamedBytes[] {
+  const listed = Array.isArray(files) &&
+    files.every((f) =>
+      f !== null && typeof f === "object" &&
+      typeof (f as ImportFileInfo).name === "string" &&
+      Number.isSafeInteger((f as ImportFileInfo).size) &&
+      (f as ImportFileInfo).size >= 0
     );
-  if (!valid) {
+  if (!listed) throw new BindingError("files must be a list of { name, size }");
+  if (!(bytes instanceof Uint8Array)) {
     throw new BindingError(
-      "uploads must be a list of { files: [{ name, bytes }] }",
+      "bytes must be a Uint8Array, passed as an argument of its own",
     );
   }
-  return value as ImportUpload[];
+  try {
+    return unpackFiles(files as ImportFileInfo[], bytes);
+  } catch (err) {
+    throw new BindingError(err instanceof Error ? err.message : String(err));
+  }
 }
 
 /**
@@ -161,23 +167,22 @@ export function createBindings(deps: {
         ollama.test(s.ollamaHost, s.ocrModel)
       ),
 
-    startImports: (uploads) =>
-      settle(() =>
-        requireUploads(uploads).map(({ files }) => {
-          try {
-            return { ok: true as const, job: imports.add(files) };
-          } catch (err) {
-            if (err instanceof ImportError) {
-              return {
-                ok: false as const,
-                fileNames: files.map((f) => f.name),
-                error: err.message,
-              };
-            }
-            throw err;
+    startImport: (files, bytes) =>
+      settle((): ImportStart => {
+        const upload = requireUpload(files, bytes);
+        try {
+          return { ok: true, job: imports.add(upload) };
+        } catch (err) {
+          if (err instanceof ImportError) {
+            return {
+              ok: false,
+              fileNames: upload.map((f) => f.name),
+              error: err.message,
+            };
           }
-        })
-      ),
+          throw err;
+        }
+      }),
 
     listImports: () => settle(() => imports.list()),
 
@@ -193,8 +198,11 @@ export function createBindings(deps: {
     getImportReview: (importId) =>
       settle(() => {
         const review = imports.review(requireId(importId, "importId"));
-        return review &&
-          { job: review.job, report: withoutPages(review.report) };
+        return review && {
+          job: review.job,
+          report: withoutPages(review.report),
+          filing: store.previewFiling(review.report),
+        };
       }),
 
     getImportPage: (importId, page) =>
@@ -250,7 +258,7 @@ export function unavailableBindings(
     updateSettings: fail,
     listOcrModels: fail,
     testOcr: fail,
-    startImports: fail,
+    startImport: fail,
     listImports: fail,
     cancelImport: fail,
     retryImport: fail,

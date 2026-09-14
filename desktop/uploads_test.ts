@@ -1,10 +1,11 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
+import { unpackFiles } from "./imports/packed-files.ts";
 import {
   MAX_UPLOAD_BYTES,
   moveItem,
+  packUpload,
   photoGroups,
   planUploads,
-  readUpload,
 } from "../app/src/lib/uploads.ts";
 
 // Made-up file names and contents only.
@@ -65,9 +66,22 @@ Deno.test("moving a photo stops at either end", () => {
   assertEquals(moveItem(["a", "b", "c"], 2, 1), ["a", "b", "c"]);
 });
 
-Deno.test("an upload carries the file's bytes", async () => {
-  const upload = await readUpload(
+Deno.test("an upload is packed as names and sizes, with the bytes back to back", async () => {
+  const packed = await packUpload([
     new File([new Uint8Array([1, 2, 3])], "a.png"),
+    new File([new Uint8Array([4, 5])], "b.png"),
+  ]);
+  assertEquals(packed, {
+    files: [{ name: "a.png", size: 3 }, { name: "b.png", size: 2 }],
+    bytes: new Uint8Array([1, 2, 3, 4, 5]),
+  });
+  assertEquals(unpackFiles(packed.files, packed.bytes), [
+    { name: "a.png", bytes: new Uint8Array([1, 2, 3]) },
+    { name: "b.png", bytes: new Uint8Array([4, 5]) },
+  ]);
+  assertThrows(
+    () => unpackFiles([{ name: "a.png", size: 9 }], packed.bytes),
+    RangeError,
+    "the file sizes add up to 9 bytes, but 5 bytes arrived",
   );
-  assertEquals(upload, { name: "a.png", bytes: new Uint8Array([1, 2, 3]) });
 });

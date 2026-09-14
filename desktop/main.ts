@@ -83,7 +83,7 @@ win.bind("getSettings", bindings.getSettings);
 win.bind("updateSettings", bindings.updateSettings);
 win.bind("listOcrModels", bindings.listOcrModels);
 win.bind("testOcr", bindings.testOcr);
-win.bind("startImports", bindings.startImports);
+win.bind("startImport", bindings.startImport);
 win.bind("listImports", bindings.listImports);
 win.bind("cancelImport", bindings.cancelImport);
 win.bind("retryImport", bindings.retryImport);

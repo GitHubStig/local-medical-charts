@@ -35,11 +35,16 @@ import {
 import { ocrMessages } from "../../../desktop/ocr/messages.ts";
 import { sniffType } from "../../../desktop/imports/file-types.ts";
 import { importMessages } from "../../../desktop/imports/messages.ts";
+import {
+  type NamedBytes,
+  unpackFiles,
+} from "../../../desktop/imports/packed-files.ts";
 import type {
+  FiledReport,
+  ImportFiling,
   ImportJob,
   ImportPage,
   ImportStart,
-  ImportUpload,
   OcrModel,
   OcrTest,
 } from "../../../desktop/contract.ts";
@@ -152,7 +157,7 @@ const PRETEND_READING = SAMPLE_REPORTS.find((r) =>
 )!;
 
 /** Why an upload can't be read, in the desktop's words; null when it can. */
-function uploadFilesProblem(files: ImportUpload["files"]): string | null {
+function uploadFilesProblem(files: NamedBytes[]): string | null {
   if (files.length === 0) return importMessages.empty();
   for (const file of files) {
     if (!sniffType(file.bytes)) return importMessages.unsupported(file.name);
@@ -161,6 +166,16 @@ function uploadFilesProblem(files: ImportUpload["files"]): string | null {
   return pdf && files.length > 1
     ? importMessages.pdfWithOthers(pdf.name)
     : null;
+}
+
+/** A report in a few words, as the store describes one it filed. */
+function filed(report: Report): FiledReport {
+  return {
+    patientName: report.patient.name,
+    collectedAt: report.collectedAt,
+    providerName: report.provider.name,
+    resultCount: report.tests.length,
+  };
 }
 
 /** Page objects counted in a PDF's text: enough for pretending. At least one. */
@@ -276,33 +291,21 @@ export function createFakeBindings(
         patientId: duplicate.patientId,
         reportId: duplicate.id,
         warnings: [],
+        summary: filed(duplicate.report),
       };
     }
 
-    const identity = patientIdentity(report.patient);
-    if (!identity) {
+    const filing = filingFor(report);
+    if (!filing.identity) {
       return rejected(
         `${file.name}: the report has no patient ID number, or name and date of birth, to file it under`,
       );
     }
-    const incoming = {
-      name: report.patient.name,
-      dateOfBirth: report.patient.dateOfBirthIso,
-    };
-    const warnings: string[] = [];
-    let patientId = patientIds.get(identity);
-    if (patientId !== undefined) {
-      const known = summary(patientId);
-      if (known && identity.startsWith("id:")) {
-        warnings.push(...idMatchWarnings(known, incoming));
-      }
-    } else {
-      const lookalike = [...patientIds.values()]
-        .map(summary)
-        .some((p) => p && sameNameAndBirthDate(incoming, p));
-      if (lookalike) warnings.push(sameNameDifferentIdWarning(incoming.name));
+    const { warnings } = filing;
+    let patientId = filing.patientId;
+    if (patientId === undefined) {
       patientId = nextPatientId++;
-      patientIds.set(identity, patientId);
+      patientIds.set(filing.identity, patientId);
     }
 
     const id = nextReportId++;
@@ -320,6 +323,65 @@ export function createFakeBindings(
       patientId,
       reportId: id,
       warnings,
+      summary: filed(report),
+    };
+  }
+
+  /** Who a report's identity already belongs to, and what saving it would warn about. */
+  function filingFor(report: Report) {
+    const identity = patientIdentity(report.patient);
+    const warnings: string[] = [];
+    if (!identity) return { identity, patientId: undefined, warnings };
+    const incoming = {
+      name: report.patient.name,
+      dateOfBirth: report.patient.dateOfBirthIso,
+    };
+    const patientId = patientIds.get(identity);
+    if (patientId !== undefined) {
+      const known = summary(patientId);
+      if (known && identity.startsWith("id:")) {
+        warnings.push(...idMatchWarnings(known, incoming));
+      }
+    } else {
+      const lookalike = [...patientIds.values()]
+        .map(summary)
+        .some((p) => p && sameNameAndBirthDate(incoming, p));
+      if (lookalike) warnings.push(sameNameDifferentIdWarning(incoming.name));
+    }
+    return { identity, patientId, warnings };
+  }
+
+  function previewFiling(report: Report): ImportFiling {
+    const { identity, patientId, warnings } = filingFor(report);
+    if (!identity) return { patient: null, warnings, similarReport: null };
+    const known = patientId === undefined ? null : summary(patientId);
+    if (patientId === undefined || !known) {
+      return {
+        patient: { kind: "new", name: report.patient.name },
+        warnings,
+        similarReport: null,
+      };
+    }
+    const similar = report.collectedAt
+      ? reports.find((r) =>
+        r.patientId === patientId &&
+        r.report.collectedAt === report.collectedAt &&
+        r.report.provider.name === report.provider.name
+      )
+      : undefined;
+    return {
+      patient: {
+        kind: "existing",
+        id: patientId,
+        name: known.name,
+        matchedBy: identity.startsWith("id:")
+          ? "id-number"
+          : "name-and-birth-date",
+      },
+      warnings,
+      similarReport: similar
+        ? { id: similar.id, fileName: similar.fileName }
+        : null,
     };
   }
 
@@ -521,44 +583,43 @@ export function createFakeBindings(
     testOcr: () =>
       settle(() => fakeOcrTest(settings.ollamaHost, settings.ocrModel)),
 
-    startImports: (uploads) =>
-      settle(() =>
-        uploads.map((upload): ImportStart => {
-          const fileNames = upload.files.map((f) => f.name);
-          const problem = uploadFilesProblem(upload.files);
-          if (problem) return { ok: false, fileNames, error: problem };
-          const pdf = upload.files.find((f) =>
-            sniffType(f.bytes) === "application/pdf"
-          );
-          const item: FakeImport = {
-            job: {
-              id: nextImportId++,
-              fileNames,
-              source: pdf ? "pdf" : "photos",
-              pageCount: pdf ? countPdfPages(pdf.bytes) : upload.files.length,
-              pagesRead: 0,
-              status: "waiting",
-              model: null,
-              addedAt: now().toISOString(),
-              startedAt: null,
-              finishedAt: null,
-              error: null,
-              resultCount: null,
-            },
-            // A PDF can't be drawn without mupdf, so only photos have page images here.
-            pages: pdf ? [] : upload.files.map((f) => ({
-              name: f.name,
-              type: sniffType(f.bytes) as ImportPage["type"],
-              bytes: f.bytes,
-              origin: "photo" as const,
-            })),
-            report: null,
-          };
-          imports.push(item);
-          pumpImports();
-          return { ok: true, job: snapshot(item) };
-        })
-      ),
+    startImport: (files, bytes) =>
+      settle((): ImportStart => {
+        const upload = unpackFiles(files, bytes);
+        const fileNames = upload.map((f) => f.name);
+        const problem = uploadFilesProblem(upload);
+        if (problem) return { ok: false, fileNames, error: problem };
+        const pdf = upload.find((f) =>
+          sniffType(f.bytes) === "application/pdf"
+        );
+        const item: FakeImport = {
+          job: {
+            id: nextImportId++,
+            fileNames,
+            source: pdf ? "pdf" : "photos",
+            pageCount: pdf ? countPdfPages(pdf.bytes) : upload.length,
+            pagesRead: 0,
+            status: "waiting",
+            model: null,
+            addedAt: now().toISOString(),
+            startedAt: null,
+            finishedAt: null,
+            error: null,
+            resultCount: null,
+          },
+          // A PDF can't be drawn without mupdf, so only photos have page images here.
+          pages: pdf ? [] : upload.map((f) => ({
+            name: f.name,
+            type: sniffType(f.bytes) as ImportPage["type"],
+            bytes: f.bytes,
+            origin: "photo" as const,
+          })),
+          report: null,
+        };
+        imports.push(item);
+        pumpImports();
+        return { ok: true, job: snapshot(item) };
+      }),
 
     listImports: () => settle(() => imports.map(snapshot)),
 
@@ -603,7 +664,11 @@ export function createFakeBindings(
       settle(() => {
         const item = findImport(importId);
         return item?.job.status === "ready" && item.report
-          ? { job: snapshot(item), report: withoutPages(item.report) }
+          ? {
+            job: snapshot(item),
+            report: withoutPages(item.report),
+            filing: previewFiling(item.report),
+          }
           : null;
       }),
 
