@@ -122,3 +122,21 @@ Deno.test("tests the catalog doesn't know get their own group, by printed name",
     ["Mystery Marker", "mmol/L", "4.2", "1 – 5"],
   );
 });
+
+Deno.test("with a single report, cards say a trend needs another report and show the reading's date", async () => {
+  const b = createFakeBindings({ reports: SAMPLE_REPORTS });
+  const sam = (await b.listPatients()).find((p) => p.name === "SAM RIVERA")!;
+  const hb = card(
+    buildTestGrid((await b.getDashboard(sam.id))!),
+    "haemoglobin",
+  );
+  assertEquals([hb.change, hb.note, hb.span], [
+    null,
+    "1 result — add another report to see a trend",
+    "7 Aug 2026",
+  ]);
+
+  // With several reports, the note is the change.
+  const alex = card(buildTestGrid(await alexDashboard()), "haemoglobin");
+  assertEquals(alex.note, "+0.6 since Oct 2025");
+});

@@ -4,6 +4,9 @@ import { CHART_LIBRARIES } from "../../../desktop/settings.ts";
 import { useChartLibrary } from "../composables/useChartLibrary.ts";
 import { CHART_BACKENDS } from "../lib/charts/backends.ts";
 
+/** `compact` hides the "Chart library" label on narrower windows (screen readers still hear it). */
+defineProps<{ compact?: boolean }>();
+
 const { chartLibrary, setChartLibrary } = useChartLibrary();
 // Unique per copy: the switcher appears in the top bar and in the zoomed view.
 const labelId = useId();
@@ -12,7 +15,11 @@ const labelId = useId();
 <template>
   <!-- Wraps the label above the options, and scrolls the options, when space is short. -->
   <div class="flex max-w-full min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1.5">
-    <span :id="labelId" class="text-xs whitespace-nowrap text-muted">Chart library</span>
+    <span
+      :id="labelId"
+      class="text-xs whitespace-nowrap text-muted"
+      :class="{ 'max-xl:sr-only': compact }"
+    >Chart library</span>
     <div
       role="radiogroup"
       :aria-labelledby="labelId"

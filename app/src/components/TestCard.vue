@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Series } from "../lib/series.ts";
 import type { TestCardData } from "../lib/test-grid.ts";
-import { plural } from "../lib/format.ts";
 import { FLAGS } from "../lib/flags.ts";
 import FlagPill from "./FlagPill.vue";
 import TestChart from "./TestChart.vue";
@@ -40,7 +39,7 @@ const emit = defineEmits<{ open: [] }>();
     <div class="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
       <span class="text-[26px] leading-none font-semibold">{{ card.latest.display }}</span>
       <span class="text-xs text-ink-2">
-        {{ card.change ?? plural(card.readingCount, "result") }}
+        {{ card.note }}
       </span>
     </div>
 

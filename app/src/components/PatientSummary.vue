@@ -35,7 +35,8 @@ const revealed = ref(false);
     </div>
 
     <div v-if="overview.latest" class="flex items-center gap-2.5 text-[13px] text-ink-2">
-      <span v-if="overview.latest.date">Latest report {{ overview.latest.date }}</span>
+      <!-- With one report, its date is already in the line on the left. -->
+      <span v-if="overview.latest.date && !overview.singleReport">Latest report {{ overview.latest.date }}</span>
       <FlagPill
         v-if="overview.latest.flagged"
         :label="`${overview.latest.flagged} flagged`"
