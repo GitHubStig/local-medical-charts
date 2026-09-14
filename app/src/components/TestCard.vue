@@ -7,16 +7,27 @@ import FlagPill from "./FlagPill.vue";
 import TestChart from "./TestChart.vue";
 
 defineProps<{ card: TestCardData; series?: Series }>();
+const emit = defineEmits<{ open: [] }>();
 </script>
 
 <template>
+  <!-- The whole card opens the zoomed view; the name is the keyboard and screen reader way in. -->
   <article
-    class="flex flex-col gap-2.5 rounded-[10px] border border-line bg-surface p-4"
+    class="flex cursor-pointer flex-col gap-2.5 rounded-[10px] border border-line bg-surface p-4 transition-colors hover:border-line-strong"
     :aria-label="card.name"
+    @click="emit('open')"
   >
     <div class="flex items-start justify-between gap-2">
       <div class="flex min-w-0 flex-col gap-0.5">
-        <h4 class="truncate text-sm font-semibold">{{ card.name }}</h4>
+        <h4 class="truncate text-sm font-semibold">
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            class="max-w-full truncate rounded-sm text-left"
+          >
+            {{ card.name }}
+          </button>
+        </h4>
         <span class="text-xs text-muted">{{ card.unit ?? "No unit" }}</span>
       </div>
       <FlagPill

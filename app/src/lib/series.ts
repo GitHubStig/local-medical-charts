@@ -59,6 +59,8 @@ export type Series = {
   key: string;
   name: string;
   group: GridGroupName;
+  /** "blood", "urine", …; null when neither the catalog nor the report says. */
+  specimen: string | null;
   unit: string | null;
   /** Oldest first. */
   points: SeriesPoint[];
@@ -191,6 +193,7 @@ function buildOne(
     key,
     name,
     group,
+    specimen: info?.specimen ?? latest.specimen,
     unit,
     points,
     bands: domain ? steppedBands(points, limits, domain.x) : [],

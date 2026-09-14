@@ -107,4 +107,9 @@
   button:disabled {
     cursor: not-allowed;
   }
+
+  /* The page behind an open modal dialog doesn't scroll. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
 }

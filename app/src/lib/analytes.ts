@@ -10,6 +10,7 @@ import { unitKey } from "../../../src/units.ts";
 export type AnalyteInfo = {
   id: string;
   name: string;
+  specimen: string;
   group: AnalyteGroup;
   /** Standard unit; "" when dimensionless. */
   unit: string;
@@ -24,6 +25,7 @@ export const ANALYTES: ReadonlyMap<string, AnalyteInfo> = new Map(
   catalog.analytes.map((a, order) => [a.id, {
     id: a.id,
     name: a.name,
+    specimen: a.specimen,
     group: a.group as AnalyteGroup,
     unit: a.unit,
     aliases: a.aliases,

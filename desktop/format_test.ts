@@ -5,6 +5,7 @@ import {
   dayMonthYear,
   displayName,
   displaySex,
+  formatMeasurement,
   initials,
   maskId,
   monthSpan,
@@ -82,4 +83,14 @@ Deno.test("sex and ID numbers are shown tidily", () => {
   assertEquals(maskId("X1234567"), "•••• 4567");
   assertEquals(maskId("AB12"), "AB12");
   assertEquals(maskId(null), null);
+});
+
+Deno.test("measurements show their comparator and unit", () => {
+  assertEquals(formatMeasurement(47, null, "U/L"), "47 U/L");
+  assertEquals(formatMeasurement(5, "<", "U/L"), "< 5 U/L");
+  assertEquals(
+    formatMeasurement(90, ">=", "mL/min/1.73m²"),
+    "≥ 90 mL/min/1.73m²",
+  );
+  assertEquals(formatMeasurement(1.23456, null, null), "1.23");
 });

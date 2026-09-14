@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import type { Dashboard } from "../../../desktop/contract.ts";
 import { plural } from "../lib/format.ts";
 import { buildSeries } from "../lib/series.ts";
+import { testDetail } from "../lib/test-detail.ts";
 import { buildTestGrid, filterTestGrid } from "../lib/test-grid.ts";
 import { buildTextResults, filterTextRows } from "../lib/text-results.ts";
 import { useTestFilters } from "../composables/useTestFilters.ts";
 import TestCard from "./TestCard.vue";
+import TestDetail from "./TestDetail.vue";
 import TextResults from "./TextResults.vue";
 import Icon from "./Icon.vue";
 
@@ -30,6 +32,15 @@ const shownRows = computed(() =>
     flaggedOnly: flaggedOnly.value,
   })
 );
+// The test shown in the zoomed view, by its card's key.
+const openKey = ref<string | null>(null);
+const openSeries = computed(() =>
+  openKey.value ? series.value.get(openKey.value) ?? null : null
+);
+const openDetail = computed(() =>
+  openSeries.value ? testDetail(openSeries.value, props.dashboard.reports) : null
+);
+
 const totalCards = computed(() =>
   grid.value.groups.reduce((n, g) => n + g.cards.length, 0)
 );
@@ -109,10 +120,19 @@ const totalCards = computed(() =>
           :key="card.key"
           :card="card"
           :series="series.get(card.key)"
+          @open="openKey = card.key"
         />
       </div>
     </section>
 
     <TextResults v-if="shownRows.length" :columns="text.columns" :rows="shownRows" />
+
+    <TestDetail
+      v-if="openSeries && openDetail"
+      :key="openKey ?? ''"
+      :series="openSeries"
+      :detail="openDetail"
+      @close="openKey = null"
+    />
   </section>
 </template>

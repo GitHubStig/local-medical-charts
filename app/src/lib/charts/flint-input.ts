@@ -6,7 +6,7 @@
  */
 import type { ChartAssemblyInput } from "flint-chart/core";
 import { FLAGS } from "../flags.ts";
-import { dayMonthYear } from "../format.ts";
+import { dayMonthYear, formatMeasurement } from "../format.ts";
 import { dateMs, type Series, type SeriesPoint } from "../series.ts";
 
 export type ChartRow = {
@@ -20,18 +20,10 @@ export type ChartRow = {
   tooltip: string;
 };
 
-const number = new Intl.NumberFormat("en", { maximumFractionDigits: 2 });
-const OPERATORS = { "<": "<", "<=": "≤", ">": ">", ">=": "≥" } as const;
-
 function tooltip(point: SeriesPoint, unit: string | null): string {
-  const value = [
-    point.op ? `${OPERATORS[point.op]} ` : "",
-    number.format(point.value),
-    unit ? ` ${unit}` : "",
-  ].join("");
   return [
     dayMonthYear(point.date),
-    value,
+    formatMeasurement(point.value, point.op, unit),
     point.lab,
     point.flag ? FLAGS[point.flag].label : null,
   ].filter(Boolean).join(" · ");
