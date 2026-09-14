@@ -1,18 +1,22 @@
 <script setup lang="ts">
+import { useId } from "vue";
 import { CHART_LIBRARIES } from "../../../desktop/settings.ts";
 import { useChartLibrary } from "../composables/useChartLibrary.ts";
 import { CHART_BACKENDS } from "../lib/charts/backends.ts";
 
 const { chartLibrary, setChartLibrary } = useChartLibrary();
+// Unique per copy: the switcher appears in the top bar and in the zoomed view.
+const labelId = useId();
 </script>
 
 <template>
-  <div class="flex items-center gap-2.5">
-    <span id="chart-library-label" class="text-xs whitespace-nowrap text-muted">Chart library</span>
+  <!-- Wraps the label above the options, and scrolls the options, when space is short. -->
+  <div class="flex max-w-full min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1.5">
+    <span :id="labelId" class="text-xs whitespace-nowrap text-muted">Chart library</span>
     <div
       role="radiogroup"
-      aria-labelledby="chart-library-label"
-      class="flex gap-0.5 rounded-[9px] bg-chip p-[3px]"
+      :aria-labelledby="labelId"
+      class="flex max-w-full gap-0.5 overflow-x-auto rounded-[9px] bg-chip p-[3px]"
     >
       <button
         v-for="library in CHART_LIBRARIES"

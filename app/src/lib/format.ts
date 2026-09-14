@@ -57,6 +57,24 @@ export function initials(name: string | null | undefined): string {
   return letters.toUpperCase();
 }
 
+const MEASUREMENT = new Intl.NumberFormat("en", { maximumFractionDigits: 2 });
+const COMPARATORS: Record<string, string> = {
+  "<": "<",
+  "<=": "≤",
+  ">": ">",
+  ">=": "≥",
+};
+
+/** A value in its unit, with any comparator: "47 U/L", "< 5 U/L", "≥ 90 mL/min/1.73m²". */
+export function formatMeasurement(
+  value: number,
+  op: string | null,
+  unit: string | null,
+): string {
+  const comparator = op ? `${COMPARATORS[op] ?? op} ` : "";
+  return `${comparator}${MEASUREMENT.format(value)}${unit ? ` ${unit}` : ""}`;
+}
+
 /** plural(1, "report") → "1 report", plural(3, "report") → "3 reports" */
 export function plural(count: number, one: string, many = `${one}s`): string {
   return `${count} ${count === 1 ? one : many}`;
