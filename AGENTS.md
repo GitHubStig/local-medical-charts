@@ -155,6 +155,14 @@ convention; the owner chose to keep this layout.
 - Small models for 8 GB Macs and 12 GB graphics cards: parked by the owner;
   `qwen3-vl:4b` is the closest so far (see `docs/ocr-models.md`). Run model
   comparisons one at a time, never in parallel.
+- More chart types, so the four libraries show more than line charts: proposed,
+  not built. In order of value: a heatmap of every test against every report
+  (cells below, within or above the lab's range, with the value shown); a ranged
+  dot plot of each latest result within its range (one-sided ranges and word
+  results left out); a stacked bar of the white cell breakdown per report
+  (samples would need the other four cell types). Flint 0.5.1 lists these for
+  all four libraries, but none has been built yet, so first check each renders
+  in all four. Avoid radar, rose, pie and dual-axis charts.
 - Before publishing: replace the `--prefix` usage example in
   `src/ocr-reports.ts` with a neutral one, and nudge four sample values that
   coincide with real results (owner will do this cleanup).
