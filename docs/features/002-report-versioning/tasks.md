@@ -11,4 +11,4 @@
 - [x] Tests: up-to-date report unchanged, catalog change re-merges, newer
       version refused
 - [x] Document how to add a migration after release, and the
-      version-1-in-development rule in the README
+      version-1-in-development rule in `docs/development.md`

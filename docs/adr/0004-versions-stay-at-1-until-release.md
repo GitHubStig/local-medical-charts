@@ -29,6 +29,7 @@ those migrations would only be noise.
 ## Consequences
 
 - The migration machinery exists and is tested, but only has version 1.
-- Developers occasionally reset local data; the README says how.
+- Developers occasionally reset local data; [development.md](../development.md)
+  says how.
 - The first real migration (version 2) happens after release, and from then on
   shipped migrations are never edited.

@@ -15,4 +15,5 @@
 - [x] Fictional sample generator and samples
 - [x] Theme toggle (system, light, dark), stored in settings
 - [x] Icon folder, `Icon` component and icon rules test
-- [x] README: getting started, the two ways to run, supply-chain notes
+- [x] README and `docs/development.md`: getting started, the two ways to run,
+      supply-chain notes
