@@ -23,14 +23,15 @@ Tested September 2026 on an Apple silicon Mac with Ollama.
 
 | Model                  | Memory | Fictional pages   | Time per page |
 | ---------------------- | ------ | ----------------- | ------------- |
-| `qwen3.8:27b-mlx`      | ~18 GB | 38/39, no retries | 55–60 s       |
-| `gemma4:31b-mlx`       | ~19 GB | 38/39, no retries | 60–66 s       |
-| `muse-glimmer:30b-mlx` | ~19 GB | 38/39, no retries | 50–54 s       |
+| `qwen3.8:27b-mlx`      | ~18 GB | 39/39, no retries | 55–60 s       |
+| `gemma4:31b-mlx`       | ~19 GB | 39/39, no retries | 60–66 s       |
+| `muse-glimmer:30b-mlx` | ~19 GB | 39/39, no retries | 50–54 s       |
 
-All three missed the same result: a blood glucose read as the urine glucose
-further down the page. Clean pages didn't separate them; photos, skewed scans or
-heavy compression would be needed to. `qwen3.8:27b-mlx` also read the real scans
-used as the reference below, in about a minute a page.
+All three read every result correctly. (An earlier count said 38/39 for each,
+but that was the scorer: the page has a blood and a urine test both named
+Glucose, and it mixed them up.) Clean pages didn't separate the three; photos,
+skewed scans or heavy compression would be needed to. `qwen3.8:27b-mlx` also
+read the real scans used as the reference below, in about a minute a page.
 
 ### `gemma4:31b-mlx` on the real scans
 
@@ -73,20 +74,40 @@ they don't fit the app.
 
 ## Small general vision models (the app's prompt and schema)
 
-| Model        | Size         | Memory | Fictional pages (39 results)                             | Real scans (124 results)                                                                                | Time per page |
-| ------------ | ------------ | ------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------- |
-| `gemma4:e2b` | 5.1B, Q4_K_M | 7.1 GB | 26 rows found, 22 values right; no ID number on any page | 47 rows found, 22 values and 9 ranges agree; 40 rows the reference doesn't have; 13 of 44 header fields | 12–17 s       |
+| Model         | Size                 | Memory       | Fictional pages (39 results)                                                                               | Real scans (124 results)                                                                                                         | Time per page                |
+| ------------- | -------------------- | ------------ | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| `gemma4:e2b`  | 5.1B, Q4_K_M         | 7.1 GB       | 26 rows found, 23 values right; no ID number on any page                                                   | 47 rows found, 19 values and 9 ranges agree; 43 rows the reference doesn't have; 13 of 44 header fields                          | 12–17 s                      |
+| `qwen3-vl:4b` | 4.4B, Q4_K_M, 3.3 GB | 5.5 GB       | 39/39, every value, unit, range and flag right; collection date missed on 1 of 3 pages                     | 112 rows found; 104 values, 109 units, 95 ranges and 108 flags agree; 29 rows the reference doesn't have; 43 of 44 header fields | 22–28 s fictional, 45 s real |
+| `qwen3-vl:8b` | 8.8B, Q4_K_M, 6.1 GB | not measured | no page read: 3 invalid replies on the first page (93 s), the 10 minute limit on the second; stopped there | not tried                                                                                                                        | —                            |
 
-It always returned valid JSON, with no retries, but reads too little of the page
-correctly to use: most rows are missing, and many it did return are merged or
-renamed. Loaded, it's also too large for an 8 GB machine.
+**`gemma4:e2b`** always returned valid JSON, with no retries, but reads too
+little of the page correctly to use: most rows are missing, and many it did
+return are merged or renamed. Loaded, it's also too large for an 8 GB machine.
+
+**`qwen3-vl:4b`** is the first small model close to the large ones. On the real
+scans it read all 17 pages with no failures or retries. All 12 missing rows came
+from one page, where it returned 2 of 14. Of the differences from the reference,
+ranges were the most common (17), then values (8), markers (4) and units (3);
+the reference is itself unchecked, so some of these may be the reference's
+mistakes. On real scans it isn't much faster than the large models (45 s against
+about a minute a page).
+
+- **Fit:** 5.5 GB loaded with the app's 16k context. That should fit a 12 GB
+  graphics card, but is likely too tight for an 8 GB Mac, where macOS lets the
+  GPU use only part of the memory. Neither has been tried.
+- **Quirk:** with thinking off and a JSON `format`, Qwen3-VL returns its whole
+  reply in `thinking` and leaves `content` empty. Before the client fell back to
+  `thinking`, every page failed; the results above are with the fallback.
+
+**`qwen3-vl:8b`** failed even with the fallback, so its real-scan run was
+skipped.
 
 ## Ideas not yet tried
 
 1. **Two steps:** `glm-ocr` transcribes the page, then a small text-only model
    (3–4B) turns the text into the app's JSON. Loaded one after the other, memory
    stays around 3 GB.
-2. **Another small general vision model** (e.g. a Qwen VL model) with the app's
-   prompt and schema directly. `gemma4:e2b`, the first tried, read too little
-   (above).
+2. **`qwen3-vl:4b` on smaller machines:** check it actually loads and keeps its
+   speed on a 12 GB graphics card and an 8 GB Mac, and whether a shorter prompt
+   (or a smaller context) recovers the page where it missed rows.
 3. Harder pages (phone photos, skew, compression) to separate the large models.

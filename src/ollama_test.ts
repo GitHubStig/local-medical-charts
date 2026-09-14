@@ -168,3 +168,43 @@ Deno.test("a reply cut off at the token cap counts as repeating", async () => {
     });
   });
 });
+
+Deno.test("a reply that arrives in the thinking field, with none in content, is still used", async () => {
+  const json = JSON.stringify({ tests: [{ name: "Glucose", value: "5.2" }] });
+  const encoder = new TextEncoder();
+  const server = Deno.serve(
+    { hostname: "127.0.0.1", port: 0, onListen() {} },
+    async (request) => {
+      await request.json();
+      const body = [json.slice(0, 20), json.slice(20)]
+        .map((piece) =>
+          JSON.stringify({
+            message: { content: "", thinking: piece },
+            done: false,
+          })
+        )
+        .concat(
+          JSON.stringify({
+            message: { content: "" },
+            done: true,
+            done_reason: "stop",
+          }),
+        )
+        .join("\n") + "\n";
+      return new Response(encoder.encode(body));
+    },
+  );
+  try {
+    const { data } = await chatJson(
+      config(`http://127.0.0.1:${server.addr.port}`),
+      {
+        label: "page 1",
+        prompt: "read",
+        schema: Schema,
+      },
+    );
+    assertEquals(data, { tests: [{ name: "Glucose", value: "5.2" }] });
+  } finally {
+    await server.shutdown();
+  }
+});
