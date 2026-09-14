@@ -14,6 +14,12 @@
 import type { ReportWithoutPages } from "./report-data.ts";
 import type { ChartLibrary, Settings, Theme } from "./settings.ts";
 import type {
+  ImportJob,
+  ImportPage,
+  ImportStart,
+  ImportStatus,
+  ImportUpload,
+  ImportUploadFile,
   OcrCheck,
   OcrModel,
   OcrModelList,
@@ -26,6 +32,12 @@ import type {
 
 export type {
   ChartLibrary,
+  ImportJob,
+  ImportPage,
+  ImportStart,
+  ImportStatus,
+  ImportUpload,
+  ImportUploadFile,
   OcrCheck,
   OcrModel,
   OcrModelList,
@@ -76,6 +88,9 @@ export type ImportOutcome =
   }
   | { fileName: string; status: "rejected"; error: string };
 
+/** A read import, for a person to check before it's saved. */
+export type ImportReview = { job: ImportJob; report: ReportWithoutPages };
+
 export type DesktopBindings = {
   /** Whether the database opened, and what the launch upgrade changed. */
   getStartupStatus(): Promise<StartupStatus>;
@@ -97,4 +112,24 @@ export type DesktopBindings = {
    * image. Can take a minute or more while Ollama loads a large model.
    */
   testOcr(): Promise<OcrTest>;
+  /**
+   * Starts reading PDFs or photos into reports, one upload per report, with the
+   * saved model. Each upload gets its own outcome. Reading carries on in the
+   * background, one import at a time: poll listImports to follow it.
+   */
+  startImports(uploads: ImportUpload[]): Promise<ImportStart[]>;
+  /** Imports in the order added, until each is saved or discarded. */
+  listImports(): Promise<ImportJob[]>;
+  /** Stops a waiting or reading import, keeping pages already read. Null if there's no such import. */
+  cancelImport(importId: number): Promise<ImportJob | null>;
+  /** Queues a failed or cancelled import again; it carries on after the pages already read. */
+  retryImport(importId: number): Promise<ImportJob | null>;
+  /** Forgets an import and its files, stopping it first if it's reading. */
+  discardImport(importId: number): Promise<boolean>;
+  /** A ready import's merged report, for review. Null unless the import is ready. */
+  getImportReview(importId: number): Promise<ImportReview | null>;
+  /** One page image of an import, numbered from 1. */
+  getImportPage(importId: number, page: number): Promise<ImportPage | null>;
+  /** Saves a ready import as a report, then forgets its files. Rejects unless it's ready. */
+  saveImport(importId: number): Promise<ImportOutcome>;
 };

@@ -20,6 +20,22 @@ function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }
 
+/** Ollama answered with an error status, e.g. 404 for a model that isn't installed. */
+export class OllamaHttpError extends Error {
+  override name = "OllamaHttpError";
+  constructor(readonly status: number, message: string) {
+    super(message);
+  }
+}
+
+/** Every attempt came back as invalid JSON or JSON that didn't match the schema. */
+export class OllamaReplyError extends Error {
+  override name = "OllamaReplyError";
+  constructor(message: string, readonly attempts: number) {
+    super(message);
+  }
+}
+
 export async function assertModelAvailable(
   config: OllamaConfig,
 ): Promise<void> {
@@ -56,6 +72,8 @@ export async function chatJson<T>(
     /** Base64-encoded images. */
     images?: string[];
     schema: z.ZodType<T>;
+    /** Stops waiting for Ollama: a cancel, or a time limit. */
+    signal?: AbortSignal;
   },
 ): Promise<{ data: T; seconds: number }> {
   const format = toOllamaFormat(request.schema);
@@ -67,6 +85,7 @@ export async function chatJson<T>(
     try {
       response = await fetch(`${config.host}/api/chat`, {
         method: "POST",
+        signal: request.signal,
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           model: config.model,
@@ -85,11 +104,14 @@ export async function chatJson<T>(
         }),
       });
     } catch (cause) {
-      throw new Error(`request to ${config.host} failed: ${message(cause)}`);
+      throw new Error(`request to ${config.host} failed: ${message(cause)}`, {
+        cause,
+      });
     }
 
     if (!response.ok) {
-      throw new Error(
+      throw new OllamaHttpError(
+        response.status,
         `Ollama returned ${response.status}: ${(await response.text()).trim()}`,
       );
     }
@@ -126,10 +148,11 @@ export async function chatJson<T>(
     );
   }
 
-  throw new Error(
+  throw new OllamaReplyError(
     `${request.label}: no valid response after ${
       config.retries + 1
     } attempt(s)`,
+    config.retries + 1,
   );
 }
 

@@ -387,5 +387,25 @@ export function createFakeBindings(
 
     testOcr: () =>
       settle(() => fakeOcrTest(settings.ollamaHost, settings.ocrModel)),
+
+    // Reading PDFs and photos comes to browser development with the upload screen.
+    startImports: (uploads) =>
+      settle(() =>
+        uploads.map((upload) => ({
+          ok: false as const,
+          fileNames: upload.files.map((f) => f.name),
+          error: "Reading PDFs and photos needs the desktop app for now.",
+        }))
+      ),
+    listImports: () => settle(() => []),
+    cancelImport: () => settle(() => null),
+    retryImport: () => settle(() => null),
+    discardImport: () => settle(() => false),
+    getImportReview: () => settle(() => null),
+    getImportPage: () => settle(() => null),
+    saveImport: (importId) =>
+      settle(() => {
+        throw new Error(`import ${importId} isn't ready to save`);
+      }),
   };
 }

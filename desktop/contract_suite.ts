@@ -33,6 +33,24 @@ export function defineContractTests(
       }
     });
 
+  test("imports that don't exist are reported as missing", async (b) => {
+    assertEquals(await b.listImports(), []);
+    assertEquals(await b.cancelImport(999), null);
+    assertEquals(await b.retryImport(999), null);
+    assertEquals(await b.discardImport(999), false);
+    assertEquals(await b.getImportReview(999), null);
+    assertEquals(await b.getImportPage(999, 1), null);
+    await assertRejects(() => b.saveImport(999));
+  });
+
+  test("an upload that isn't a PDF or photos is refused on its own", async (b) => {
+    const [outcome] = await b.startImports([{
+      files: [{ name: "notes.txt", bytes: new TextEncoder().encode("hi") }],
+    }]);
+    assert(!outcome.ok);
+    assertEquals(outcome.fileNames, ["notes.txt"]);
+  });
+
   test("startup status is ok", async (b) => {
     assertEquals((await b.getStartupStatus()).ok, true);
   });

@@ -7,8 +7,13 @@ import type {
   DesktopBindings,
   ImportFile,
   ImportOutcome,
+  ImportUpload,
   StartupStatus,
 } from "./contract.ts";
+import { ImportError, importMessages } from "./imports/messages.ts";
+import { ImportQueue } from "./imports/queue.ts";
+import type { PageReader } from "./imports/reader.ts";
+import { pagesFromUpload } from "./imports/sources.ts";
 import type { OllamaService } from "./ocr/ollama.ts";
 import { withoutPages } from "./report-data.ts";
 import { DEFAULT_SETTINGS, parseSettingsPatch } from "./settings.ts";
@@ -38,6 +43,24 @@ function requireFiles(value: unknown): ImportFile[] {
   return value as ImportFile[];
 }
 
+function requireUploads(value: unknown): ImportUpload[] {
+  const valid = Array.isArray(value) &&
+    value.every((u) =>
+      u !== null && typeof u === "object" &&
+      Array.isArray((u as ImportUpload).files) &&
+      (u as ImportUpload).files.every((f) =>
+        f !== null && typeof f === "object" && typeof f.name === "string" &&
+        f.bytes instanceof Uint8Array
+      )
+    );
+  if (!valid) {
+    throw new BindingError(
+      "uploads must be a list of { files: [{ name, bytes }] }",
+    );
+  }
+  return value as ImportUpload[];
+}
+
 /**
  * Runs a handler body so that a synchronous throw becomes a rejected Promise,
  * keeping every binding promise-based whether it fails early or late.
@@ -56,10 +79,24 @@ export function createBindings(deps: {
   startup: StartupStatus;
   /** Talks to Ollama; tests pass a stand-in. */
   ollama: OllamaService;
+  /** Opens a reader for report pages with the saved address and model; tests pass a stand-in. */
+  pageReader: (host: string, model: string) => Promise<PageReader>;
   now?: () => Date;
 }): DesktopBindings {
-  const { store, catalog, startup, ollama } = deps;
+  const { store, catalog, startup, ollama, pageReader } = deps;
   const now = deps.now ?? (() => new Date());
+
+  const imports = new ImportQueue({
+    pagesFrom: pagesFromUpload,
+    // Settings are read as each import starts, so a model chosen meanwhile is used.
+    openReader: () =>
+      settle(() => store.getSettings()).then((s) => {
+        if (!s.ocrModel) throw new ImportError(importMessages.noModel());
+        return pageReader(s.ollamaHost, s.ocrModel);
+      }),
+    catalog,
+    now,
+  });
 
   return {
     getStartupStatus: () => settle(() => startup),
@@ -103,7 +140,11 @@ export function createBindings(deps: {
     deleteReport: (reportId) =>
       settle(() => store.deleteReport(requireId(reportId, "reportId"), now())),
 
-    clearAll: () => settle(() => store.clearAll()),
+    clearAll: () =>
+      settle(() => {
+        store.clearAll();
+        imports.clear();
+      }),
 
     getSettings: () => settle(() => store.getSettings()),
 
@@ -119,6 +160,73 @@ export function createBindings(deps: {
       settle(() => store.getSettings()).then((s) =>
         ollama.test(s.ollamaHost, s.ocrModel)
       ),
+
+    startImports: (uploads) =>
+      settle(() =>
+        requireUploads(uploads).map(({ files }) => {
+          try {
+            return { ok: true as const, job: imports.add(files) };
+          } catch (err) {
+            if (err instanceof ImportError) {
+              return {
+                ok: false as const,
+                fileNames: files.map((f) => f.name),
+                error: err.message,
+              };
+            }
+            throw err;
+          }
+        })
+      ),
+
+    listImports: () => settle(() => imports.list()),
+
+    cancelImport: (importId) =>
+      settle(() => imports.cancel(requireId(importId, "importId"))),
+
+    retryImport: (importId) =>
+      settle(() => imports.retry(requireId(importId, "importId"))),
+
+    discardImport: (importId) =>
+      settle(() => imports.discard(requireId(importId, "importId"))),
+
+    getImportReview: (importId) =>
+      settle(() => {
+        const review = imports.review(requireId(importId, "importId"));
+        return review &&
+          { job: review.job, report: withoutPages(review.report) };
+      }),
+
+    getImportPage: (importId, page) =>
+      settle(() =>
+        imports.page(requireId(importId, "importId"), requireId(page, "page"))
+      ),
+
+    saveImport: (importId) =>
+      settle((): ImportOutcome => {
+        const id = requireId(importId, "importId");
+        const review = imports.review(id);
+        if (!review) {
+          throw new BindingError(`import ${id} isn't ready to save`);
+        }
+        const fileName = review.job.fileNames.join(", ");
+        try {
+          const saved = store.addReport(
+            JSON.stringify(review.report),
+            fileName,
+            catalog,
+            now(),
+          );
+          imports.discard(id);
+          return { fileName, ...saved };
+        } catch (err) {
+          // Kept, so the person can see why and discard it.
+          if (err instanceof StoreError) {
+            return { fileName, status: "rejected", error: err.message };
+          }
+          throw err;
+        }
+      }),
   };
 }
 
@@ -142,5 +250,13 @@ export function unavailableBindings(
     updateSettings: fail,
     listOcrModels: fail,
     testOcr: fail,
+    startImports: fail,
+    listImports: fail,
+    cancelImport: fail,
+    retryImport: fail,
+    discardImport: fail,
+    getImportReview: fail,
+    getImportPage: fail,
+    saveImport: fail,
   };
 }

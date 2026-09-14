@@ -4,11 +4,13 @@ import {
   createBindings,
   unavailableBindings,
 } from "./bindings.ts";
-import type { StartupStatus } from "./contract.ts";
+import type { DesktopBindings, ImportJob, StartupStatus } from "./contract.ts";
+import type { PageReader } from "./imports/reader.ts";
 import type { OllamaService } from "./ocr/ollama.ts";
+import { simplePdf } from "./ocr/simple-pdf.ts";
 import { defineContractTests } from "./contract_suite.ts";
 import { ReportStore } from "./store/store.ts";
-import { catalogV1 } from "./store/testing.ts";
+import { catalogV1, syntheticExtraction } from "./store/testing.ts";
 
 // All reports here are synthetic (see store/testing.ts).
 
@@ -35,7 +37,25 @@ function recordingOllama(calls: unknown[] = []): OllamaService {
   };
 }
 
-function realBindings(ollama = recordingOllama()) {
+/** Reads every page as the same made-up page, recording the settings it was opened with. */
+function standInPageReader(opened: string[] = []) {
+  return (host: string, model: string): Promise<PageReader> => {
+    opened.push(`${host} ${model}`);
+    return Promise.resolve({
+      model,
+      promptHash: "prompt-1",
+      read: (_image, page, pageCount) =>
+        Promise.resolve(syntheticExtraction({ page, pageCount })),
+    });
+  };
+}
+
+function realBindings(
+  { ollama = recordingOllama(), pageReader = standInPageReader() }: {
+    ollama?: OllamaService;
+    pageReader?: (host: string, model: string) => Promise<PageReader>;
+  } = {},
+) {
   const store = ReportStore.open(":memory:");
   return {
     bindings: createBindings({
@@ -43,6 +63,7 @@ function realBindings(ollama = recordingOllama()) {
       catalog: catalogV1,
       startup,
       ollama,
+      pageReader,
       now,
     }),
     close: () => store.close(),
@@ -118,7 +139,9 @@ Deno.test("with the database unavailable, status explains, settings default, the
 
 Deno.test("real bindings: OCR checks use the saved Ollama address and model", async () => {
   const calls: unknown[] = [];
-  const { bindings: b, close } = realBindings(recordingOllama(calls));
+  const { bindings: b, close } = realBindings({
+    ollama: recordingOllama(calls),
+  });
   try {
     await b.listOcrModels();
     await b.testOcr();
@@ -132,6 +155,129 @@ Deno.test("real bindings: OCR checks use the saved Ollama address and model", as
       ["test", "http://localhost:11434", null],
       ["test", "http://192.168.1.20:11434", "qwen3.8:27b-mlx"],
     ]);
+  } finally {
+    close();
+  }
+});
+
+/** Imports once none is waiting or reading. */
+async function settledImports(b: DesktopBindings): Promise<ImportJob[]> {
+  for (let i = 0; i < 500; i++) {
+    const jobs = await b.listImports();
+    if (!jobs.some((j) => j.status === "waiting" || j.status === "reading")) {
+      return jobs;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2));
+  }
+  throw new Error("imports didn't settle");
+}
+
+const examplePdf = () =>
+  simplePdf([
+    ["EXAMPLE LAB", "HAEMOGLOBIN   13.1   g/dL"],
+    ["EXAMPLE LAB", "GLUCOSE   5.2   mmol/L"],
+  ]);
+
+Deno.test("real bindings: a PDF is read with the saved model, reviewed, then saved", async () => {
+  const opened: string[] = [];
+  const { bindings: b, close } = realBindings({
+    pageReader: standInPageReader(opened),
+  });
+  try {
+    await b.updateSettings({ ocrModel: "vision:27b" });
+    const [start] = await b.startImports([{
+      files: [{ name: "example-lab.pdf", bytes: examplePdf() }],
+    }]);
+    assert(start.ok);
+
+    const [job] = await settledImports(b);
+    assertEquals(
+      [job.status, job.source, job.pageCount, job.resultCount],
+      ["ready", "pdf", 2, 6],
+    );
+    assertEquals(opened, ["http://localhost:11434 vision:27b"]);
+
+    const review = await b.getImportReview(job.id);
+    assertEquals(review?.report.patient.name, "ALEX EXAMPLE");
+    assert(
+      review && !("pages" in review.report),
+      "page transcriptions stay behind",
+    );
+    const page = await b.getImportPage(job.id, 2);
+    assertEquals(page?.name, "example-lab-2.png");
+    assertEquals(page?.type, "image/png");
+
+    const saved = await b.saveImport(job.id);
+    assert(saved.status === "added");
+    assertEquals(saved.fileName, "example-lab.pdf");
+    assertEquals(await b.listImports(), [], "its files are forgotten");
+    const dashboard = await b.getDashboard(saved.patientId);
+    assertEquals(dashboard?.results.length, 6);
+    assertEquals(dashboard?.reports[0].report?.source.images, [
+      "example-lab-1.png",
+      "example-lab-2.png",
+    ]);
+  } finally {
+    close();
+  }
+});
+
+Deno.test("real bindings: without a model, an import fails and says where to choose one", async () => {
+  const opened: string[] = [];
+  const { bindings: b, close } = realBindings({
+    pageReader: standInPageReader(opened),
+  });
+  try {
+    await b.startImports([{
+      files: [{ name: "example-lab.pdf", bytes: examplePdf() }],
+    }]);
+    const [job] = await settledImports(b);
+    assertEquals(job.status, "failed");
+    assertEquals(
+      job.error,
+      "Choose a model for reading PDFs and photos in Settings.",
+    );
+    assertEquals(opened, []);
+    await assertRejects(
+      () => b.saveImport(job.id),
+      BindingError,
+      "isn't ready to save",
+    );
+
+    await b.clearAll();
+    assertEquals(await b.listImports(), [], "Clear all data forgets imports");
+  } finally {
+    close();
+  }
+});
+
+Deno.test("real bindings: uploads that can't be read are refused one by one", async () => {
+  const { bindings: b, close } = realBindings();
+  try {
+    const outcomes = await b.startImports([
+      { files: [{ name: "notes.txt", bytes: new TextEncoder().encode("hi") }] },
+      { files: [{ name: "example-lab.pdf", bytes: examplePdf() }] },
+    ]);
+    assertEquals(outcomes.map((o) => o.ok), [false, true]);
+    assert(
+      !outcomes[0].ok &&
+        outcomes[0].error === "notes.txt isn't a PDF, JPG, PNG or WebP file.",
+    );
+
+    await assertRejects(
+      () =>
+        b.startImports(
+          [{ files: [{ name: "a.pdf", bytes: "nope" }] }] as never,
+        ),
+      BindingError,
+      "{ files: [{ name, bytes }] }",
+    );
+    await assertRejects(
+      () => b.getImportPage(1, 0),
+      BindingError,
+      "page must be a positive integer",
+    );
+    await b.discardImport(2);
   } finally {
     close();
   }
