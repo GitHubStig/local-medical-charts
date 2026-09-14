@@ -23,3 +23,5 @@
       `thinking`
 - [x] Tests: sources with fictional scanned PDFs, queue, reader against stand-in
       servers, contract lifecycle
+- [x] Closing the window quits; asks first when readings aren't saved; tests
+- [x] Check in the desktop window: close with and without unsaved readings
