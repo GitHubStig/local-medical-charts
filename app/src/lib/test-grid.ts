@@ -240,6 +240,18 @@ export function buildTestGrid(dashboard: Dashboard): TestGrid {
   return { groups, textOnlyCount };
 }
 
+/** The filters in words, e.g. "“glu” · flagged only"; null when neither is on. */
+export function describeFilters(
+  filters: { query: string; flaggedOnly: boolean },
+): string | null {
+  const query = filters.query.trim();
+  const parts = [
+    query ? `“${query}”` : null,
+    filters.flaggedOnly ? "flagged only" : null,
+  ].filter(Boolean);
+  return parts.length ? parts.join(" · ") : null;
+}
+
 /** Cards matching every word of the query (and flagged, if asked), in their groups. */
 export function filterTestGrid(
   groups: readonly TestGroupData[],

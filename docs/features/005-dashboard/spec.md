@@ -27,8 +27,12 @@ which reports do we have, and how has each test changed?
 4. Reports section: collapsible report rows with provider, doctor, dates,
    extraction details, specimen notes, interpretation and extraction notes;
    remove a report.
-5. Test grid grouped by catalog group, with search and a flagged-only filter.
-6. Text results in their own collapsible section.
+5. Tests in their own collapsible section, showing the test and flagged counts
+   when folded: search and a flagged-only filter, then the test grid grouped by
+   catalog group. Folding stays as it was when switching patients.
+6. Text results in their own collapsible section after Tests, filtered by the
+   same search and flagged-only filter. While Tests is folded and a filter is
+   on, the text results say so and offer to clear it, even when none match.
 7. One-report notice explaining that trends need a second report.
 8. Top bar stays in reach while scrolling; clickable things look clickable.
 
@@ -37,6 +41,8 @@ which reports do we have, and how has each test changed?
 - With the fictional samples, Alex Tan shows four reports from two labs and Sam
   Rivera one, with the one-report notice.
 - Searching "chol" shows only cholesterol tests; flagged-only hides normal ones.
+- Folding Tests brings the text results up under it; with a search still on,
+  they show "Filtered in Tests" and a way to clear it.
 - The dashboard loads a different patient without showing the previous one's
   data.
 

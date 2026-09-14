@@ -1,7 +1,11 @@
 import { assertEquals } from "@std/assert";
 import { createFakeBindings } from "../app/src/api/fake-bindings.ts";
 import { SAMPLE_REPORTS } from "../app/src/api/samples.ts";
-import { buildTestGrid, filterTestGrid } from "../app/src/lib/test-grid.ts";
+import {
+  buildTestGrid,
+  describeFilters,
+  filterTestGrid,
+} from "../app/src/lib/test-grid.ts";
 import type { Dashboard } from "./contract.ts";
 
 // Uses the fictional sample reports (samples/).
@@ -139,4 +143,21 @@ Deno.test("with a single report, cards say a trend needs another report and show
   // With several reports, the note is the change.
   const alex = card(buildTestGrid(await alexDashboard()), "haemoglobin");
   assertEquals(alex.note, "+0.6 since Oct 2025");
+});
+
+Deno.test("filters are described in words, or not at all when none is on", () => {
+  assertEquals(describeFilters({ query: "", flaggedOnly: false }), null);
+  assertEquals(describeFilters({ query: "   ", flaggedOnly: false }), null);
+  assertEquals(
+    describeFilters({ query: " glu ", flaggedOnly: false }),
+    "“glu”",
+  );
+  assertEquals(
+    describeFilters({ query: "", flaggedOnly: true }),
+    "flagged only",
+  );
+  assertEquals(
+    describeFilters({ query: "chol", flaggedOnly: true }),
+    "“chol” · flagged only",
+  );
 });

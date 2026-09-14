@@ -10,6 +10,8 @@
 - [x] Catalog groups in `analytes.json`; test grid grouped by them
 - [x] Search and flagged-only filter
 - [x] Text results section
+- [x] Tests section folds with its filters; text results note a hidden filter;
+      filter wording tests; browser check
 - [x] One-report notice
 - [x] Sticky top bar; pointer cursor on clickable controls
 - [x] Tests for overview, grid, text results, selection and import helpers
