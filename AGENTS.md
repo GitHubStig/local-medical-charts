@@ -145,8 +145,11 @@ convention; the owner chose to keep this layout.
 
 ## Open threads
 
-- Packaging the desktop app for release ("phase 6"): deferred; the owner has
-  something in mind, so ask before starting.
+- Packaging the desktop app for release ("phase 6"): parked by the owner. The
+  project is a proof of concept, run by cloning the repo (`deno install`,
+  `deno task desktop`). A shareable build would need Apple and Windows code
+  signing to avoid install warnings, and still needs Ollama and a large model.
+  Ask before starting.
 - Per-model prompts: proposed, not built. Any prompt change is compared on the
   fictional pages and the real scans first (see `docs/ocr-models.md`).
 - Small models for 8 GB Macs and 12 GB graphics cards: parked by the owner;
