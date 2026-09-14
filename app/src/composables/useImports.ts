@@ -7,13 +7,15 @@ import { useIntervalFn } from "@vueuse/core";
 import { computed, readonly, ref, shallowRef, watch } from "vue";
 import type { DesktopBindings, ImportJob } from "../../../desktop/contract.ts";
 import { errorMessage } from "../api/index.ts";
+import { plural } from "../lib/format.ts";
 import { isActive } from "../lib/import-jobs.ts";
 import {
+  packUpload,
   photoGroups,
   planUploads,
-  readUpload,
   type RefusedFile,
 } from "../lib/uploads.ts";
+import { beginActivity } from "./useActivity.ts";
 import { useOcrSettings } from "./useOcrSettings.ts";
 
 const jobs = shallowRef<ImportJob[]>([]);
@@ -58,25 +60,32 @@ function connected(): DesktopBindings {
   return bindings;
 }
 
-/** Sends each group of files as one report to read. */
+/** Sends each group of files as one report to read, one upload at a time. */
 async function start(groups: File[][]) {
   if (groups.length === 0) return;
   starting.value = true;
+  const progress = beginActivity(
+    `Adding ${plural(groups.length, "report")}`,
+    groups.length * 2,
+  );
   try {
-    const uploads = await Promise.all(
-      groups.map(async (files) => ({
-        files: await Promise.all(files.map(readUpload)),
-      })),
-    );
-    const outcomes = await connected().startImports(uploads);
-    const notRead = outcomes.flatMap((o) =>
-      o.ok ? [] : [{ fileName: o.fileNames.join(", "), error: o.error }]
-    );
-    if (notRead.length) refused.value = [...refused.value, ...notRead];
-    await refresh();
+    for (const group of groups) {
+      const { files, bytes } = await packUpload(group);
+      progress.step();
+      const outcome = await connected().startImport(files, bytes);
+      progress.step();
+      if (!outcome.ok) {
+        refused.value = [
+          ...refused.value,
+          { fileName: outcome.fileNames.join(", "), error: outcome.error },
+        ];
+      }
+      await refresh();
+    }
   } catch (err) {
     error.value = errorMessage(err);
   } finally {
+    progress.end();
     starting.value = false;
   }
 }
@@ -145,6 +154,19 @@ export function useImports() {
           ),
         )
       ),
+
+    refresh,
+
+    /** A ready import's report and filing, or null once it's gone or isn't ready. */
+    loadReview: (id: number) => connected().getImportReview(id),
+    loadPage: (id: number, page: number) => connected().getImportPage(id, page),
+
+    /** Saves a reviewed report; the panel no longer lists it unless saving was refused. */
+    async save(id: number) {
+      const outcome = await connected().saveImport(id);
+      await refresh();
+      return outcome;
+    },
 
     dismissNotices() {
       refused.value = [];

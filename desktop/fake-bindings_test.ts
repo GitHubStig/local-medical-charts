@@ -5,7 +5,12 @@ import { defineContractTests } from "./contract_suite.ts";
 
 defineContractTests(
   "fake bindings",
-  () => ({ bindings: createFakeBindings({ pageMs: 0 }) }),
+  () => ({
+    bindings: createFakeBindings({
+      pageMs: 0,
+      now: () => new Date("2026-05-11T09:00:00.000Z"),
+    }),
+  }),
 );
 
 Deno.test("fake bindings: the sample reports load as two fictional patients", async () => {

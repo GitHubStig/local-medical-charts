@@ -17,6 +17,8 @@ import {
   prepareImport,
 } from "../lib/import-files.ts";
 import { importedPatient, resolveSelection } from "../lib/selection.ts";
+import { plural } from "../lib/format.ts";
+import { beginActivity } from "./useActivity.ts";
 import { initChartLibrary } from "./useChartLibrary.ts";
 import { initImports } from "./useImports.ts";
 import { initOcrSettings } from "./useOcrSettings.ts";
@@ -119,20 +121,31 @@ async function withBusy<T>(work: () => Promise<T>): Promise<T | undefined> {
  */
 function importFiles(files: readonly File[]) {
   return withBusy(async () => {
-    const prepared = await prepareImport(files);
-    const toSend = filesToSend(prepared);
-    const sent = toSend.length ? await bindings().importReports(toSend) : [];
-    lastImport.value = mergeOutcomes(prepared, sent);
-    await refreshPatients();
-    selectPatient(
-      resolveSelection(
-        patients.value,
-        importedPatient(lastImport.value) ?? selectedPatientId.value,
-      ),
+    // Reading every file is one step each; handing them over is the last.
+    const progress = beginActivity(
+      `Adding ${plural(files.length, "file")}`,
+      files.length + 1,
     );
-    // The same patient may have gained reports, which a selection change wouldn't reload.
-    await loadDashboard();
-    return lastImport.value;
+    try {
+      const prepared = await prepareImport(files);
+      progress.step(files.length);
+      const toSend = filesToSend(prepared);
+      const sent = toSend.length ? await bindings().importReports(toSend) : [];
+      progress.step();
+      lastImport.value = mergeOutcomes(prepared, sent);
+      await refreshPatients();
+      selectPatient(
+        resolveSelection(
+          patients.value,
+          importedPatient(lastImport.value) ?? selectedPatientId.value,
+        ),
+      );
+      // The same patient may have gained reports, which a selection change wouldn't reload.
+      await loadDashboard();
+      return lastImport.value;
+    } finally {
+      progress.end();
+    }
   });
 }
 
@@ -152,6 +165,20 @@ export function useLibrary() {
     selectPatient,
 
     importFiles,
+
+    /** Shows a report saved from review: its patient, and how it was filed. */
+    showSavedReport: (outcome: ImportOutcome) =>
+      withBusy(async () => {
+        lastImport.value = [outcome];
+        await refreshPatients();
+        selectPatient(
+          resolveSelection(
+            patients.value,
+            importedPatient([outcome]) ?? selectedPatientId.value,
+          ),
+        );
+        await loadDashboard();
+      }),
 
     /** Removes one report; a patient left with none drops out of the picker. */
     deleteReport: (reportId: number) =>

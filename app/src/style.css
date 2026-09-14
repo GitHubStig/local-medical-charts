@@ -113,3 +113,13 @@
     overflow: hidden;
   }
 }
+
+/* The floating "reports added" card counts down to closing along its bottom edge. */
+@keyframes toast-countdown {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}

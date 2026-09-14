@@ -9,6 +9,7 @@
  */
 import { assert, assertEquals, assertRejects } from "@std/assert";
 import type { DesktopBindings, ImportJob } from "./contract.ts";
+import { type NamedBytes, packFiles } from "./imports/packed-files.ts";
 import { syntheticReport } from "./store/testing.ts";
 
 export type ContractHarness = {
@@ -44,21 +45,25 @@ export function defineContractTests(
   });
 
   test("an upload that isn't a PDF or photos is refused on its own", async (b) => {
-    const [outcome] = await b.startImports([{
-      files: [{ name: "notes.txt", bytes: new TextEncoder().encode("hi") }],
-    }]);
+    const outcome = await startWith(b, [
+      { name: "notes.txt", bytes: new TextEncoder().encode("hi") },
+    ]);
     assert(!outcome.ok);
     assertEquals(outcome.fileNames, ["notes.txt"]);
   });
 
+  test("an upload whose sizes don't match its bytes is refused", async (b) => {
+    await assertRejects(() =>
+      b.startImport([{ name: "IMG_1.png", size: 20 }], PNG_BYTES)
+    );
+  });
+
   test("photos are read in the background, reviewed, then saved as a report", async (b) => {
     await b.updateSettings({ ocrModel: "vision-model:27b" });
-    const [start] = await b.startImports([{
-      files: [
-        { name: "IMG_1.png", bytes: PNG_BYTES },
-        { name: "IMG_2.png", bytes: PNG_BYTES },
-      ],
-    }]);
+    const start = await startWith(b, [
+      { name: "IMG_1.png", bytes: PNG_BYTES },
+      { name: "IMG_2.png", bytes: PNG_BYTES },
+    ]);
     assert(start.ok);
     assertEquals([start.job.source, start.job.pageCount], ["photos", 2]);
 
@@ -86,10 +91,39 @@ export function defineContractTests(
     assertEquals(await b.listImports(), []);
   });
 
+  test("a read report says where it would be filed, and spots one already saved", async (b) => {
+    await b.updateSettings({ ocrModel: "vision-model:27b" });
+    const files = [{ name: "IMG_1.png", bytes: PNG_BYTES }];
+
+    await startWith(b, files);
+    const [first] = await settledImports(b);
+    const firstReview = await b.getImportReview(first.id);
+    assertEquals(firstReview?.filing.patient?.kind, "new");
+    assertEquals(firstReview?.filing.similarReport, null);
+    const saved = await b.saveImport(first.id);
+    assert(saved.status === "added");
+
+    await startWith(b, files);
+    const [second] = await settledImports(b);
+    const { filing } = (await b.getImportReview(second.id))!;
+    const [patient] = await b.listPatients();
+    assertEquals(filing, {
+      patient: {
+        kind: "existing",
+        id: saved.patientId,
+        name: patient.name,
+        matchedBy: "id-number",
+      },
+      warnings: [],
+      similarReport: { id: saved.reportId, fileName: "IMG_1.png" },
+    });
+  });
+
   test("an import waiting its turn can be cancelled, retried and discarded", async (b) => {
     await b.updateSettings({ ocrModel: "vision-model:27b" });
     const files = [{ name: "IMG_1.png", bytes: PNG_BYTES }];
-    const [first, second] = await b.startImports([{ files }, { files }]);
+    const first = await startWith(b, files);
+    const second = await startWith(b, files);
     assert(first.ok && second.ok);
     assertEquals(second.job.status, "waiting");
 
@@ -107,9 +141,7 @@ export function defineContractTests(
   });
 
   test("without a model, an import fails and says where to choose one", async (b) => {
-    await b.startImports([{
-      files: [{ name: "IMG_1.png", bytes: PNG_BYTES }],
-    }]);
+    await startWith(b, [{ name: "IMG_1.png", bytes: PNG_BYTES }]);
     const [job] = await settledImports(b);
     assertEquals(job.status, "failed");
     assertEquals(
@@ -136,6 +168,18 @@ export function defineContractTests(
       ["broken.json", "rejected"],
       ["other.json", "rejected"],
     ]);
+    const [added, duplicate] = outcomes;
+    assert(added.status === "added" && duplicate.status === "duplicate");
+    assertEquals(
+      [
+        added.summary.patientName,
+        added.summary.providerName,
+        added.summary.resultCount,
+      ],
+      ["ALEX EXAMPLE", "Example Lab", 3],
+    );
+    assert(added.summary.collectedAt?.startsWith("2025-01-14"));
+    assertEquals(duplicate.summary, added.summary);
   });
 
   test("common wrong files are rejected with an explanation", async (b) => {
@@ -373,4 +417,10 @@ export async function settledImports(
     await new Promise((resolve) => setTimeout(resolve, 2));
   }
   throw new Error("imports didn't settle");
+}
+
+/** Starts an import the way the page does: names and sizes, then the bytes as their own argument. */
+function startWith(b: DesktopBindings, files: NamedBytes[]) {
+  const packed = packFiles(files);
+  return b.startImport(packed.files, packed.bytes);
 }

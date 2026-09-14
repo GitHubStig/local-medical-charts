@@ -2,6 +2,14 @@ import { assertEquals } from "@std/assert";
 import { importedPatient, resolveSelection } from "../app/src/lib/selection.ts";
 import type { ImportOutcome, PatientSummary } from "./contract.ts";
 
+/** How the tests' made-up outcomes describe their report: nothing to say. */
+const FILED = {
+  patientName: null,
+  collectedAt: null,
+  providerName: null,
+  resultCount: 0,
+};
+
 // Synthetic patients only.
 
 const patient = (
@@ -43,6 +51,7 @@ Deno.test("an import that added one patient's reports selects that patient", () 
     status: "added",
     patientId,
     reportId: patientId * 10,
+    summary: FILED,
     warnings: [],
   });
   assertEquals(importedPatient([added(2), added(2)]), 2);
@@ -53,6 +62,7 @@ Deno.test("an import that added one patient's reports selects that patient", () 
       status: "duplicate",
       patientId: 2,
       reportId: 1,
+      summary: FILED,
       warnings: [],
     }]),
     null,

@@ -25,6 +25,7 @@ import {
 } from "../upload-checks.ts";
 import type {
   AddReportResult,
+  ImportFiling,
   PatientSummary,
   ReportSummary,
   StoredResult,
@@ -116,14 +117,25 @@ export class ReportStore {
 
     const hash = contentHash(json);
     const existing = this.#db
-      .prepare("SELECT id, patient_id FROM reports WHERE content_hash = ?")
+      .prepare(
+        `SELECT id, patient_id, report_json,
+           (SELECT COUNT(*) FROM results WHERE report_id = reports.id) AS result_count
+         FROM reports WHERE content_hash = ?`,
+      )
       .get(hash) as Row | undefined;
     if (existing) {
+      const stored = JSON.parse(String(existing.report_json)) as Report;
       return {
         status: "duplicate",
         reportId: Number(existing.id),
         patientId: Number(existing.patient_id),
         warnings: [],
+        summary: {
+          patientName: stored.patient.name,
+          collectedAt: stored.collectedAt,
+          providerName: stored.provider.name,
+          resultCount: Number(existing.result_count),
+        },
       };
     }
 
@@ -143,40 +155,8 @@ export class ReportStore {
     }
 
     const at = now.toISOString();
-    const incoming = {
-      name: report.patient.name,
-      dateOfBirth: report.patient.dateOfBirthIso,
-    };
     return this.#transaction(() => {
-      const warnings: string[] = [];
-      const known = this.#db
-        .prepare(
-          "SELECT name, date_of_birth FROM patients WHERE identity_key = ?",
-        )
-        .get(identity) as Row | undefined;
-
-      if (known && identity.startsWith("id:")) {
-        warnings.push(...idMatchWarnings(
-          {
-            name: known.name as string | null,
-            dateOfBirth: known.date_of_birth as string | null,
-          },
-          incoming,
-        ));
-      } else if (!known) {
-        const others = this.#db
-          .prepare(
-            "SELECT name, date_of_birth FROM patients WHERE date_of_birth = ?",
-          )
-          .all(incoming.dateOfBirth) as Row[];
-        const lookalike = others.some((o) =>
-          sameNameAndBirthDate(incoming, {
-            name: o.name as string | null,
-            dateOfBirth: o.date_of_birth as string | null,
-          })
-        );
-        if (lookalike) warnings.push(sameNameDifferentIdWarning(incoming.name));
-      }
+      const { warnings } = this.#filing(identity, report);
 
       this.#db
         .prepare(
@@ -216,8 +196,107 @@ export class ReportStore {
 
       this.#writeResults(reportId, patientId, report);
       this.#refreshPatient(patientId, at);
-      return { status: "added", reportId, patientId, warnings };
+      return {
+        status: "added",
+        reportId,
+        patientId,
+        warnings,
+        summary: {
+          patientName: report.patient.name,
+          collectedAt: report.collectedAt,
+          providerName: report.provider.name,
+          resultCount: report.tests.length,
+        },
+      };
     });
+  }
+
+  /**
+   * Where a report would be filed and what's worth checking first, decided as
+   * saving it would decide, without storing anything.
+   */
+  previewFiling(report: Report): ImportFiling {
+    const identity = patientIdentity(report.patient);
+    if (!identity) return { patient: null, warnings: [], similarReport: null };
+    const { known, warnings } = this.#filing(identity, report);
+    if (!known) {
+      return {
+        patient: { kind: "new", name: report.patient.name },
+        warnings,
+        similarReport: null,
+      };
+    }
+    const similar = report.collectedAt
+      ? this.#db
+        .prepare(
+          `SELECT id, file_name FROM reports
+           WHERE patient_id = ? AND collected_at = ? AND provider_name IS ?
+           ORDER BY id LIMIT 1`,
+        )
+        .get(known.id, report.collectedAt, report.provider.name) as
+          | Row
+          | undefined
+      : undefined;
+    return {
+      patient: {
+        kind: "existing",
+        id: known.id,
+        name: known.name,
+        matchedBy: identity.startsWith("id:")
+          ? "id-number"
+          : "name-and-birth-date",
+      },
+      warnings,
+      similarReport: similar
+        ? { id: Number(similar.id), fileName: String(similar.file_name) }
+        : null,
+    };
+  }
+
+  /** The patient a report's identity already belongs to, and what filing it there would warn about. */
+  #filing(
+    identity: string,
+    report: Report,
+  ): { known: { id: number; name: string | null } | null; warnings: string[] } {
+    const incoming = {
+      name: report.patient.name,
+      dateOfBirth: report.patient.dateOfBirthIso,
+    };
+    const warnings: string[] = [];
+    const known = this.#db
+      .prepare(
+        "SELECT id, name, date_of_birth FROM patients WHERE identity_key = ?",
+      )
+      .get(identity) as Row | undefined;
+
+    if (known && identity.startsWith("id:")) {
+      warnings.push(...idMatchWarnings(
+        {
+          name: known.name as string | null,
+          dateOfBirth: known.date_of_birth as string | null,
+        },
+        incoming,
+      ));
+    } else if (!known) {
+      const others = this.#db
+        .prepare(
+          "SELECT name, date_of_birth FROM patients WHERE date_of_birth = ?",
+        )
+        .all(incoming.dateOfBirth) as Row[];
+      const lookalike = others.some((o) =>
+        sameNameAndBirthDate(incoming, {
+          name: o.name as string | null,
+          dateOfBirth: o.date_of_birth as string | null,
+        })
+      );
+      if (lookalike) warnings.push(sameNameDifferentIdWarning(incoming.name));
+    }
+    return {
+      known: known
+        ? { id: Number(known.id), name: known.name as string | null }
+        : null,
+      warnings,
+    };
   }
 
   /**

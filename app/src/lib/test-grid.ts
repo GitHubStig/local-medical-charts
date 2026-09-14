@@ -82,12 +82,14 @@ function factor(result: StoredResult): number {
   return result.analyte ? unitFactor(result.analyte, result.unit) ?? 1 : 1;
 }
 
-export function rangeLabel(result: StoredResult): string | null {
-  const range = result.range;
+/** A structured range as text, its numbers multiplied by `factor`; null for banded ranges. */
+export function formatRange(
+  range: StoredResult["range"],
+  factor = 1,
+): string | null {
   if (!range) return null;
-  const f = factor(result);
   // Rounded as the pipeline rounds values, so 0.1 × 155 reads 15.5.
-  const n = (v: number) => number.format(Number((v * f).toPrecision(12)));
+  const n = (v: number) => number.format(Number((v * factor).toPrecision(12)));
   switch (range.kind) {
     case "between":
       return `${n(range.min)} – ${n(range.max)}`;
@@ -100,6 +102,10 @@ export function rangeLabel(result: StoredResult): string | null {
     default:
       return null;
   }
+}
+
+export function rangeLabel(result: StoredResult): string | null {
+  return formatRange(result.range, factor(result));
 }
 
 function change(
