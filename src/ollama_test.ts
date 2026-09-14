@@ -15,9 +15,20 @@ const Schema = z.object({
 const row = (i: number) =>
   `{"name":"Test number ${i}","value":"${(i * 1.7).toFixed(1)}"},`;
 
-/** Streams each piece as its own line, then a final line with `doneReason`; or pieces forever. */
+/**
+ * Streams each piece as its own line, then a final line with `doneReason`; or
+ * pieces forever. `startAfterMs` waits before the first piece; `silent` sends the
+ * pieces and then nothing, leaving the stream open.
+ */
 async function withStreamingOllama(
-  reply: { pieces: string[]; doneReason?: string } | { forever: string },
+  reply:
+    | {
+      pieces: string[];
+      doneReason?: string;
+      startAfterMs?: number;
+      silent?: boolean;
+    }
+    | { forever: string },
   run: (host: string, bodies: Record<string, unknown>[]) => Promise<void>,
 ) {
   const bodies: Record<string, unknown>[] = [];
@@ -33,7 +44,7 @@ async function withStreamingOllama(
         );
       let timer: ReturnType<typeof setInterval> | undefined;
       const stream = new ReadableStream<Uint8Array>({
-        start(controller) {
+        async start(controller) {
           if ("forever" in reply) {
             timer = setInterval(() => {
               try {
@@ -44,7 +55,13 @@ async function withStreamingOllama(
             }, 1);
             return;
           }
+          if (reply.startAfterMs) {
+            await new Promise((resolve) =>
+              setTimeout(resolve, reply.startAfterMs)
+            );
+          }
           for (const piece of reply.pieces) controller.enqueue(line(piece));
+          if (reply.silent) return;
           controller.enqueue(
             encoder.encode(
               JSON.stringify({
@@ -207,4 +224,42 @@ Deno.test("a reply that arrives in the thinking field, with none in content, is 
   } finally {
     await server.shutdown();
   }
+});
+
+Deno.test("a reply that goes silent partway is given up after the idle time, without a retry", async () => {
+  await withStreamingOllama(
+    { pieces: ['{"tests":[', row(1)], silent: true },
+    async (host, bodies) => {
+      const started = Date.now();
+      await quietly(async () => {
+        const err = await assertRejects(
+          () =>
+            chatJson({ ...config(host), idleSeconds: 0.2 }, {
+              label: "page 2",
+              prompt: "read",
+              schema: Schema,
+            }),
+          OllamaReplyError,
+        );
+        assertEquals([err.reason, err.attempts], ["stalled", 1]);
+      });
+      assert(Date.now() - started < 5_000, "given up, not left waiting");
+      assertEquals(bodies.length, 1);
+    },
+  );
+});
+
+Deno.test("a slow start isn't taken for a silent reply", async () => {
+  const json = JSON.stringify({ tests: [{ name: "Glucose", value: "5.2" }] });
+  await withStreamingOllama(
+    { pieces: [json], startAfterMs: 500 },
+    async (host) => {
+      const { data } = await chatJson({ ...config(host), idleSeconds: 0.2 }, {
+        label: "page 1",
+        prompt: "read",
+        schema: Schema,
+      });
+      assertEquals(data, { tests: [{ name: "Glucose", value: "5.2" }] });
+    },
+  );
 });

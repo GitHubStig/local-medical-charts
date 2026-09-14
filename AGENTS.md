@@ -135,8 +135,10 @@ convention; the owner chose to keep this layout.
   `localStorage` doesn't persist. Settings live in SQLite.
 - **Ollama quirks:** MLX models don't stop at `num_ctx`, and some models repeat
   rows forever; replies are streamed, capped and stopped when they repeat
-  (`src/ollama.ts`). Some models put the formatted reply in `thinking` instead
-  of `content`; the client falls back to it.
+  (`src/ollama.ts`). Ollama can also leave a finished reply's stream open, so a
+  started reply that sends nothing for 3 minutes is given up (not retried). Some
+  models put the formatted reply in `thinking` instead of `content`; the client
+  falls back to it.
 - **Vite runs under Deno** (`deno task dev`/`build`). npm `zod` in
   `app/package.json` is for editor types only (see
   [docs/development.md](docs/development.md)).

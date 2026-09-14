@@ -146,9 +146,10 @@ time.
   prompt. `glm-ocr` failed the first fictional page (three invalid replies in 31
   s, against 170 s before), then wrote to the 8,192-token cap on the second;
   Ollama never closed that reply, so the page would have waited out the 10
-  minute limit, and the run was stopped. `deepseek-ocr` returned valid JSON with
-  0 of 13 rows on two pages (patient name and ID only) and failed the third.
-  Their real-scan runs were skipped.
+  minute limit, and the run was stopped. (The client now gives up on a started
+  reply that sends nothing for 3 minutes.) `deepseek-ocr` returned valid JSON
+  with 0 of 13 rows on two pages (patient name and ID only) and failed the
+  third. Their real-scan runs were skipped.
 
 ## Ideas not yet tried
 

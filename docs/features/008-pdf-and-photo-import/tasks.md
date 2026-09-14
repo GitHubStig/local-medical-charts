@@ -21,6 +21,7 @@
       something needs attention
 - [x] Stream, cap and stop replies that repeat; read replies placed in
       `thinking`
+- [x] Give up on a started reply after 3 minutes without new text; tests
 - [x] Tests: sources with fictional scanned PDFs, queue, reader against stand-in
       servers, contract lifecycle
 - [x] Closing the window quits; asks first when readings aren't saved; tests

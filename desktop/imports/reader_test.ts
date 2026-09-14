@@ -174,3 +174,35 @@ Deno.test("a model that keeps repeating itself is named, with what to do", async
     },
   );
 });
+
+Deno.test("a reply that goes silent partway is named, with what to do", async () => {
+  const encoder = new TextEncoder();
+  const firstLine = JSON.stringify({
+    message: { content: '{"tests":[' },
+    done: false,
+  }) + "\n";
+  await withStandIn(
+    // Starts a reply, then sends nothing more and never closes it.
+    () =>
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode(firstLine));
+          },
+        }),
+      ),
+    async (host, bodies) => {
+      const quick = await ollamaPageReader(host, "vision:27b", {
+        idleSeconds: 0.2,
+      });
+      await quietly(async () => {
+        await assertRejects(
+          () => quick.read(image, 2, 3, notCancelled()),
+          ImportError,
+          "vision:27b went silent for",
+        );
+      });
+      assertEquals(bodies.length, 1, "not retried");
+    },
+  );
+});

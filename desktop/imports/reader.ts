@@ -9,6 +9,7 @@ import {
   chatJson,
   OllamaHttpError,
   OllamaReplyError,
+  REPLY_IDLE_SECONDS,
 } from "../../src/ollama.ts";
 import { type PageExtraction, PageExtractionSchema } from "../../src/schema.ts";
 import { ocrMessages } from "../ocr/messages.ts";
@@ -37,10 +38,11 @@ const RETRIES = 2;
 export async function ollamaPageReader(
   host: string,
   model: string,
-  options: { pageMinutes?: number } = {},
+  options: { pageMinutes?: number; idleSeconds?: number } = {},
 ): Promise<PageReader> {
   const hash = await promptHash();
   const minutes = options.pageMinutes ?? PAGE_MINUTES;
+  const idleSeconds = options.idleSeconds ?? REPLY_IDLE_SECONDS;
 
   return {
     model,
@@ -49,7 +51,7 @@ export async function ollamaPageReader(
       const limit = AbortSignal.timeout(minutes * 60_000);
       try {
         const { data } = await chatJson(
-          { host, model, context: CONTEXT, retries: RETRIES },
+          { host, model, context: CONTEXT, retries: RETRIES, idleSeconds },
           {
             label: `page ${page} of ${pageCount}`,
             prompt: pagePrompt(page, pageCount),
@@ -73,6 +75,8 @@ export async function ollamaPageReader(
           throw new ImportError(
             err.reason === "repeating"
               ? importMessages.repeating(model, page)
+              : err.reason === "stalled"
+              ? importMessages.stalled(model, page, idleSeconds / 60)
               : importMessages.unreadable(model, page, err.attempts),
             because,
           );

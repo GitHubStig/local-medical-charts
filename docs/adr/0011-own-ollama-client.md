@@ -35,5 +35,6 @@ providers instead of writing one? Checked before deciding:
 
 - A couple of hundred lines to own, and no dependency churn.
 - Model quirks are handled in one place: replies are streamed and capped at
-  8,192 tokens, stopped as soon as they repeat themselves, and read from
-  `thinking` when a model's template puts the reply there.
+  8,192 tokens, stopped as soon as they repeat themselves, given up once a
+  started reply sends nothing for 3 minutes, and read from `thinking` when a
+  model's template puts the reply there.
