@@ -15,10 +15,14 @@ const Schema = z.object({
 const row = (i: number) =>
   `{"name":"Test number ${i}","value":"${(i * 1.7).toFixed(1)}"},`;
 
+/** Where an endless stand-in reply is cut off, as Ollama's token cap would: far past where repetition is spotted. */
+const ENDLESS_LINES = 3_000;
+
 /**
  * Streams each piece as its own line, then a final line with `doneReason`; or
- * pieces forever. `startAfterMs` waits before the first piece; `silent` sends the
- * pieces and then nothing, leaving the stream open.
+ * the same piece over and over, until ENDLESS_LINES are cut off at the token
+ * cap. `startAfterMs` waits before the first piece; `silent` sends the pieces and
+ * then nothing, leaving the stream open. `sent` counts the lines each request got.
  */
 async function withStreamingOllama(
   reply:
@@ -29,13 +33,19 @@ async function withStreamingOllama(
       silent?: boolean;
     }
     | { forever: string },
-  run: (host: string, bodies: Record<string, unknown>[]) => Promise<void>,
+  run: (
+    host: string,
+    bodies: Record<string, unknown>[],
+    sent: number[],
+  ) => Promise<void>,
 ) {
   const bodies: Record<string, unknown>[] = [];
+  const sent: number[] = [];
   const server = Deno.serve(
     { hostname: "127.0.0.1", port: 0, onListen() {} },
     async (request) => {
       bodies.push(await request.json());
+      const slot = sent.push(0) - 1;
       const encoder = new TextEncoder();
       const line = (content: string, extra = {}) =>
         encoder.encode(
@@ -48,7 +58,19 @@ async function withStreamingOllama(
           if ("forever" in reply) {
             timer = setInterval(() => {
               try {
+                if (sent[slot] >= ENDLESS_LINES) {
+                  clearInterval(timer);
+                  controller.enqueue(
+                    encoder.encode(
+                      JSON.stringify({ done: true, done_reason: "length" }) +
+                        "\n",
+                    ),
+                  );
+                  controller.close();
+                  return;
+                }
                 controller.enqueue(line(reply.forever));
+                sent[slot]++;
               } catch {
                 clearInterval(timer);
               }
@@ -82,7 +104,7 @@ async function withStreamingOllama(
     },
   );
   try {
-    await run(`http://127.0.0.1:${server.addr.port}`, bodies);
+    await run(`http://127.0.0.1:${server.addr.port}`, bodies, sent);
   } finally {
     await server.shutdown();
   }
@@ -139,7 +161,7 @@ Deno.test("a streamed reply is put back together and validated, with a token cap
 Deno.test("a reply stuck repeating itself is stopped early, retried, then reported as repeating", async () => {
   await withStreamingOllama(
     { forever: row(7) + row(8) },
-    async (host, bodies) => {
+    async (host, bodies, sent) => {
       const started = Date.now();
       await quietly(async () => {
         const err = await assertRejects(
@@ -158,6 +180,12 @@ Deno.test("a reply stuck repeating itself is stopped early, retried, then report
         "stopped within seconds, not minutes",
       );
       assertEquals(bodies.length, 2);
+      assert(
+        sent.every((lines) => lines < 1_000),
+        `each attempt stopped long before the token cap (${
+          sent.join(", ")
+        } lines)`,
+      );
       assert(
         String((bodies[1].messages as { content: string }[])[0].content)
           .includes("repeated itself"),

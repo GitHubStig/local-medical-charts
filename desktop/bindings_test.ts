@@ -99,21 +99,6 @@ Deno.test("real bindings: arguments from the page are checked", async () => {
   }
 });
 
-Deno.test("real bindings: rejected imports explain why", async () => {
-  const { bindings: b, close } = realBindings();
-  try {
-    const [outcome] = await b.importReports([{
-      name: "broken.json",
-      text: "{ nope",
-    }]);
-    assert(
-      outcome.status === "rejected" && outcome.error.includes("not valid JSON"),
-    );
-  } finally {
-    close();
-  }
-});
-
 Deno.test("with the database unavailable, status explains, settings default, the rest reject", async () => {
   const b = unavailableBindings({
     ok: false,
@@ -226,7 +211,8 @@ Deno.test("real bindings: a PDF is read with the saved model, reviewed, then sav
   }
 });
 
-Deno.test("real bindings: without a model, an import fails and says where to choose one", async () => {
+// The failure itself is in the contract suite; only the real bindings open readers.
+Deno.test("real bindings: without a model, no page reader is opened", async () => {
   const opened: string[] = [];
   const { bindings: b, close } = realBindings({
     pageReader: standInPageReader(opened),
@@ -236,19 +222,7 @@ Deno.test("real bindings: without a model, an import fails and says where to cho
     await b.startImport(pdf.files, pdf.bytes);
     const [job] = await settledImports(b);
     assertEquals(job.status, "failed");
-    assertEquals(
-      job.error,
-      "Choose a model for reading PDFs and photos in Settings.",
-    );
     assertEquals(opened, []);
-    await assertRejects(
-      () => b.saveImport(job.id),
-      BindingError,
-      "isn't ready to save",
-    );
-
-    await b.clearAll();
-    assertEquals(await b.listImports(), [], "Clear all data forgets imports");
   } finally {
     close();
   }

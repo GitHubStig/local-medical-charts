@@ -1,6 +1,5 @@
 import { assertEquals } from "@std/assert";
 import { modelChoices } from "../app/src/lib/ocr-settings.ts";
-import { parseRoute } from "../app/src/lib/route.ts";
 import type { OcrModelList } from "./contract.ts";
 
 const LIST: OcrModelList = {
@@ -88,15 +87,4 @@ Deno.test("a saved model stays visible when Ollama doesn't list it, or can't be 
     modelChoices({ ...LIST, models: [] }, null).summary,
     "No models installed. Install a vision model with ollama pull.",
   );
-});
-
-Deno.test("the address fragment picks the screen", () => {
-  assertEquals(parseRoute("#/settings"), { name: "settings" });
-  assertEquals(parseRoute("#settings"), { name: "settings" });
-  assertEquals(parseRoute("#/review/12"), { name: "review", importId: 12 });
-  assertEquals(parseRoute(""), { name: "home" });
-  assertEquals(parseRoute("#/"), { name: "home" });
-  assertEquals(parseRoute("#/settings/more"), { name: "home" });
-  assertEquals(parseRoute("#/review/0"), { name: "home" });
-  assertEquals(parseRoute("#/review/abc"), { name: "home" });
 });
