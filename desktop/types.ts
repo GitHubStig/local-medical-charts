@@ -67,3 +67,30 @@ export type UpgradeSummary = {
   upgraded: number;
   failed: { reportId: number; fileName: string; error: string }[];
 };
+
+/** An installed Ollama model, as the settings page lists it. */
+export type OcrModel = {
+  name: string;
+  /** Ollama reports the "vision" capability: only these models can read report pages. */
+  readsImages: boolean;
+  /** e.g. "27.8B"; null when Ollama doesn't say. */
+  parameterSize: string | null;
+  contextLength: number | null;
+};
+
+export type OcrModelList =
+  | { ok: true; host: string; version: string; models: OcrModel[] }
+  | { ok: false; host: string; error: string };
+
+export type OcrCheckStep = "reachable" | "installed" | "reads-images";
+
+/** One step of Test connection. Steps after a failed one aren't run. */
+export type OcrCheck = { step: OcrCheckStep; ok: boolean; message: string };
+
+export type OcrTest = {
+  host: string;
+  model: string | null;
+  /** Every step ran and passed. */
+  ok: boolean;
+  checks: OcrCheck[];
+};

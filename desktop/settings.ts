@@ -25,12 +25,20 @@ export type Settings = {
   /** The patient the dashboard last showed; null before one is chosen. */
   selectedPatientId: number | null;
   chartLibrary: ChartLibrary;
+  /** Where Ollama listens, for reading PDFs and photos. */
+  ollamaHost: string;
+  /** The Ollama model that reads report pages; null until one is chosen. */
+  ocrModel: string | null;
 };
+
+export const DEFAULT_OLLAMA_HOST = "http://localhost:11434";
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: "system",
   selectedPatientId: null,
   chartLibrary: "vega-lite",
+  ollamaHost: DEFAULT_OLLAMA_HOST,
+  ocrModel: null,
 };
 
 export class SettingsError extends Error {
@@ -42,6 +50,25 @@ const isTheme = (value: unknown): value is Theme =>
 
 const isChartLibrary = (value: unknown): value is ChartLibrary =>
   (CHART_LIBRARIES as readonly unknown[]).includes(value);
+
+/** An http(s) address with nothing after the port, tidied to its origin; null if it isn't one. */
+function ollamaOrigin(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  try {
+    const url = new URL(value.trim());
+    const bare = url.pathname === "/" && !url.search && !url.hash;
+    return (url.protocol === "http:" || url.protocol === "https:") && bare
+      ? url.origin
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+const isModelName = (value: unknown): value is string | null =>
+  value === null ||
+  (typeof value === "string" && value.length > 0 && value.length <= 200 &&
+    !/\s/.test(value));
 
 const isPatientId = (value: unknown): value is number | null =>
   value === null ||
@@ -73,6 +100,19 @@ export function parseSettingsPatch(value: unknown): Partial<Settings> {
         );
       }
       patch.chartLibrary = entry;
+    } else if (key === "ollamaHost") {
+      const origin = ollamaOrigin(entry);
+      if (!origin) {
+        throw new SettingsError(
+          "ollamaHost must be an http(s) address such as http://localhost:11434",
+        );
+      }
+      patch.ollamaHost = origin;
+    } else if (key === "ocrModel") {
+      if (!isModelName(entry)) {
+        throw new SettingsError("ocrModel must be a model name or null");
+      }
+      patch.ocrModel = entry;
     } else {
       throw new SettingsError(`unknown setting "${key}"`);
     }
@@ -93,5 +133,9 @@ export function normalizeSettings(stored: Record<string, unknown>): Settings {
     chartLibrary: isChartLibrary(stored.chartLibrary)
       ? stored.chartLibrary
       : DEFAULT_SETTINGS.chartLibrary,
+    ollamaHost: ollamaOrigin(stored.ollamaHost) ?? DEFAULT_SETTINGS.ollamaHost,
+    ocrModel: isModelName(stored.ocrModel)
+      ? stored.ocrModel
+      : DEFAULT_SETTINGS.ocrModel,
   };
 }

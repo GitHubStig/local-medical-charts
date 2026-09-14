@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
 import { createFakeBindings } from "../app/src/api/fake-bindings.ts";
 import { SAMPLE_REPORTS } from "../app/src/api/samples.ts";
 import { defineContractTests } from "./contract_suite.ts";
@@ -35,5 +35,38 @@ Deno.test("fake bindings: settings persist in the storage they're given", async 
     theme: "dark",
     selectedPatientId: null,
     chartLibrary: "vega-lite",
+    ollamaHost: "http://localhost:11434",
+    ocrModel: null,
   });
+});
+
+Deno.test("fake bindings: OCR setup answers from a fictional model list, with the real wording", async () => {
+  const b = createFakeBindings();
+  const list = await b.listOcrModels();
+  assert(list.ok);
+  assertEquals(
+    list.models.filter((m) => m.readsImages).map((m) => m.name),
+    ["gemma3:27b", "qwen3.8:27b-mlx"],
+  );
+
+  const noModel = await b.testOcr();
+  assertEquals(
+    [noModel.ok, noModel.checks.at(-1)?.message],
+    [false, "Choose a model first."],
+  );
+
+  await b.updateSettings({ ocrModel: "llama3.3:70b" });
+  assertEquals(
+    (await b.testOcr()).checks.at(-1)?.message,
+    "llama3.3:70b can't read images. Choose a model marked “Reads images”.",
+  );
+
+  await b.updateSettings({ ocrModel: "qwen3.8:27b-mlx" });
+  const passed = await b.testOcr();
+  assertEquals(passed.ok, true);
+  assertEquals(passed.checks.map((c) => c.step), [
+    "reachable",
+    "installed",
+    "reads-images",
+  ]);
 });

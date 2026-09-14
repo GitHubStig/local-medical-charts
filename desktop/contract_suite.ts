@@ -213,6 +213,8 @@ export function defineContractTests(
       theme: "dark",
       selectedPatientId: null,
       chartLibrary: "vega-lite",
+      ollamaHost: "http://localhost:11434",
+      ocrModel: null,
     });
   });
 
@@ -223,6 +225,8 @@ export function defineContractTests(
       theme: "system",
       selectedPatientId: 7,
       chartLibrary: "vega-lite",
+      ollamaHost: "http://localhost:11434",
+      ocrModel: null,
     });
     await b.updateSettings({ selectedPatientId: null });
     assertEquals((await b.getSettings()).selectedPatientId, null);
@@ -236,11 +240,15 @@ export function defineContractTests(
       theme: "system",
       selectedPatientId: null,
       chartLibrary: "vega-lite",
+      ollamaHost: "http://localhost:11434",
+      ocrModel: null,
     });
     assertEquals(await b.updateSettings({ theme: "light" }), {
       theme: "light",
       selectedPatientId: null,
       chartLibrary: "vega-lite",
+      ollamaHost: "http://localhost:11434",
+      ocrModel: null,
     });
     await assertRejects(() => b.updateSettings({ theme: "sepia" } as never));
     await assertRejects(() =>
@@ -250,6 +258,8 @@ export function defineContractTests(
       theme: "light",
       selectedPatientId: null,
       chartLibrary: "vega-lite",
+      ollamaHost: "http://localhost:11434",
+      ocrModel: null,
     });
   });
 }

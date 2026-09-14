@@ -14,6 +14,10 @@
 import type { ReportWithoutPages } from "./report-data.ts";
 import type { ChartLibrary, Settings, Theme } from "./settings.ts";
 import type {
+  OcrCheck,
+  OcrModel,
+  OcrModelList,
+  OcrTest,
   PatientSummary,
   ReportSummary,
   StoredResult,
@@ -22,6 +26,10 @@ import type {
 
 export type {
   ChartLibrary,
+  OcrCheck,
+  OcrModel,
+  OcrModelList,
+  OcrTest,
   PatientSummary,
   ReportSummary,
   ReportWithoutPages,
@@ -82,4 +90,11 @@ export type DesktopBindings = {
   getSettings(): Promise<Settings>;
   /** Saves the given settings and returns all of them. Invalid values reject. */
   updateSettings(patch: Partial<Settings>): Promise<Settings>;
+  /** Models installed at the saved Ollama address, and which of them can read images. */
+  listOcrModels(): Promise<OcrModelList>;
+  /**
+   * Tests the saved Ollama address and model: reachable, installed, reads a test
+   * image. Can take a minute or more while Ollama loads a large model.
+   */
+  testOcr(): Promise<OcrTest>;
 };

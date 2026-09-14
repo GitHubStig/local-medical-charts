@@ -10,6 +10,7 @@ import catalogJson from "../src/analytes.json" with { type: "json" };
 import { catalogFromJson } from "../src/catalog.ts";
 import { SCHEMA_VERSION } from "../src/schema.ts";
 import { createBindings, unavailableBindings } from "./bindings.ts";
+import { createOllamaService } from "./ocr/ollama.ts";
 import type { DesktopBindings, StartupStatus } from "./contract.ts";
 import { databasePath } from "./store/paths.ts";
 import { ReportStore } from "./store/store.ts";
@@ -55,7 +56,12 @@ try {
     catalogHash: catalog.hash,
     upgrade: store.upgradeAll(catalog),
   };
-  bindings = createBindings({ store, catalog, startup });
+  bindings = createBindings({
+    store,
+    catalog,
+    startup,
+    ollama: createOllamaService(),
+  });
 } catch (err) {
   // Keep the window usable so the page can explain what went wrong.
   bindings = unavailableBindings({
@@ -73,6 +79,8 @@ win.bind("deleteReport", bindings.deleteReport);
 win.bind("clearAll", bindings.clearAll);
 win.bind("getSettings", bindings.getSettings);
 win.bind("updateSettings", bindings.updateSettings);
+win.bind("listOcrModels", bindings.listOcrModels);
+win.bind("testOcr", bindings.testOcr);
 
 const dist = findAppDist();
 

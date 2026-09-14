@@ -67,11 +67,56 @@ Deno.test("stored settings fall back to defaults for anything unknown or invalid
       chartLibrary: "echarts",
       retired: true,
     }),
-    { theme: "light", selectedPatientId: 2, chartLibrary: "echarts" },
+    {
+      ...DEFAULT_SETTINGS,
+      theme: "light",
+      selectedPatientId: 2,
+      chartLibrary: "echarts",
+    },
   );
   assertEquals(
     // A library that's been removed falls back too.
     normalizeSettings({ theme: 42, selectedPatientId: -1, chartLibrary: "d3" }),
+    DEFAULT_SETTINGS,
+  );
+});
+
+Deno.test("the Ollama address is tidied to its origin and model names are checked", () => {
+  assertEquals(parseSettingsPatch({ ollamaHost: "http://localhost:11434/" }), {
+    ollamaHost: "http://localhost:11434",
+  });
+  assertEquals(
+    parseSettingsPatch({ ollamaHost: " http://192.168.1.20:11434 " }),
+    { ollamaHost: "http://192.168.1.20:11434" },
+  );
+  assertEquals(parseSettingsPatch({ ocrModel: "qwen3.8:27b-mlx" }), {
+    ocrModel: "qwen3.8:27b-mlx",
+  });
+  assertEquals(parseSettingsPatch({ ocrModel: null }), { ocrModel: null });
+
+  for (
+    const ollamaHost of [
+      "localhost:11434",
+      "ftp://localhost",
+      "http://localhost:11434/api",
+      11434,
+    ]
+  ) {
+    assertThrows(
+      () => parseSettingsPatch({ ollamaHost }),
+      SettingsError,
+      "ollamaHost must be",
+    );
+  }
+  for (const ocrModel of ["", "two words", 7]) {
+    assertThrows(
+      () => parseSettingsPatch({ ocrModel }),
+      SettingsError,
+      "ocrModel must be",
+    );
+  }
+  assertEquals(
+    normalizeSettings({ ollamaHost: "nonsense", ocrModel: 42 }),
     DEFAULT_SETTINGS,
   );
 });
