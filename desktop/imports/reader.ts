@@ -71,7 +71,9 @@ export async function ollamaPageReader(
         }
         if (err instanceof OllamaReplyError) {
           throw new ImportError(
-            importMessages.unreadable(model, page, err.attempts),
+            err.reason === "repeating"
+              ? importMessages.repeating(model, page)
+              : importMessages.unreadable(model, page, err.attempts),
             because,
           );
         }
