@@ -23,11 +23,13 @@ export type PatientOverview = {
   /** "Female · 41" */
   sexAndAge: string | null;
   idNumber: string | null;
-  /** "4 reports · Nov 2024 – Mar 2026" */
+  /** "4 reports · Nov 2024 – Mar 2026", or "1 report · 7 Aug 2026" */
   reports: string;
-  /** "2 labs" */
+  /** "2 labs", or the lab's name when there's only one. */
   labs: string | null;
   latest: { date: string | null; flagged: number } | null;
+  /** Only one report so far: the charts can't show a trend yet. */
+  singleReport: boolean;
 };
 
 export function flaggedCount(report: ReportWithoutPages): number {
@@ -43,7 +45,10 @@ export function patientOverview(
   const age = ageOn(patient.dateOfBirth, today);
   const sexAndAge = [displaySex(patient.sex), age === null ? null : String(age)]
     .filter(Boolean).join(" · ") || null;
-  const span = monthSpan(patient.firstCollectedAt, patient.lastCollectedAt);
+  // One report shows its date; several show the months they span.
+  const when = patient.reportCount === 1
+    ? dayMonthYear(patient.firstCollectedAt)
+    : monthSpan(patient.firstCollectedAt, patient.lastCollectedAt);
   const labs = new Set(
     usable.flatMap((r) => r.providerName ? [r.providerName] : []),
   );
@@ -53,16 +58,21 @@ export function patientOverview(
     name: displayName(patient.name),
     sexAndAge,
     idNumber: patient.idNumber,
-    reports: [plural(patient.reportCount, "report"), span].filter(Boolean).join(
-      " · ",
-    ),
-    labs: labs.size ? plural(labs.size, "lab") : null,
+    reports: [plural(patient.reportCount, "report"), when].filter(Boolean)
+      .join(" · "),
+    // One lab is named; several are counted.
+    labs: labs.size === 1
+      ? [...labs][0]
+      : labs.size
+      ? plural(labs.size, "lab")
+      : null,
     latest: newest
       ? {
         date: dayMonthYear(newest.collectedAt),
         flagged: flaggedCount(newest.report!),
       }
       : null,
+    singleReport: patient.reportCount === 1,
   };
 }
 

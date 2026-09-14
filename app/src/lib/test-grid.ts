@@ -10,7 +10,7 @@ import {
 import type { Dashboard, StoredResult } from "../../../desktop/contract.ts";
 import { ANALYTES, unitFactor } from "./analytes.ts";
 import { type Flag, toFlag } from "./flags.ts";
-import { monthSpan, monthYear } from "./format.ts";
+import { dayMonthYear, monthSpan, monthYear, plural } from "./format.ts";
 
 export const UNMATCHED_GROUP = "Not in the catalog";
 export type GridGroupName = AnalyteGroup | typeof UNMATCHED_GROUP;
@@ -29,7 +29,10 @@ export type TestCardData = {
   };
   /** "+0.6 since Oct 2025", or null when there's nothing to compare. */
   change: string | null;
+  /** Beside the value: the change, or how many results there are to compare. */
+  note: string;
   readingCount: number;
+  /** The months the readings span, or a lone reading's date. */
   span: string | null;
   /** The latest reading's lab range, converted to `unit`; null for banded ranges. */
   range: string | null;
@@ -117,6 +120,14 @@ function change(
   return `${delta > 0 ? "+" : "−"}${number.format(Math.abs(delta))}${suffix}`;
 }
 
+/** What a card says beside a value there's nothing to compare with. */
+function readingNote(count: number, reportCount: number): string {
+  if (count > 1) return plural(count, "result");
+  return reportCount === 1
+    ? "1 result — add another report to see a trend"
+    : "1 result";
+}
+
 /** Oldest first; results without a date sort before dated ones. */
 export const byDate = (a: StoredResult, b: StoredResult) =>
   (a.collectedAt ?? "").localeCompare(b.collectedAt ?? "") ||
@@ -182,6 +193,7 @@ export function buildTestGrid(dashboard: Dashboard): TestGrid {
     const { latest, info, name, group, order, searchText } = describeTest(
       readings,
     );
+    const changeText = change(latest, readings[readings.length - 2]);
 
     cards.push({
       key,
@@ -193,9 +205,13 @@ export function buildTestGrid(dashboard: Dashboard): TestGrid {
         flag: toFlag(latest.flag),
         collectedAt: latest.collectedAt,
       },
-      change: change(latest, readings[readings.length - 2]),
+      change: changeText,
+      note: changeText ??
+        readingNote(readings.length, dashboard.patient.reportCount),
       readingCount: readings.length,
-      span: monthSpan(readings[0].collectedAt, latest.collectedAt),
+      span: readings.length === 1
+        ? dayMonthYear(latest.collectedAt)
+        : monthSpan(readings[0].collectedAt, latest.collectedAt),
       range: rangeLabel(latest),
       order,
       searchText,

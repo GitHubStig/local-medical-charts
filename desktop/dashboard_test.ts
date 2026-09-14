@@ -28,6 +28,7 @@ Deno.test("the patient overview summarises every report", async () => {
     reports: "4 reports · Nov 2024 – Mar 2026",
     labs: "2 labs",
     latest: { date: "18 Mar 2026", flagged: 3 },
+    singleReport: false,
   });
 });
 
@@ -36,11 +37,15 @@ Deno.test("a single report reads naturally", async () => {
     await sampleDashboard("SAM RIVERA"),
     new Date(2026, 8, 14),
   );
-  assertEquals([overview.sexAndAge, overview.reports, overview.labs], [
-    "Male · 36",
-    "1 report · Aug 2026",
-    "1 lab",
-  ]);
+  assertEquals(
+    [
+      overview.sexAndAge,
+      overview.reports,
+      overview.labs,
+      overview.singleReport,
+    ],
+    ["Male · 36", "1 report · 7 Aug 2026", "Northside Pathology", true],
+  );
 });
 
 Deno.test("report rows list newest first with counts and specimen notes", async () => {

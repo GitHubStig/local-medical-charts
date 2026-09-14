@@ -3,6 +3,7 @@ import { useDropZone } from "@vueuse/core";
 import { computed, ref } from "vue";
 import ImportResults from "../components/ImportResults.vue";
 import PatientSummary from "../components/PatientSummary.vue";
+import SingleReportNotice from "../components/SingleReportNotice.vue";
 import ReportsSection from "../components/ReportsSection.vue";
 import TestGrid from "../components/TestGrid.vue";
 import TopBar from "../components/TopBar.vue";
@@ -48,7 +49,7 @@ const { isOverDropZone } = useDropZone(page, {
   <div ref="page" class="min-h-screen">
     <TopBar />
 
-    <main class="mx-auto flex max-w-[1440px] flex-col gap-7 px-10 pt-8 pb-14">
+    <main class="mx-auto flex max-w-[1440px] flex-col gap-7 px-4 pt-8 pb-14 sm:px-10">
       <div
         v-if="lastImport"
         role="status"
@@ -67,6 +68,7 @@ const { isOverDropZone } = useDropZone(page, {
 
       <template v-if="current && overview">
         <PatientSummary :key="`summary-${current.patient.id}`" :overview="overview" />
+        <SingleReportNotice v-if="overview.singleReport" />
         <!-- Keyed by patient, so expanded reports reset when switching patients. -->
         <ReportsSection
           :key="`reports-${current.patient.id}`"
