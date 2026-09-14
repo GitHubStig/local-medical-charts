@@ -51,13 +51,14 @@ each row once:
   page N".
 
 Each stopped attempt had written about 2,400 tokens, about as much as a real
-page, so the time lost is the model's own writing speed.
+page, so the time lost is the model's own writing speed. With the current
+prompt, no page repeated (see [Prompt changes](#prompt-changes)).
 
 ## Small OCR-only models (for machines with 8 GB of memory)
 
-Neither can fill in the app's JSON: with the app's prompt, both failed or
-returned no results on every page. They can only transcribe, so on their own
-they don't fit the app.
+Neither can fill in the app's JSON: with the app's prompt, old or new, both
+failed or returned no results on every page. They can only transcribe, so on
+their own they don't fit the app.
 
 | Model                 | Size         | Memory | Prompt                                             | Fictional pages          | Real scans (124 results)                                                         | Time per page |
 | --------------------- | ------------ | ------ | -------------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------- | ------------- |
@@ -74,23 +75,24 @@ they don't fit the app.
 
 ## Small general vision models (the app's prompt and schema)
 
-| Model         | Size                 | Memory       | Fictional pages (39 results)                                                                               | Real scans (124 results)                                                                                                         | Time per page                |
-| ------------- | -------------------- | ------------ | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| `gemma4:e2b`  | 5.1B, Q4_K_M         | 7.1 GB       | 26 rows found, 23 values right; no ID number on any page                                                   | 47 rows found, 19 values and 9 ranges agree; 43 rows the reference doesn't have; 13 of 44 header fields                          | 12–17 s                      |
-| `qwen3-vl:4b` | 4.4B, Q4_K_M, 3.3 GB | 5.5 GB       | 39/39, every value, unit, range and flag right; collection date missed on 1 of 3 pages                     | 112 rows found; 104 values, 109 units, 95 ranges and 108 flags agree; 29 rows the reference doesn't have; 43 of 44 header fields | 22–28 s fictional, 45 s real |
-| `qwen3-vl:8b` | 8.8B, Q4_K_M, 6.1 GB | not measured | no page read: 3 invalid replies on the first page (93 s), the 10 minute limit on the second; stopped there | not tried                                                                                                                        | —                            |
+| Model         | Size                 | Memory       | Fictional pages (39 results)                                                                               | Real scans (124 results)                                                                                                          | Time per page             |
+| ------------- | -------------------- | ------------ | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `gemma4:e2b`  | 5.1B, Q4_K_M         | 7.1 GB       | 26 rows found, 23 values right; no ID number on any page                                                   | 47 rows found, 19 values and 9 ranges agree; 43 rows the reference doesn't have; 13 of 44 header fields                           | 12–17 s                   |
+| `qwen3-vl:4b` | 4.4B, Q4_K_M, 3.3 GB | 5.5 GB       | 39/39, every value, unit, range and flag right; collection date missed on 1 of 3 pages                     | 119 rows found; 111 values, 115 units, 102 ranges and 115 flags agree; 24 rows the reference doesn't have; 43 of 44 header fields | 30 s fictional, 49 s real |
+| `qwen3-vl:8b` | 8.8B, Q4_K_M, 6.1 GB | not measured | no page read: 3 invalid replies on the first page (93 s), the 10 minute limit on the second; stopped there | not tried                                                                                                                         | —                         |
 
 **`gemma4:e2b`** always returned valid JSON, with no retries, but reads too
 little of the page correctly to use: most rows are missing, and many it did
 return are merged or renamed. Loaded, it's also too large for an 8 GB machine.
 
-**`qwen3-vl:4b`** is the first small model close to the large ones. On the real
-scans it read all 17 pages with no failures or retries. All 12 missing rows came
-from one page, where it returned 2 of 14. Of the differences from the reference,
-ranges were the most common (17), then values (8), markers (4) and units (3);
-the reference is itself unchecked, so some of these may be the reference's
-mistakes. On real scans it isn't much faster than the large models (45 s against
-about a minute a page).
+**`qwen3-vl:4b`** is the first small model close to the large ones (figures
+above are with the current prompt; see [Prompt changes](#prompt-changes)). On
+the real scans it read all 17 pages with no failures and one retry, and missed 5
+rows across three pages. Of the differences from the reference, ranges were the
+most common (17), then values (8), markers (4) and units (4); the reference is
+itself unchecked, so some of these may be the reference's mistakes. On real
+scans it isn't much faster than the large models (49 s against about a minute a
+page).
 
 - **Fit:** 5.5 GB loaded with the app's 16k context. That should fit a 12 GB
   graphics card, but is likely too tight for an 8 GB Mac, where macOS lets the
@@ -102,12 +104,57 @@ about a minute a page).
 **`qwen3-vl:8b`** failed even with the fallback, so its real-scan run was
 skipped.
 
+## Prompt changes
+
+Six changes to `src/ocr-prompt.md`, aimed at the problems above: write each row
+once and close the JSON (runaway repetition); a check before finishing that
+every row is in `tests` (a page with 2 of 14 rows); one rule for what counts as
+a test row (extra rows); an example of a range printed over several lines
+(ranges were the most common difference); a short recap at the end; and empty
+lists as `[]`. Each model was run with the old and new prompt, one run at a
+time.
+
+| Real scans (124 results)             | `qwen3-vl:4b` old | `qwen3-vl:4b` new | `qwen3.8:27b-mlx` new |
+| ------------------------------------ | ----------------- | ----------------- | --------------------- |
+| Rows found                           | 112               | 119               | 124                   |
+| Values / units agree                 | 104 / 109         | 111 / 115         | 124 / 124             |
+| Ranges / flags agree                 | 95 / 108          | 102 / 115         | 122 / 124             |
+| Rows the reference doesn't have      | 29                | 24                | 0                     |
+| Header fields                        | 43 of 44          | 43 of 44          | 44 of 44              |
+| Failed pages, retries (all 17 pages) | 0, 0              | 0, 1              | 0, 0                  |
+| Time per page                        | 45 s              | 49 s              | 79 s                  |
+
+- **`qwen3-vl:4b`:** 7 more rows found and 7 more values agree. The page with 2
+  of 14 rows now has 12; two other pages lost a row or two. Values and ranges
+  that disagree stayed the same (8 and 17), so the gain is in finding rows, not
+  reading them. Fictional pages were unchanged at 39/39, taking 30 s a page
+  instead of 22–28 s.
+- **`qwen3.8:27b-mlx`:** the reference is its own reading with the old prompt,
+  so this shows how much the new prompt changes a large model: all 124 rows,
+  values, units and flags the same, and 2 ranges on one page read differently
+  (both printed over several lines; which reading is right wasn't checked).
+  Fictional pages stayed at 39/39, at 60–64 s a page instead of 55–60 s.
+- **`gemma4:31b-mlx`:** run through the app's page reader, as before. With the
+  old prompt 2 of 17 real pages repeated themselves (one recovered, one failed)
+  and pages averaged 103 s. With the new prompt no attempt was stopped for
+  repeating, no page failed or retried, and pages averaged 78 s (31–110 s,
+  against 32–121 s for the pages that went cleanly before), so the time saved is
+  the repeats. One clean run doesn't prove the loop is gone, but it didn't
+  appear. Fictional pages stayed at 39/39, at 64–67 s a page instead of 60–66 s.
+  This run counted rows, not accuracy against the reference.
+- **`glm-ocr:latest` and `deepseek-ocr:latest`:** still no use with the app's
+  prompt. `glm-ocr` failed the first fictional page (three invalid replies in 31
+  s, against 170 s before), then wrote to the 8,192-token cap on the second;
+  Ollama never closed that reply, so the page would have waited out the 10
+  minute limit, and the run was stopped. `deepseek-ocr` returned valid JSON with
+  0 of 13 rows on two pages (patient name and ID only) and failed the third.
+  Their real-scan runs were skipped.
+
 ## Ideas not yet tried
 
 1. **Two steps:** `glm-ocr` transcribes the page, then a small text-only model
    (3–4B) turns the text into the app's JSON. Loaded one after the other, memory
    stays around 3 GB.
 2. **`qwen3-vl:4b` on smaller machines:** check it actually loads and keeps its
-   speed on a 12 GB graphics card and an 8 GB Mac, and whether a shorter prompt
-   (or a smaller context) recovers the page where it missed rows.
+   speed on a 12 GB graphics card and an 8 GB Mac.
 3. Harder pages (phone photos, skew, compression) to separate the large models.

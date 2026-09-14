@@ -14,9 +14,14 @@ schema you were given. Every example below uses made-up values.
 2. **Values stay verbatim.** Keep operators, trailing zeros and decimal places:
    `7.0`, `< 15.00`, `>=60`, `0.00`. Never turn `5.0` into `5`.
 3. **Blank means null.** A label with nothing after it is `null`, not `""`.
+   A list with nothing in it (`headings`, `notes`, `headerFields`,
+   `interpretation`, `specimenNotes`, `warnings`) is `[]`.
 4. **Never invent a test.** Only results actually printed on *this* page.
 5. **Unsure? Say so.** Transcribe your best reading and add a note to
    `warnings` naming the field, e.g. `"Creatinine could be 61 or 67"`.
+6. **Each row once.** Work down the page from top to bottom and transcribe
+   each printed row exactly once. When you reach the last row, close the JSON.
+   Never start the list over.
 
 ## Header
 
@@ -52,6 +57,11 @@ the validating technologist, and so on. Skip labels with no value.
 
 ## Test rows
 
+**A row is a test only when a result is printed for it**: a number, a word such
+as `Negative`, or a comparator such as `< 5`. Column headers (`Test`, `Result`,
+`Units`, `Reference Range`), section headings, table rows from interpretation
+material and footnotes are not tests, even when they look like a test name.
+
 For each printed result row, emit one entry in `tests`:
 
 - `headings`: the section headings the row sits under, outermost first, e.g.
@@ -77,12 +87,27 @@ Each measurement is `{ "value", "unit", "referenceText", "marker" }`:
 - `unit`: the unit printed for that value, or `null`.
 - `referenceText`: that value's reference range exactly as printed, including
   any parentheses — `(120-150)`, `< 5.2`, `(Negative)`. When the range column
-  spans several lines, join them with `"; "`. `null` when none is printed for
-  that value.
+  spans several lines, join them with `"; "` (example below). `null` when none
+  is printed for that value.
 - `marker`: an abnormal-result marker printed for that value, copied exactly —
   a letter such as `H` or `L`, or a symbol such as `*`. If the laboratory marks
   an abnormal value only by underlining or bold with no letter, use `"*"`.
   Otherwise `null`.
+
+A range printed over several lines belongs to the one value beside it:
+
+```
+Testosterone        1.2   nmol/L   Male: 8.6 - 29.0
+                                   Female: 0.3 - 1.7
+```
+
+```json
+{ "value": "1.2", "unit": "nmol/L", "referenceText": "Male: 8.6 - 29.0; Female: 0.3 - 1.7", "marker": null }
+```
+
+The second line is not a new test. If the range runs past the bottom of the
+page, copy the lines on this page; the rest is the next page's
+`continuationText`.
 
 Most rows have one measurement. Some print **several results for one test**,
 and each becomes its own measurement. Recognise these three layouts:
@@ -193,3 +218,11 @@ An interpretation or guideline table continuing from the previous page is
 
 Set `page` and `pageCount` from the printed footer (`Page 2 of 6`,
 `Page :002`) when legible; otherwise use {{PAGE}} and {{PAGE_COUNT}}.
+
+## Before you finish
+
+- Every printed result row on the page is in `tests`, including rows near the
+  bottom, rows after a new section heading, and rows in a second column.
+- Each row appears exactly once.
+- Values, units and ranges are copied as printed; nothing is calculated.
+- Blank labels are `null`; empty lists are `[]`.
