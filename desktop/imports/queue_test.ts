@@ -271,3 +271,51 @@ Deno.test("clearing forgets every import and stops the one reading", async () =>
   await queue.idle();
   assertEquals(reader.calls.length, 1, "nothing else was read");
 });
+
+Deno.test("the queue announces imports that become ready or fail, not cancelled ones", async () => {
+  const reader = new StandInReader();
+  const finished: unknown[] = [];
+  const queue = new ImportQueue({
+    pagesFrom: pagesFromUpload,
+    openReader: reader.open,
+    catalog: catalogV1,
+    onFinished: (job) => finished.push([job.id, job.status]),
+  });
+
+  queue.add(photos("a.png"));
+  await queue.idle();
+  reader.failure = new ImportError("Couldn't reach Ollama. Is it running?");
+  queue.add(photos("b.png"));
+  await queue.idle();
+
+  reader.failure = null;
+  reader.hold = true;
+  queue.add(photos("c.png"));
+  await until(() => reader.calls.length === 3);
+  queue.cancel(3);
+  await queue.idle();
+
+  assertEquals(finished, [[1, "ready"], [2, "failed"]]);
+});
+
+Deno.test("an announcement that throws doesn't stop reading", async () => {
+  const reader = new StandInReader();
+  const queue = new ImportQueue({
+    pagesFrom: pagesFromUpload,
+    openReader: reader.open,
+    catalog: catalogV1,
+    onFinished: () => {
+      throw new Error("notifications unavailable");
+    },
+  });
+  const error = console.error;
+  console.error = () => {};
+  try {
+    queue.add(photos("a.png"));
+    queue.add(photos("b.png"));
+    await queue.idle();
+  } finally {
+    console.error = error;
+  }
+  assertEquals(statuses(queue), [[1, "ready"], [2, "ready"]]);
+});

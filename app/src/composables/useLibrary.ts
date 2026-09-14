@@ -21,6 +21,7 @@ import { plural } from "../lib/format.ts";
 import { beginActivity } from "./useActivity.ts";
 import { initChartLibrary } from "./useChartLibrary.ts";
 import { initImports } from "./useImports.ts";
+import { initNotifications } from "./useNotifications.ts";
 import { initOcrSettings } from "./useOcrSettings.ts";
 import { initTheme } from "./useTheme.ts";
 
@@ -83,6 +84,7 @@ export async function startLibrary(): Promise<void> {
     await initTheme(api.value.bindings, settings);
     initChartLibrary(api.value.bindings, settings);
     initOcrSettings(api.value.bindings, settings);
+    initNotifications(api.value.bindings, settings);
     status.value = await api.value.bindings.getStartupStatus();
     if (!status.value.ok) {
       phase.value = "unavailable";

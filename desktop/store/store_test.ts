@@ -308,6 +308,7 @@ Deno.test("settings default, persist across reopening, and survive clearAll", ()
       chartLibrary: "vega-lite",
       ollamaHost: "http://localhost:11434",
       ocrModel: null,
+      notifyWhenRead: true,
     });
     assertEquals(store.updateSettings({ theme: "dark" }, now), {
       theme: "dark",
@@ -315,6 +316,7 @@ Deno.test("settings default, persist across reopening, and survive clearAll", ()
       chartLibrary: "vega-lite",
       ollamaHost: "http://localhost:11434",
       ocrModel: null,
+      notifyWhenRead: true,
     });
     store.addReport(syntheticReport(), "a.json", catalogV1, now);
     store.clearAll();
@@ -327,6 +329,7 @@ Deno.test("settings default, persist across reopening, and survive clearAll", ()
       chartLibrary: "vega-lite",
       ollamaHost: "http://localhost:11434",
       ocrModel: null,
+      notifyWhenRead: true,
     });
     assertEquals(store.listPatients(), []);
     store.close();

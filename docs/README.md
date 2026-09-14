@@ -46,6 +46,7 @@ feature's spec, plan and tasks.
 | 007 | [Reading settings](features/007-reading-settings/spec.md)                | Done   |
 | 008 | [PDF and photo import](features/008-pdf-and-photo-import/spec.md)        | Done   |
 | 009 | [Review before saving](features/009-review-before-saving/spec.md)        | Done   |
+| 010 | [Reading notifications](features/010-reading-notifications/spec.md)      | Done   |
 
 ## Writing new docs
 

@@ -137,7 +137,6 @@ convention; the owner chose to keep this layout.
 
 - Packaging the desktop app for release ("phase 6"): deferred; the owner has
   something in mind, so ask before starting.
-- System notifications when a long PDF reading finishes: proposed, not built.
 - Per-model prompts: proposed, not built. Any prompt change is compared on the
   fictional pages and the real scans first (see `docs/ocr-models.md`).
 - Small models for 8 GB Macs and 12 GB graphics cards: parked by the owner;

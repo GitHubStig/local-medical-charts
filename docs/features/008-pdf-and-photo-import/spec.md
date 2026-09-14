@@ -49,4 +49,4 @@ minute.
 ## Out of scope
 
 - Keeping uploads or readings across restarts.
-- System notifications (proposed later).
+- System notifications ([feature 010](../010-reading-notifications/spec.md)).

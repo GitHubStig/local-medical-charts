@@ -5,6 +5,7 @@ import {
   unavailableBindings,
 } from "./bindings.ts";
 import type { DesktopBindings, ImportJob, StartupStatus } from "./contract.ts";
+import type { ReadingNotice } from "./imports/notice.ts";
 import type { PageReader } from "./imports/reader.ts";
 import type { OllamaService } from "./ocr/ollama.ts";
 import { packFiles } from "./imports/packed-files.ts";
@@ -52,9 +53,10 @@ function standInPageReader(opened: string[] = []) {
 }
 
 function realBindings(
-  { ollama = recordingOllama(), pageReader = standInPageReader() }: {
+  { ollama = recordingOllama(), pageReader = standInPageReader(), notify }: {
     ollama?: OllamaService;
     pageReader?: (host: string, model: string) => Promise<PageReader>;
+    notify?: (notice: ReadingNotice) => void;
   } = {},
 ) {
   const store = ReportStore.open(":memory:");
@@ -65,6 +67,7 @@ function realBindings(
       startup,
       ollama,
       pageReader,
+      notify,
       now,
     }),
     close: () => store.close(),
@@ -125,6 +128,7 @@ Deno.test("with the database unavailable, status explains, settings default, the
     chartLibrary: "vega-lite",
     ollamaHost: "http://localhost:11434",
     ocrModel: null,
+    notifyWhenRead: true,
   });
   await assertRejects(
     () => b.listPatients(),
@@ -287,6 +291,32 @@ Deno.test("real bindings: uploads are checked, and files that can't be read are 
       BindingError,
       "page must be a positive integer",
     );
+  } finally {
+    close();
+  }
+});
+
+Deno.test("real bindings: a finished reading is announced only while the setting is on", async () => {
+  const notices: ReadingNotice[] = [];
+  const { bindings: b, close } = realBindings({
+    notify: (notice) => notices.push(notice),
+  });
+  try {
+    await b.updateSettings({ ocrModel: "vision:27b" });
+    const pdf = packFiles([{ name: "example-lab.pdf", bytes: examplePdf() }]);
+    assert((await b.startImport(pdf.files, pdf.bytes)).ok);
+    const [job] = await settledImports(b);
+    assertEquals(notices, [{
+      title: "Report ready to review",
+      body: "2 pages read. Check the results before saving.",
+      tag: `medical-charts-import-${job.id}`,
+      href: `#/review/${job.id}`,
+    }]);
+
+    await b.updateSettings({ notifyWhenRead: false });
+    assert((await b.startImport(pdf.files, pdf.bytes)).ok);
+    await settledImports(b);
+    assertEquals(notices.length, 1);
   } finally {
     close();
   }
