@@ -163,6 +163,24 @@ convention; the owner chose to keep this layout.
   (samples would need the other four cell types). Flint 0.5.1 lists these for
   all four libraries, but none has been built yet, so first check each renders
   in all four. Avoid radar, rose, pie and dual-axis charts.
+- Rebuild benchmark: parked by the owner. The idea is to hand a new AI model
+  `docs/` in an empty repo and compare what it builds against this repo.
+  - **Missing from `docs/` today:** the report JSON format, the analyte catalog,
+    the reading prompt, the full bindings contract, the samples and exact
+    versions. Provide these as fixed files rather than let each model invent
+    them.
+  - **Include:** `design/`, so every model has the same target.
+  - **Keep back:** the screenshots (they're the answer), stored with the grading
+    pack.
+  - **Grading:** unit tests can't be reused as they are. Turn their behaviour
+    into hidden outside-in tests: merged report JSON on fictional pages, and the
+    contract suite against a fixed `DesktopBindings`. Add a scorecard from each
+    spec's acceptance criteria.
+  - **Watch:** a public repo can leak into training data; the docs hint at
+    solutions (plans name files); `AGENTS.md` gotchas are hints too; grade
+    without a live Ollama.
+  - **First step when resumed:** a gap audit of what a rebuild needs that
+    `docs/` doesn't pin down.
 - Flint feature request for reference bands: drafted in
   `docs/proposals/flint-reference-bands.md`, not posted; parked by the owner.
   The owner posts it from their own GitHub account.
