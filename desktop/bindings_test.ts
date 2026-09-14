@@ -5,6 +5,7 @@ import {
   unavailableBindings,
 } from "./bindings.ts";
 import type { StartupStatus } from "./contract.ts";
+import type { OllamaService } from "./ocr/ollama.ts";
 import { defineContractTests } from "./contract_suite.ts";
 import { ReportStore } from "./store/store.ts";
 import { catalogV1 } from "./store/testing.ts";
@@ -20,10 +21,30 @@ const startup: StartupStatus = {
 };
 const now = () => new Date("2026-01-01T00:00:00.000Z");
 
-function realBindings() {
+/** Records what the bindings ask Ollama; never touches the network. */
+function recordingOllama(calls: unknown[] = []): OllamaService {
+  return {
+    listModels: (host) => {
+      calls.push(["listModels", host]);
+      return Promise.resolve({ ok: false, host, error: "stand-in" });
+    },
+    test: (host, model) => {
+      calls.push(["test", host, model]);
+      return Promise.resolve({ host, model, ok: false, checks: [] });
+    },
+  };
+}
+
+function realBindings(ollama = recordingOllama()) {
   const store = ReportStore.open(":memory:");
   return {
-    bindings: createBindings({ store, catalog: catalogV1, startup, now }),
+    bindings: createBindings({
+      store,
+      catalog: catalogV1,
+      startup,
+      ollama,
+      now,
+    }),
     close: () => store.close(),
   };
 }
@@ -80,6 +101,8 @@ Deno.test("with the database unavailable, status explains, settings default, the
     theme: "system",
     selectedPatientId: null,
     chartLibrary: "vega-lite",
+    ollamaHost: "http://localhost:11434",
+    ocrModel: null,
   });
   await assertRejects(
     () => b.listPatients(),
@@ -91,4 +114,25 @@ Deno.test("with the database unavailable, status explains, settings default, the
     BindingError,
     "unavailable",
   );
+});
+
+Deno.test("real bindings: OCR checks use the saved Ollama address and model", async () => {
+  const calls: unknown[] = [];
+  const { bindings: b, close } = realBindings(recordingOllama(calls));
+  try {
+    await b.listOcrModels();
+    await b.testOcr();
+    await b.updateSettings({
+      ollamaHost: "http://192.168.1.20:11434/",
+      ocrModel: "qwen3.8:27b-mlx",
+    });
+    await b.testOcr();
+    assertEquals(calls, [
+      ["listModels", "http://localhost:11434"],
+      ["test", "http://localhost:11434", null],
+      ["test", "http://192.168.1.20:11434", "qwen3.8:27b-mlx"],
+    ]);
+  } finally {
+    close();
+  }
 });

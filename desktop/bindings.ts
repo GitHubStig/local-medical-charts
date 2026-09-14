@@ -9,6 +9,7 @@ import type {
   ImportOutcome,
   StartupStatus,
 } from "./contract.ts";
+import type { OllamaService } from "./ocr/ollama.ts";
 import { withoutPages } from "./report-data.ts";
 import { DEFAULT_SETTINGS, parseSettingsPatch } from "./settings.ts";
 import { type ReportStore, StoreError } from "./store/store.ts";
@@ -53,9 +54,11 @@ export function createBindings(deps: {
   store: ReportStore;
   catalog: CatalogIndex;
   startup: StartupStatus;
+  /** Talks to Ollama; tests pass a stand-in. */
+  ollama: OllamaService;
   now?: () => Date;
 }): DesktopBindings {
-  const { store, catalog, startup } = deps;
+  const { store, catalog, startup, ollama } = deps;
   const now = deps.now ?? (() => new Date());
 
   return {
@@ -106,6 +109,16 @@ export function createBindings(deps: {
 
     updateSettings: (patch) =>
       settle(() => store.updateSettings(parseSettingsPatch(patch), now())),
+
+    listOcrModels: () =>
+      settle(() => store.getSettings()).then((s) =>
+        ollama.listModels(s.ollamaHost)
+      ),
+
+    testOcr: () =>
+      settle(() => store.getSettings()).then((s) =>
+        ollama.test(s.ollamaHost, s.ocrModel)
+      ),
   };
 }
 
@@ -127,5 +140,7 @@ export function unavailableBindings(
     // Defaults still apply, so the window can follow the system theme while explaining the error.
     getSettings: () => Promise.resolve(DEFAULT_SETTINGS),
     updateSettings: fail,
+    listOcrModels: fail,
+    testOcr: fail,
   };
 }

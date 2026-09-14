@@ -30,6 +30,82 @@ import {
   normalizeSettings,
   parseSettingsPatch,
 } from "../../../desktop/settings.ts";
+import { ocrMessages } from "../../../desktop/ocr/messages.ts";
+import type { OcrModel, OcrTest } from "../../../desktop/contract.ts";
+
+/** What browser development shows as installed models. Fictional. */
+const FAKE_MODELS: OcrModel[] = [
+  {
+    name: "gemma3:27b",
+    readsImages: true,
+    parameterSize: "27B",
+    contextLength: 131072,
+  },
+  {
+    name: "llama3.3:70b",
+    readsImages: false,
+    parameterSize: "70B",
+    contextLength: 131072,
+  },
+  {
+    name: "nomic-embed-text",
+    readsImages: false,
+    parameterSize: "137M",
+    contextLength: 2048,
+  },
+  {
+    name: "qwen3.8:27b-mlx",
+    readsImages: true,
+    parameterSize: "27.8B",
+    contextLength: 262144,
+  },
+];
+
+/** Test connection against the fake model list: no network, same wording as the real checks. */
+function fakeOcrTest(host: string, model: string | null): OcrTest {
+  const checks: OcrTest["checks"] = [
+    {
+      step: "reachable",
+      ok: true,
+      message: ocrMessages.running("0.0.0-fake", host),
+    },
+  ];
+  const found = FAKE_MODELS.find((m) => m.name === model);
+  if (!model) {
+    checks.push({
+      step: "installed",
+      ok: false,
+      message: ocrMessages.noModel(),
+    });
+  } else if (!found) {
+    checks.push({
+      step: "installed",
+      ok: false,
+      message: ocrMessages.notInstalled(model),
+    });
+  } else {
+    checks.push({
+      step: "installed",
+      ok: true,
+      message: ocrMessages.installed(model),
+    });
+    checks.push(
+      found.readsImages
+        ? { step: "reads-images", ok: true, message: ocrMessages.readOk(1.2) }
+        : {
+          step: "reads-images",
+          ok: false,
+          message: ocrMessages.cantReadImages(model),
+        },
+    );
+  }
+  return {
+    host,
+    model,
+    ok: checks.length === 3 && checks.every((c) => c.ok),
+    checks,
+  };
+}
 import {
   idMatchWarnings,
   sameNameAndBirthDate,
@@ -300,5 +376,16 @@ export function createFakeBindings(
         options.storage?.setItem(SETTINGS_KEY, JSON.stringify(settings));
         return { ...settings };
       }),
+
+    listOcrModels: () =>
+      settle(() => ({
+        ok: true as const,
+        host: settings.ollamaHost,
+        version: "0.0.0-fake",
+        models: FAKE_MODELS.map((m) => ({ ...m })),
+      })),
+
+    testOcr: () =>
+      settle(() => fakeOcrTest(settings.ollamaHost, settings.ocrModel)),
   };
 }
