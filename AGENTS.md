@@ -163,6 +163,9 @@ convention; the owner chose to keep this layout.
   (samples would need the other four cell types). Flint 0.5.1 lists these for
   all four libraries, but none has been built yet, so first check each renders
   in all four. Avoid radar, rose, pie and dual-axis charts.
+- Flint feature request for reference bands: drafted in
+  `docs/proposals/flint-reference-bands.md`, not posted; parked by the owner.
+  The owner posts it from their own GitHub account.
 - Before publishing: replace the `--prefix` usage example in
   `src/ocr-reports.ts` with a neutral one, and nudge four sample values that
   coincide with real results (owner will do this cleanup).
