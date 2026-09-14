@@ -8,9 +8,10 @@ import type { ChartPalette } from "../lib/charts/palette.ts";
 import type { ChartTooltip, RenderedChart } from "../lib/charts/types.ts";
 import type { Series } from "../lib/series.ts";
 
-const props = withDefaults(defineProps<{ series: Series; height?: number }>(), {
-  height: 64,
-});
+const props = withDefaults(
+  defineProps<{ series: Series; height?: number; axes?: boolean }>(),
+  { height: 64, axes: false },
+);
 
 const element = ref<HTMLElement | null>(null);
 const { width } = useElementSize(element);
@@ -30,6 +31,10 @@ function readPalette(): ChartPalette {
     bandEdge: token("band-edge"),
     critical: token("critical"),
     surface: token("surface"),
+    muted: token("muted"),
+    grid: token("hairline"),
+    axis: token("line-strong"),
+    font: getComputedStyle(document.body).fontFamily,
   };
 }
 
@@ -51,6 +56,7 @@ async function draw() {
       palette: readPalette(),
       width: w,
       height: props.height,
+      axes: props.axes,
       onTooltip: (next) => (tooltip.value = next),
     });
     if (mine !== generation) return rendered.destroy();

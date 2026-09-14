@@ -18,12 +18,12 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip);
 export const chartjs: ChartBackend = {
   // Resolves once drawn: Chart.js draws synchronously when animation is off.
   // deno-lint-ignore require-await
-  async render(element, series, { palette, width, height, onTooltip }) {
+  async render(element, series, { palette, width, height, axes, onTooltip }) {
     const canvas = document.createElement("canvas");
     canvas.style.display = "block";
     element.replaceChildren(canvas);
 
-    const config = chartjsConfig(series, palette, { width, height });
+    const config = chartjsConfig(series, palette, { width, height }, axes);
     const options = config.options!;
     // Sharp on high-density screens: the canvas backs each CSS pixel with more.
     options.devicePixelRatio = globalThis.devicePixelRatio;

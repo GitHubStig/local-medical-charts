@@ -50,8 +50,12 @@ export type ChartBand = {
 /** A band's real limit, drawn as a thin edge line. */
 export type BandEdge = { start: number; end: number; value: number };
 
-export function chartBands(series: Series): ChartBand[] {
-  const [bottom, top] = series.domain?.y ?? [0, 0];
+/** `window` is the value range the chart shows; open limits run to its edges. */
+export function chartBands(
+  series: Series,
+  window: readonly [number, number] = series.domain?.y ?? [0, 0],
+): ChartBand[] {
+  const [bottom, top] = window;
   return series.bands.map((band) => ({
     start: dateMs(band.start),
     end: dateMs(band.end),

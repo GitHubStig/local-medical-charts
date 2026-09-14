@@ -13,8 +13,11 @@ export type ChartTooltip = { text: string; x: number; y: number } | null;
 
 export type ChartOptions = {
   palette: ChartPalette;
+  /** The element's full size; axes, when shown, take their room from it. */
   width: number;
   height: number;
+  /** Value and date axes, for the large chart; cards stay bare. */
+  axes: boolean;
   onTooltip: (tooltip: ChartTooltip) => void;
 };
 

@@ -16,7 +16,13 @@ const PALETTE = {
   bandEdge: "#d3cfc6",
   critical: "#d03b3b",
   surface: "#ffffff",
+  muted: "#77706b",
+  grid: "#eeece7",
+  axis: "#d6d2ca",
+  font: "IBM Plex Sans, sans-serif",
 };
+/** The zoomed view's chart, with axes. */
+const LARGE = { width: 1088, height: 320 };
 const SIZE = { width: 294, height: 64 };
 
 async function alexSeries(key: string): Promise<Series> {
@@ -93,4 +99,41 @@ Deno.test("every sample chart builds a Chart.js config", async () => {
       assertEquals(plotted, s.points.length, s.key);
     }
   }
+});
+
+Deno.test("the large chart gets value and date axes, and names the latest range", async () => {
+  const alt = await alexSeries("alt");
+  const config = chartjsConfig(alt, PALETTE, LARGE, true) as Loose;
+  const { x, y } = config.options.scales;
+  assertEquals([y.display, y.min, y.max, y.ticks.stepSize], [true, 0, 60, 20]);
+  assertEquals(y.ticks.callback(40), "40");
+
+  const scale = { ticks: [] as Loose[] };
+  x.afterBuildTicks(scale);
+  assertEquals(scale.ticks.length, 4);
+  assertEquals(x.ticks.callback(scale.ticks[0].value), [
+    "12 Nov 2024",
+    "Northside Pathology",
+  ]);
+
+  // The plugin writes the range just past the plot's right edge, level with its band.
+  const written: unknown[] = [];
+  const ctx = {
+    save() {},
+    restore() {},
+    fillText: (...args: unknown[]) => written.push(args),
+  };
+  config.plugins[0].afterDraw({
+    ctx,
+    chartArea: { right: 968 },
+    scales: { y: { getPixelForValue: (v: number) => 300 - v } },
+  });
+  assertEquals(written, [["< 35", 976, 282.5]]);
+
+  // Cards stay bare.
+  const card = chartjsConfig(alt, PALETTE, SIZE) as Loose;
+  assertEquals(
+    [card.options.scales.x.display, card.options.scales.y.display],
+    [false, false],
+  );
 });

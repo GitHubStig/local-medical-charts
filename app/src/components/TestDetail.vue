@@ -91,7 +91,7 @@ function closeOnBackdrop(event: MouseEvent) {
           <ChartLibraryToggle />
         </div>
 
-        <TestChart v-if="series.domain" :series="series" :height="280" />
+        <TestChart v-if="series.domain" :series="series" :height="320" axes />
 
         <div class="overflow-x-auto">
           <table class="w-full border-collapse text-left text-sm">

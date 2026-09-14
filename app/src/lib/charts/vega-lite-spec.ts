@@ -1,17 +1,19 @@
 /**
  * The Vega-Lite chart for a Series: Flint assembles the line chart, then an
- * overlay layers the lab's reference bands and the reading markers around it.
- * No DOM here, so Deno tests can build and render it.
+ * overlay layers the lab's reference bands and the reading markers around it,
+ * with axes on the large chart. No DOM here, so Deno tests can build and
+ * render it.
  */
 import { assembleVegaLite } from "flint-chart/vegalite";
 import { parse, View } from "vega";
 import { compile, type TopLevelSpec } from "vega-lite";
 import { dateMs, type Series } from "../series.ts";
+import { AXIS_MARGIN, chartAxes } from "./axes.ts";
 import { bandEdges, chartBands, chartRows, flintInput } from "./flint-input.ts";
 import type { ChartPalette } from "./palette.ts";
 
-/** Room around the plot so markers at the edges aren't clipped. */
-export const PADDING = 6;
+/** Room around a bare chart so markers at the edges aren't clipped. */
+const PADDING = 6;
 const MARKER_SIZE = 64;
 
 /** Flint's own bookkeeping (editor options, pivots) isn't part of Vega-Lite. */
@@ -21,25 +23,85 @@ function withoutFlintKeys(spec: Record<string, unknown>) {
   );
 }
 
+/** `size` is the whole chart; with `axes`, the labels take their room from it. */
 export function vegaLiteSpec(
   series: Series,
   palette: ChartPalette,
   size: { width: number; height: number },
+  axes = false,
 ): TopLevelSpec {
   const domain = series.domain;
   if (!domain) throw new Error(`${series.name} has no readings to chart`);
+  const margin = axes ? AXIS_MARGIN : {
+    top: PADDING,
+    right: PADDING,
+    bottom: PADDING,
+    left: PADDING,
+  };
+  const plot = {
+    width: size.width - margin.left - margin.right,
+    height: size.height - margin.top - margin.bottom,
+  };
+  const frame = axes ? chartAxes(series, plot.width) : null;
   const flint = withoutFlintKeys(
-    assembleVegaLite(flintInput(series, size)) as Record<string, unknown>,
+    assembleVegaLite(flintInput(series, plot)) as Record<string, unknown>,
   );
-  const [bottom, top] = domain.y;
+  const [bottom, top] = frame?.y.domain ?? domain.y;
 
-  // Every layer shares one pair of hidden axes. The window is set once, on the
-  // line: Vega-Lite warns when layers restate the same domain.
-  const x = { field: "date", type: "temporal" as const, axis: null };
+  const label = {
+    labelColor: palette.muted,
+    labelFont: palette.font,
+    labelFontSize: 11,
+  };
+  // Tick values are milliseconds; each label is looked up from the shared axes,
+  // as two lines (date, then lab).
+  const xLabels = Object.fromEntries(
+    frame?.x.ticks.map((tick) => [tick.value, tick.lines]) ?? [],
+  );
+  const xAxis = frame
+    ? {
+      ...label,
+      values: frame.x.ticks.map((tick) => tick.value),
+      labelExpr: `${JSON.stringify(xLabels)}[toString(+datum.value)]`,
+      labelLineHeight: 15,
+      labelPadding: 6,
+      // The shared axes already thin labels to fit; Vega's default limit
+      // would cut lab names short ("Northside …").
+      labelLimit: 0,
+      labelOverlap: false,
+      grid: false,
+      domainColor: palette.axis,
+      tickColor: palette.axis,
+      title: null,
+    }
+    : null;
+  const yAxis = frame
+    ? {
+      ...label,
+      values: frame.y.ticks,
+      // Plain numbers ("20", "1,000"): "~g" alone writes 20 as "2e+1".
+      format: ",.12~g",
+      labelPadding: 8,
+      grid: true,
+      gridColor: palette.grid,
+      domain: false,
+      ticks: false,
+      title: null,
+    }
+    : null;
+
+  // Every layer shares one pair of axes. The window is set once, on the line:
+  // Vega-Lite warns when layers restate the same domain.
+  const x = {
+    field: "date",
+    type: "temporal" as const,
+    axis: xAxis,
+    title: null,
+  };
   const y = {
     field: "value",
     type: "quantitative" as const,
-    axis: null,
+    axis: yAxis,
     title: null,
   };
   const window = {
@@ -53,7 +115,7 @@ export function vegaLiteSpec(
     },
   };
 
-  const bands = chartBands(series);
+  const bands = chartBands(series, [bottom, top]);
   const edges = bandEdges(series);
   const colour = {
     condition: { test: "datum.flagged", value: palette.critical },
@@ -61,9 +123,9 @@ export function vegaLiteSpec(
   };
 
   return {
-    width: size.width,
-    height: size.height,
-    padding: PADDING,
+    width: plot.width,
+    height: plot.height,
+    padding: margin,
     autosize: { type: "none" },
     background: "transparent",
     config: {
@@ -144,8 +206,28 @@ export function vegaLiteSpec(
         },
         encoding: { x, y, tooltip: { field: "tooltip" } },
       },
+      // The latest lab range, written just past the right edge of its band.
+      ...(frame?.rangeLabel
+        ? [{
+          data: { values: [frame.rangeLabel] },
+          mark: {
+            type: "text" as const,
+            align: "left" as const,
+            baseline: "middle" as const,
+            dx: 8,
+            color: palette.muted,
+            font: palette.font,
+            fontSize: 11,
+          },
+          encoding: {
+            x: { value: plot.width },
+            y: { ...y, field: "y" },
+            text: { field: "text" },
+          },
+        }]
+        : []),
     ],
-  };
+  } as TopLevelSpec;
 }
 
 /** Compiles to Vega, collecting Vega-Lite's warnings instead of logging them. */
