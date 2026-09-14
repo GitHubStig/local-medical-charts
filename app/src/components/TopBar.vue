@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useImports } from "../composables/useImports.ts";
 import { useLibrary } from "../composables/useLibrary.ts";
 import AppLogo from "./AppLogo.vue";
 import ChartLibraryToggle from "./ChartLibraryToggle.vue";
@@ -11,13 +12,8 @@ import Icon from "./Icon.vue";
 /** `active` marks the page the bar sits on, e.g. the settings gear while on Settings. */
 defineProps<{ active?: "settings" }>();
 
-const {
-  patients,
-  selectedPatientId,
-  selectPatient,
-  busy,
-  importFiles,
-} = useLibrary();
+const { patients, selectedPatientId, selectPatient, busy } = useLibrary();
+const { addFiles, starting } = useImports();
 </script>
 
 <template>
@@ -48,10 +44,10 @@ const {
       <ChartLibraryToggle compact />
       <ThemeToggle compact />
       <FilePickerButton
-        :disabled="busy"
+        :disabled="busy || starting"
         title="Add reports"
         class="flex h-11 items-center gap-2 rounded-lg bg-ink px-3.5 text-sm font-medium whitespace-nowrap text-page disabled:opacity-60 lg:px-4"
-        @files="importFiles"
+        @files="addFiles"
       >
         <Icon name="plus" />
         <span class="max-lg:sr-only">Add reports</span>

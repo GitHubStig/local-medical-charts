@@ -3,25 +3,33 @@ import { useDropZone } from "@vueuse/core";
 import { computed, ref } from "vue";
 import AppLogo from "../components/AppLogo.vue";
 import FilePickerButton from "../components/FilePickerButton.vue";
+import Icon from "../components/Icon.vue";
 import ImportResults from "../components/ImportResults.vue";
+import ImportsPanel from "../components/ImportsPanel.vue";
 import SettingsLink from "../components/SettingsLink.vue";
 import ThemeToggle from "../components/ThemeToggle.vue";
+import { useImports } from "../composables/useImports.ts";
 import { useLibrary } from "../composables/useLibrary.ts";
-import Icon from "../components/Icon.vue";
+import { useOcrSettings } from "../composables/useOcrSettings.ts";
 
-const { busy, lastImport, mode, importFiles } = useLibrary();
+const { busy, lastImport, mode } = useLibrary();
+const { addFiles, starting } = useImports();
+const { model } = useOcrSettings();
 
+const working = computed(() => busy.value || starting.value);
 const page = ref<HTMLElement | null>(null);
 
 // The whole screen accepts drops; the card shows the drop state. Unhandled drops
 // are cancelled so the window never navigates to a dropped file.
 const { isOverDropZone } = useDropZone(page, {
-  onDrop: (files) => files && importFiles(files),
+  onDrop: (files) => files && addFiles(files),
   preventDefaultForUnhandled: true,
 });
 
-// Still on this screen after an import means nothing could be filed.
+// Still on this screen after a JSON import means nothing could be filed.
 const failedImport = computed(() => lastImport.value?.length ? lastImport.value : null);
+
+const FORMATS = ["PDF", "JPG", "PNG", "WebP", "JSON"];
 </script>
 
 <template>
@@ -44,28 +52,39 @@ const failedImport = computed(() => lastImport.value?.length ? lastImport.value 
       </div>
 
       <section
-        aria-label="Import reports"
-        class="flex w-full flex-col items-center gap-3.5 rounded-2xl border-[1.5px] border-dashed px-10 py-13 text-center transition-colors"
+        aria-label="Add reports"
+        class="flex w-full flex-col items-center gap-3.5 rounded-2xl border-[1.5px] border-dashed px-6 py-13 text-center transition-colors sm:px-10"
         :class="isOverDropZone ? 'border-series bg-series-wash' : 'border-line-strong bg-surface'"
       >
         <span class="flex size-14 items-center justify-center rounded-full bg-chip">
           <Icon name="upload" :size="24" class="text-ink" />
         </span>
         <h2 class="text-lg font-semibold">
-          {{ busy ? "Importing…" : isOverDropZone ? "Drop to import" : "Drop report files here" }}
+          {{ working ? "Adding…" : isOverDropZone ? "Drop to add" : "Drop lab reports here" }}
         </h2>
-        <p class="max-w-[440px] text-sm leading-normal text-ink-2">
-          Merged report JSON from the OCR pipeline, one or many at a time.
-          Per-page files are skipped.
+        <p class="max-w-[460px] text-sm leading-normal text-ink-2">
+          PDFs or photos of each page, one report or many at a time. Report JSON
+          from the command line works too.
         </p>
+        <ul class="flex flex-wrap justify-center gap-2" aria-label="File types">
+          <li
+            v-for="format in FORMATS"
+            :key="format"
+            class="rounded-full bg-chip px-2.5 py-1 text-xs font-medium whitespace-nowrap text-ink-2"
+          >
+            {{ format }}
+          </li>
+        </ul>
         <FilePickerButton
-          :disabled="busy"
+          :disabled="working"
           class="mt-1.5 flex h-11 items-center rounded-lg bg-ink px-4.5 text-sm font-medium text-page disabled:opacity-60"
-          @files="importFiles"
+          @files="addFiles"
         >
           Choose files
         </FilePickerButton>
       </section>
+
+      <ImportsPanel />
 
       <div
         v-if="failedImport"
@@ -75,13 +94,21 @@ const failedImport = computed(() => lastImport.value?.length ? lastImport.value 
         <ImportResults :outcomes="failedImport" />
       </div>
 
-      <p class="flex items-center gap-2 text-[13px] text-muted">
-        <Icon name="lock" :size="14" />
-        <span v-if="mode === 'fake'">
-          Browser development: fictional sample data, kept in this tab only.
-        </span>
-        <span v-else>Stays on this computer, in a local SQLite database.</span>
-      </p>
+      <div class="flex flex-col items-center gap-3">
+        <p class="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-center text-[13px] text-ink-2">
+          <span>PDFs and photos are read by a vision model in Ollama on this computer.</span>
+          <a href="#/settings" class="font-medium text-series hover:underline">
+            {{ model ? "Settings" : "Set up in Settings" }}
+          </a>
+        </p>
+        <p class="flex items-center gap-2 text-[13px] text-muted">
+          <Icon name="lock" :size="14" />
+          <span v-if="mode === 'fake'">
+            Browser development: fictional sample data, kept in this tab only.
+          </span>
+          <span v-else>Stays on this computer, in a local SQLite database.</span>
+        </p>
+      </div>
     </main>
   </div>
 </template>

@@ -8,7 +8,7 @@
  * one (argument errors, database failures, sample data) belongs in its own tests.
  */
 import { assert, assertEquals, assertRejects } from "@std/assert";
-import type { DesktopBindings } from "./contract.ts";
+import type { DesktopBindings, ImportJob } from "./contract.ts";
 import { syntheticReport } from "./store/testing.ts";
 
 export type ContractHarness = {
@@ -49,6 +49,73 @@ export function defineContractTests(
     }]);
     assert(!outcome.ok);
     assertEquals(outcome.fileNames, ["notes.txt"]);
+  });
+
+  test("photos are read in the background, reviewed, then saved as a report", async (b) => {
+    await b.updateSettings({ ocrModel: "vision-model:27b" });
+    const [start] = await b.startImports([{
+      files: [
+        { name: "IMG_1.png", bytes: PNG_BYTES },
+        { name: "IMG_2.png", bytes: PNG_BYTES },
+      ],
+    }]);
+    assert(start.ok);
+    assertEquals([start.job.source, start.job.pageCount], ["photos", 2]);
+
+    const [job] = await settledImports(b);
+    assertEquals([job.status, job.pagesRead, job.model], [
+      "ready",
+      2,
+      "vision-model:27b",
+    ]);
+    assert((job.resultCount ?? 0) > 0);
+
+    const review = await b.getImportReview(job.id);
+    assert(review && !("pages" in review.report), "no page transcriptions");
+    assertEquals(await b.getImportPage(job.id, 2), {
+      name: "IMG_2.png",
+      type: "image/png",
+      bytes: PNG_BYTES,
+      origin: "photo",
+    });
+
+    const saved = await b.saveImport(job.id);
+    assertEquals(saved.status, "added");
+    assertEquals(saved.fileName, "IMG_1.png, IMG_2.png");
+    assertEquals((await b.listPatients()).length, 1);
+    assertEquals(await b.listImports(), []);
+  });
+
+  test("an import waiting its turn can be cancelled, retried and discarded", async (b) => {
+    await b.updateSettings({ ocrModel: "vision-model:27b" });
+    const files = [{ name: "IMG_1.png", bytes: PNG_BYTES }];
+    const [first, second] = await b.startImports([{ files }, { files }]);
+    assert(first.ok && second.ok);
+    assertEquals(second.job.status, "waiting");
+
+    assertEquals((await b.cancelImport(second.job.id))?.status, "cancelled");
+    assertEquals(
+      (await b.retryImport(second.job.id))?.status !== "cancelled",
+      true,
+    );
+    assertEquals((await settledImports(b)).map((j) => j.status), [
+      "ready",
+      "ready",
+    ]);
+    assertEquals(await b.discardImport(second.job.id), true);
+    assertEquals((await b.listImports()).map((j) => j.id), [first.job.id]);
+  });
+
+  test("without a model, an import fails and says where to choose one", async (b) => {
+    await b.startImports([{
+      files: [{ name: "IMG_1.png", bytes: PNG_BYTES }],
+    }]);
+    const [job] = await settledImports(b);
+    assertEquals(job.status, "failed");
+    assertEquals(
+      job.error,
+      "Choose a model for reading PDFs and photos in Settings.",
+    );
   });
 
   test("startup status is ok", async (b) => {
@@ -280,4 +347,30 @@ export function defineContractTests(
       ocrModel: null,
     });
   });
+}
+
+/** A PNG signature: enough for an upload to count as a photo. */
+const PNG_BYTES = new Uint8Array([
+  0x89,
+  0x50,
+  0x4e,
+  0x47,
+  0x0d,
+  0x0a,
+  0x1a,
+  0x0a,
+]);
+
+/** Imports once none is waiting or reading. */
+export async function settledImports(
+  b: DesktopBindings,
+): Promise<ImportJob[]> {
+  for (let i = 0; i < 500; i++) {
+    const jobs = await b.listImports();
+    if (!jobs.some((j) => j.status === "waiting" || j.status === "reading")) {
+      return jobs;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2));
+  }
+  throw new Error("imports didn't settle");
 }

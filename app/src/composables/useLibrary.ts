@@ -18,6 +18,7 @@ import {
 } from "../lib/import-files.ts";
 import { importedPatient, resolveSelection } from "../lib/selection.ts";
 import { initChartLibrary } from "./useChartLibrary.ts";
+import { initImports } from "./useImports.ts";
 import { initOcrSettings } from "./useOcrSettings.ts";
 import { initTheme } from "./useTheme.ts";
 
@@ -85,6 +86,7 @@ export async function startLibrary(): Promise<void> {
       phase.value = "unavailable";
       return;
     }
+    initImports(api.value.bindings, { importJson: importFiles });
     await refreshPatients();
     // A remembered patient who has since been deleted falls back quietly, without
     // overwriting the saved choice until someone picks another patient.
@@ -111,6 +113,29 @@ async function withBusy<T>(work: () => Promise<T>): Promise<T | undefined> {
   }
 }
 
+/**
+ * Imports picked or dropped report JSON; every file gets one outcome, in picked
+ * order. When the new reports all belong to one patient, that patient is shown.
+ */
+function importFiles(files: readonly File[]) {
+  return withBusy(async () => {
+    const prepared = await prepareImport(files);
+    const toSend = filesToSend(prepared);
+    const sent = toSend.length ? await bindings().importReports(toSend) : [];
+    lastImport.value = mergeOutcomes(prepared, sent);
+    await refreshPatients();
+    selectPatient(
+      resolveSelection(
+        patients.value,
+        importedPatient(lastImport.value) ?? selectedPatientId.value,
+      ),
+    );
+    // The same patient may have gained reports, which a selection change wouldn't reload.
+    await loadDashboard();
+    return lastImport.value;
+  });
+}
+
 export function useLibrary() {
   return {
     phase: readonly(phase),
@@ -126,29 +151,7 @@ export function useLibrary() {
 
     selectPatient,
 
-    /**
-     * Imports picked or dropped files; every file gets one outcome, in picked
-     * order. When the new reports all belong to one patient, that patient is shown.
-     */
-    importFiles: (files: readonly File[]) =>
-      withBusy(async () => {
-        const prepared = await prepareImport(files);
-        const toSend = filesToSend(prepared);
-        const sent = toSend.length
-          ? await bindings().importReports(toSend)
-          : [];
-        lastImport.value = mergeOutcomes(prepared, sent);
-        await refreshPatients();
-        selectPatient(
-          resolveSelection(
-            patients.value,
-            importedPatient(lastImport.value) ?? selectedPatientId.value,
-          ),
-        );
-        // The same patient may have gained reports, which a selection change wouldn't reload.
-        await loadDashboard();
-        return lastImport.value;
-      }),
+    importFiles,
 
     /** Removes one report; a patient left with none drops out of the picker. */
     deleteReport: (reportId: number) =>

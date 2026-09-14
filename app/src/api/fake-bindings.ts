@@ -8,7 +8,9 @@
  * patient grouping and result rows.
  *
  * What it doesn't do: no SQLite, and no upgrading or re-merging reports against
- * the catalog — reports are used as imported. Never part of a production build.
+ * the catalog — reports are used as imported. PDFs and photos aren't really
+ * read: each page takes a moment and comes out as a fictional sample report.
+ * Never part of a production build.
  */
 import type {
   DashboardReport,
@@ -31,7 +33,17 @@ import {
   parseSettingsPatch,
 } from "../../../desktop/settings.ts";
 import { ocrMessages } from "../../../desktop/ocr/messages.ts";
-import type { OcrModel, OcrTest } from "../../../desktop/contract.ts";
+import { sniffType } from "../../../desktop/imports/file-types.ts";
+import { importMessages } from "../../../desktop/imports/messages.ts";
+import type {
+  ImportJob,
+  ImportPage,
+  ImportStart,
+  ImportUpload,
+  OcrModel,
+  OcrTest,
+} from "../../../desktop/contract.ts";
+import { SAMPLE_REPORTS } from "./samples.ts";
 
 /** What browser development shows as installed models. Fictional. */
 const FAKE_MODELS: OcrModel[] = [
@@ -128,6 +140,35 @@ type FakeReport = {
   importedAt: string;
 };
 
+type FakeImport = {
+  job: ImportJob;
+  pages: ImportPage[];
+  report: Report | null;
+};
+
+/** What every pretend reading comes out as: a fictional sample. */
+const PRETEND_READING = SAMPLE_REPORTS.find((r) =>
+  r.name.startsWith("sam-rivera")
+)!;
+
+/** Why an upload can't be read, in the desktop's words; null when it can. */
+function uploadFilesProblem(files: ImportUpload["files"]): string | null {
+  if (files.length === 0) return importMessages.empty();
+  for (const file of files) {
+    if (!sniffType(file.bytes)) return importMessages.unsupported(file.name);
+  }
+  const pdf = files.find((f) => sniffType(f.bytes) === "application/pdf");
+  return pdf && files.length > 1
+    ? importMessages.pdfWithOthers(pdf.name)
+    : null;
+}
+
+/** Page objects counted in a PDF's text: enough for pretending. At least one. */
+function countPdfPages(bytes: Uint8Array): number {
+  const text = new TextDecoder("latin1").decode(bytes);
+  return Math.max(1, text.match(/\/Type\s*\/Page(?![A-Za-z])/g)?.length ?? 0);
+}
+
 const SETTINGS_KEY = "medical-charts:fake-settings";
 
 const STARTUP: StartupStatus = {
@@ -174,6 +215,8 @@ export function createFakeBindings(
     /** Where settings survive a page reload; in-memory when omitted. */
     storage?: SettingsStorage;
     now?: () => Date;
+    /** How long a pretend page takes to read. */
+    pageMs?: number;
   } = {},
 ): DesktopBindings {
   const now = options.now ?? (() => new Date());
@@ -302,6 +345,94 @@ export function createFakeBindings(
 
   for (const file of options.reports ?? []) add(file);
 
+  // ---- Reading PDFs and photos, pretended. Each page "takes" pageMs, one import
+  // at a time, and every upload reads as a copy of a fictional sample report,
+  // dated now. Same lifecycle and wording as desktop/imports/queue.ts.
+  const pageMs = options.pageMs ?? 1500;
+  let imports: FakeImport[] = [];
+  let nextImportId = 1;
+  let pageTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const snapshot = (item: FakeImport): ImportJob => ({
+    ...item.job,
+    fileNames: [...item.job.fileNames],
+  });
+  const findImport = (id: number) => imports.find((i) => i.job.id === id);
+
+  /** Starts an import reading; fails it straight away when no model is chosen. */
+  function startReading(item: FakeImport): boolean {
+    const at = now().toISOString();
+    Object.assign(item.job, {
+      status: "reading",
+      startedAt: at,
+      finishedAt: null,
+      error: null,
+    });
+    if (!settings.ocrModel) {
+      Object.assign(item.job, {
+        status: "failed",
+        finishedAt: at,
+        error: importMessages.noModel(),
+      });
+      return false;
+    }
+    item.job.model = settings.ocrModel;
+    return true;
+  }
+
+  function finishReading(item: FakeImport) {
+    const at = now().toISOString();
+    const template = JSON.parse(PRETEND_READING.text) as Report;
+    const base = item.job.fileNames[0].replace(/\.[^.]+$/, "");
+    item.report = {
+      ...template,
+      source: {
+        ...template.source,
+        report: base,
+        images: item.pages.length
+          ? item.pages.map((p) => p.name)
+          : Array.from({ length: item.job.pageCount }, (_, i) =>
+            `${base}-${i + 1}.png`),
+        pages: item.job.pageCount,
+        model: item.job.model ?? "",
+        extractedAt: at,
+        mergedAt: at,
+      },
+      // Dated now, so saving it adds a new point to the charts rather than a duplicate.
+      collectedAt: `${at.slice(0, 16)}:00`,
+    };
+    Object.assign(item.job, {
+      status: "ready",
+      finishedAt: at,
+      resultCount: item.report.tests.length,
+    });
+  }
+
+  /** Drops the page in progress, so the next import starts reading straight away. */
+  function restartPages() {
+    if (pageTimer !== null) clearTimeout(pageTimer);
+    pageTimer = null;
+    pumpImports();
+  }
+
+  function pumpImports() {
+    if (pageTimer !== null) return;
+    let reading = imports.find((i) => i.job.status === "reading");
+    while (!reading) {
+      const next = imports.find((i) => i.job.status === "waiting");
+      if (!next) return;
+      if (startReading(next)) reading = next;
+    }
+    pageTimer = setTimeout(() => {
+      pageTimer = null;
+      const current = imports.find((i) => i.job.status === "reading");
+      if (current && ++current.job.pagesRead >= current.job.pageCount) {
+        finishReading(current);
+      }
+      pumpImports();
+    }, pageMs);
+  }
+
   return {
     getStartupStatus: () => settle(() => STARTUP),
 
@@ -363,6 +494,8 @@ export function createFakeBindings(
       settle(() => {
         reports = [];
         patientIds.clear();
+        imports = [];
+        restartPages();
       }),
 
     getSettings: () => settle(() => ({ ...settings })),
@@ -388,24 +521,112 @@ export function createFakeBindings(
     testOcr: () =>
       settle(() => fakeOcrTest(settings.ollamaHost, settings.ocrModel)),
 
-    // Reading PDFs and photos comes to browser development with the upload screen.
     startImports: (uploads) =>
       settle(() =>
-        uploads.map((upload) => ({
-          ok: false as const,
-          fileNames: upload.files.map((f) => f.name),
-          error: "Reading PDFs and photos needs the desktop app for now.",
-        }))
+        uploads.map((upload): ImportStart => {
+          const fileNames = upload.files.map((f) => f.name);
+          const problem = uploadFilesProblem(upload.files);
+          if (problem) return { ok: false, fileNames, error: problem };
+          const pdf = upload.files.find((f) =>
+            sniffType(f.bytes) === "application/pdf"
+          );
+          const item: FakeImport = {
+            job: {
+              id: nextImportId++,
+              fileNames,
+              source: pdf ? "pdf" : "photos",
+              pageCount: pdf ? countPdfPages(pdf.bytes) : upload.files.length,
+              pagesRead: 0,
+              status: "waiting",
+              model: null,
+              addedAt: now().toISOString(),
+              startedAt: null,
+              finishedAt: null,
+              error: null,
+              resultCount: null,
+            },
+            // A PDF can't be drawn without mupdf, so only photos have page images here.
+            pages: pdf ? [] : upload.files.map((f) => ({
+              name: f.name,
+              type: sniffType(f.bytes) as ImportPage["type"],
+              bytes: f.bytes,
+              origin: "photo" as const,
+            })),
+            report: null,
+          };
+          imports.push(item);
+          pumpImports();
+          return { ok: true, job: snapshot(item) };
+        })
       ),
-    listImports: () => settle(() => []),
-    cancelImport: () => settle(() => null),
-    retryImport: () => settle(() => null),
-    discardImport: () => settle(() => false),
-    getImportReview: () => settle(() => null),
-    getImportPage: () => settle(() => null),
+
+    listImports: () => settle(() => imports.map(snapshot)),
+
+    cancelImport: (importId) =>
+      settle(() => {
+        const item = findImport(importId);
+        if (!item) return null;
+        if (item.job.status === "waiting" || item.job.status === "reading") {
+          const wasReading = item.job.status === "reading";
+          item.job.status = "cancelled";
+          item.job.finishedAt = now().toISOString();
+          if (wasReading) restartPages();
+        }
+        return snapshot(item);
+      }),
+
+    retryImport: (importId) =>
+      settle(() => {
+        const item = findImport(importId);
+        if (!item) return null;
+        if (item.job.status === "failed" || item.job.status === "cancelled") {
+          Object.assign(item.job, {
+            status: "waiting",
+            error: null,
+            finishedAt: null,
+          });
+          pumpImports();
+        }
+        return snapshot(item);
+      }),
+
+    discardImport: (importId) =>
+      settle(() => {
+        const item = findImport(importId);
+        if (!item) return false;
+        imports = imports.filter((i) => i !== item);
+        if (item.job.status === "reading") restartPages();
+        return true;
+      }),
+
+    getImportReview: (importId) =>
+      settle(() => {
+        const item = findImport(importId);
+        return item?.job.status === "ready" && item.report
+          ? { job: snapshot(item), report: withoutPages(item.report) }
+          : null;
+      }),
+
+    getImportPage: (importId, page) =>
+      settle(() => {
+        const image = findImport(importId)?.pages[page - 1];
+        return image ? { ...image } : null;
+      }),
+
     saveImport: (importId) =>
       settle(() => {
-        throw new Error(`import ${importId} isn't ready to save`);
+        const item = findImport(importId);
+        if (item?.job.status !== "ready" || !item.report) {
+          throw new Error(`import ${importId} isn't ready to save`);
+        }
+        const outcome = add({
+          name: item.job.fileNames.join(", "),
+          text: JSON.stringify(item.report),
+        });
+        if (outcome.status !== "rejected") {
+          imports = imports.filter((i) => i !== item);
+        }
+        return outcome;
       }),
   };
 }
