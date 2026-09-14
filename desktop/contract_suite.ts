@@ -148,6 +148,14 @@ export function defineContractTests(
       job.error,
       "Choose a model for reading PDFs and photos in Settings.",
     );
+    await assertRejects(
+      () => b.saveImport(job.id),
+      Error,
+      "isn't ready to save",
+    );
+
+    await b.clearAll();
+    assertEquals(await b.listImports(), [], "Clear all data forgets imports");
   });
 
   test("startup status is ok", async (b) => {
@@ -168,8 +176,12 @@ export function defineContractTests(
       ["broken.json", "rejected"],
       ["other.json", "rejected"],
     ]);
-    const [added, duplicate] = outcomes;
+    const [added, duplicate, broken] = outcomes;
     assert(added.status === "added" && duplicate.status === "duplicate");
+    assert(
+      broken.status === "rejected" && broken.error.includes("not valid JSON"),
+      "a file that isn't JSON says so",
+    );
     assertEquals(
       [
         added.summary.patientName,
