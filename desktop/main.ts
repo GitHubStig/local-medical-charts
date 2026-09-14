@@ -10,6 +10,7 @@ import catalogJson from "../src/analytes.json" with { type: "json" };
 import { catalogFromJson } from "../src/catalog.ts";
 import { SCHEMA_VERSION } from "../src/schema.ts";
 import { createBindings, unavailableBindings } from "./bindings.ts";
+import { ollamaPageReader } from "./imports/reader.ts";
 import { createOllamaService } from "./ocr/ollama.ts";
 import type { DesktopBindings, StartupStatus } from "./contract.ts";
 import { databasePath } from "./store/paths.ts";
@@ -61,6 +62,7 @@ try {
     catalog,
     startup,
     ollama: createOllamaService(),
+    pageReader: ollamaPageReader,
   });
 } catch (err) {
   // Keep the window usable so the page can explain what went wrong.
@@ -81,6 +83,14 @@ win.bind("getSettings", bindings.getSettings);
 win.bind("updateSettings", bindings.updateSettings);
 win.bind("listOcrModels", bindings.listOcrModels);
 win.bind("testOcr", bindings.testOcr);
+win.bind("startImports", bindings.startImports);
+win.bind("listImports", bindings.listImports);
+win.bind("cancelImport", bindings.cancelImport);
+win.bind("retryImport", bindings.retryImport);
+win.bind("discardImport", bindings.discardImport);
+win.bind("getImportReview", bindings.getImportReview);
+win.bind("getImportPage", bindings.getImportPage);
+win.bind("saveImport", bindings.saveImport);
 
 const dist = findAppDist();
 

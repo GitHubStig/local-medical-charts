@@ -73,14 +73,13 @@ export type ReportOptions = {
   label?: string;
 };
 
-/** A one-page merged report as the pipeline would write it, serialized. */
-export function syntheticReport(
-  options: ReportOptions = {},
-  catalog = catalogV1,
-): string {
-  const extraction: PageExtraction = {
-    page: 1,
-    pageCount: 1,
+/** One page as a model would transcribe it: three results, all made up. */
+export function syntheticExtraction(
+  options: ReportOptions & { page?: number; pageCount?: number } = {},
+): PageExtraction {
+  return {
+    page: options.page ?? 1,
+    pageCount: options.pageCount ?? 1,
     provider: {
       name: "Example Lab",
       address: null,
@@ -114,6 +113,14 @@ export function syntheticReport(
     specimenNotes: [],
     warnings: [],
   };
+}
+
+/** A one-page merged report as the pipeline would write it, serialized. */
+export function syntheticReport(
+  options: ReportOptions = {},
+  catalog = catalogV1,
+): string {
+  const extraction = syntheticExtraction(options);
   const report: Report = buildReport(
     [{
       image: `${options.label ?? "example"}-1.jpg`,

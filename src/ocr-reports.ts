@@ -14,11 +14,11 @@
  */
 import { parseArgs } from "@std/cli/parse-args";
 import { ensureDir, exists } from "@std/fs";
-import { basename, extname, fromFileUrl, join, resolve } from "@std/path";
+import { basename, extname, join, resolve } from "@std/path";
 import { encodeBase64 } from "@std/encoding/base64";
-import { encodeHex } from "@std/encoding/hex";
 import { loadCatalog } from "./catalog.ts";
 import { buildReport } from "./normalize.ts";
+import { OCR_PROMPT, pagePrompt, promptHash } from "./ocr-prompt.ts";
 import { assertModelAvailable, chatJson, type OllamaConfig } from "./ollama.ts";
 import {
   PageExtractionSchema,
@@ -109,13 +109,7 @@ async function findGroups(dir: string, prefix?: string): Promise<Group[]> {
 }
 
 async function loadPrompt(): Promise<{ text: string; hash: string }> {
-  const path = fromFileUrl(new URL("./ocr-prompt.md", import.meta.url));
-  const text = await Deno.readTextFile(path);
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(text),
-  );
-  return { text, hash: encodeHex(new Uint8Array(digest)).slice(0, 12) };
+  return { text: OCR_PROMPT, hash: await promptHash(OCR_PROMPT) };
 }
 
 async function ocrPage(
@@ -126,9 +120,7 @@ async function ocrPage(
 ): Promise<PageFile> {
   const { data, seconds } = await chatJson(config, {
     label: basename(image.path),
-    prompt: prompt.text
-      .replaceAll("{{PAGE}}", String(image.page))
-      .replaceAll("{{PAGE_COUNT}}", String(pageCount)),
+    prompt: pagePrompt(image.page, pageCount, prompt.text),
     images: [encodeBase64(await Deno.readFile(image.path))],
     schema: PageExtractionSchema,
   });
