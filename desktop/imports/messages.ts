@@ -26,6 +26,8 @@ export const importMessages = {
     `${model} couldn't give a usable reading of page ${page} after ${attempts} tries.`,
   repeating: (model: string, page: number) =>
     `${model} kept repeating itself on page ${page} and was stopped. Try again, or choose another model in Settings.`,
+  stalled: (model: string, page: number, minutes: number) =>
+    `${model} went silent for ${minutes} minutes partway through page ${page} and was stopped. Try again, and restart Ollama if it happens again.`,
   ollamaError: (detail: string) => `Ollama couldn't read the page. ${detail}`,
   unexpected: (detail: string) => `Reading stopped unexpectedly: ${detail}`,
 };

@@ -105,7 +105,7 @@ sequenceDiagram
   B->>Q: pages from upload (mupdf: scan kept, or page rendered)
   loop each page, one import at a time
     Q->>O: page image + prompt + schema (streamed)
-    O-->>Q: page extraction (or stopped if repeating)
+    O-->>Q: page extraction (or stopped if repeating or silent)
   end
   Q->>Q: merge pages into a Report
   Page->>B: listImports() (every second while reading)

@@ -9,6 +9,9 @@
  * same rows over and over: gemma4:31b once wrote 26,000 tokens for one page, and
  * Ollama's MLX engine doesn't stop it at the context size. A reply that starts
  * repeating itself is stopped within a few hundred tokens and retried.
+ *
+ * A reply can also go silent: glm-ocr once wrote to the token cap and Ollama
+ * never closed the stream. Once a reply has started, a long silence gives up.
  */
 import { z } from "@zod/zod";
 
@@ -21,10 +24,19 @@ export type OllamaConfig = {
   retries: number;
   /** Longest reply allowed, in tokens; MAX_REPLY_TOKENS when not given. */
   maxTokens?: number;
+  /** Longest silence once a reply has started, in seconds; REPLY_IDLE_SECONDS when not given. */
+  idleSeconds?: number;
 };
 
 /** A page's JSON is a few thousand tokens; many more means the model is repeating itself. */
 export const MAX_REPLY_TOKENS = 8192;
+
+/**
+ * Generous, so a slower machine isn't cut off between tokens. It only counts
+ * once a reply has started: loading a model and reading the image can take
+ * minutes with nothing sent, and the caller's time limit covers that.
+ */
+export const REPLY_IDLE_SECONDS = 180;
 
 function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
@@ -38,14 +50,14 @@ export class OllamaHttpError extends Error {
   }
 }
 
-/** Every attempt came back as invalid JSON, JSON that didn't match the schema, or a reply stuck repeating itself. */
+/** Every attempt came back as invalid JSON, JSON that didn't match the schema, or a reply stuck repeating itself; or a reply went silent. */
 export class OllamaReplyError extends Error {
   override name = "OllamaReplyError";
   constructor(
     message: string,
     readonly attempts: number,
     /** What went wrong with the last attempt. */
-    readonly reason: "invalid" | "repeating" = "invalid",
+    readonly reason: "invalid" | "repeating" | "stalled" = "invalid",
   ) {
     super(message);
   }
@@ -74,15 +86,16 @@ export function isRepeating(text: string, stretch = 400, times = 4): boolean {
 type Reply = {
   content: string;
   seconds: number;
-  /** done: the model finished; length: it hit the token cap; repeating: it was stopped for repeating itself. */
-  stopped: "done" | "length" | "repeating";
+  /** done: the model finished; length: it hit the token cap; repeating: it was stopped for repeating itself; stalled: it went silent. */
+  stopped: "done" | "length" | "repeating" | "stalled";
 };
 
-/** One streamed /api/chat request, watched for a reply that repeats itself. */
+/** One streamed /api/chat request, watched for a reply that repeats itself or goes silent. */
 async function streamReply(
   host: string,
   body: Record<string, unknown>,
   signal: AbortSignal | undefined,
+  idleMs: number,
 ): Promise<Reply> {
   const started = Date.now();
   const seconds = () => (Date.now() - started) / 1000;
@@ -128,26 +141,41 @@ async function streamReply(
   const decoder = new TextDecoder();
   let buffer = "";
   let chunks = 0;
+  // Why the stream was stopped on purpose, to tell that apart from a cancel.
+  let stoppedFor: "repeating" | "stalled" | null = null;
+  // Restarted by every chunk, so it only fires once a started reply goes quiet.
+  let idle: ReturnType<typeof setTimeout> | undefined;
+  const heardFrom = () => {
+    clearTimeout(idle);
+    idle = setTimeout(() => {
+      stoppedFor = "stalled";
+      stop.abort();
+    }, idleMs);
+  };
   try {
     for (;;) {
       const { value, done } = await reader.read();
       if (done) break;
+      heardFrom();
       buffer += decoder.decode(value, { stream: true });
       for (let nl = buffer.indexOf("\n"); nl >= 0; nl = buffer.indexOf("\n")) {
         take(buffer.slice(0, nl));
         buffer = buffer.slice(nl + 1);
       }
       if (++chunks % 25 === 0 && isRepeating(content || thinking)) {
+        stoppedFor = "repeating";
         stop.abort();
         return { content, seconds: seconds(), stopped: "repeating" };
       }
     }
     take(buffer + decoder.decode());
   } catch (err) {
-    if (stop.signal.aborted && !signal?.aborted) {
-      return { content, seconds: seconds(), stopped: "repeating" };
+    if (stoppedFor && !signal?.aborted) {
+      return { content, seconds: seconds(), stopped: stoppedFor };
     }
     throw err;
+  } finally {
+    clearTimeout(idle);
   }
   return {
     content: content.trim() ? content : thinking,
@@ -198,28 +226,48 @@ export async function chatJson<T>(
 ): Promise<{ data: T; seconds: number }> {
   const format = toOllamaFormat(request.schema);
   const maxTokens = config.maxTokens ?? MAX_REPLY_TOKENS;
+  const idleSeconds = config.idleSeconds ?? REPLY_IDLE_SECONDS;
 
   let feedback = "";
   let reason: "invalid" | "repeating" = "invalid";
   for (let attempt = 1; attempt <= config.retries + 1; attempt++) {
-    const reply = await streamReply(config.host, {
-      model: config.model,
-      stream: true,
-      // Thinking only pollutes transcription and matching output.
-      think: false,
-      format,
-      options: {
-        temperature: 0,
-        num_ctx: config.context,
-        num_predict: maxTokens,
+    const reply = await streamReply(
+      config.host,
+      {
+        model: config.model,
+        stream: true,
+        // Thinking only pollutes transcription and matching output.
+        think: false,
+        format,
+        options: {
+          temperature: 0,
+          num_ctx: config.context,
+          num_predict: maxTokens,
+        },
+        messages: [{
+          role: "user",
+          content: feedback
+            ? `${request.prompt}\n\n${feedback}`
+            : request.prompt,
+          images: request.images,
+        }],
       },
-      messages: [{
-        role: "user",
-        content: feedback ? `${request.prompt}\n\n${feedback}` : request.prompt,
-        images: request.images,
-      }],
-    }, request.signal);
+      request.signal,
+      idleSeconds * 1000,
+    );
     const took = `attempt ${attempt} (${reply.seconds.toFixed(1)}s)`;
+
+    if (reply.stopped === "stalled") {
+      // Not retried: each retry could leave the page waiting as long again.
+      console.warn(
+        `    ${request.label}: ${took} went silent for ${idleSeconds}s and was stopped`,
+      );
+      throw new OllamaReplyError(
+        `${request.label}: the reply went silent for ${idleSeconds}s`,
+        attempt,
+        "stalled",
+      );
+    }
 
     if (reply.stopped !== "done") {
       reason = "repeating";

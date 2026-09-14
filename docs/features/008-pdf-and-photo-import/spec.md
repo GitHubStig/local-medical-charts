@@ -46,6 +46,9 @@ minute.
 - Three photos named IMG_2, IMG_9, IMG_10 are offered in that order.
 - A model that repeats itself is stopped within a few minutes with a clear
   message, not after a ten-minute timeout.
+- A reply that goes silent partway is given up after 3 minutes without new text,
+  with a clear message. A model that takes minutes to start isn't cut off; the
+  page limit covers that.
 - Adding files never moves the page content.
 
 ## Out of scope
