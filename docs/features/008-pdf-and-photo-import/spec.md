@@ -37,6 +37,8 @@ minute.
    when something needs attention.
 9. Failures are worded for people: no model chosen, Ollama unreachable, model
    not installed, took too long, kept repeating itself.
+10. Closing the window quits the app. If a reading is waiting, being read or
+    ready to review, it asks first, since quitting forgets it.
 
 ## Acceptance criteria
 

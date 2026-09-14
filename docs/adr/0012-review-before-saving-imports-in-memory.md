@@ -31,7 +31,8 @@ as real as a right one. Uploaded files are also sensitive personal data.
 ## Consequences
 
 - Misreads are caught before they reach a chart.
-- Closing the app mid-read loses that work.
+- Closing the app mid-read loses that work, so closing the window asks first
+  while readings aren't saved.
 - The review screen also spots a report that's probably already saved (same
   patient, lab and collection time), which content hashes can't, because every
   reading has its own timestamps.

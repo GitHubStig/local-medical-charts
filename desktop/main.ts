@@ -11,6 +11,7 @@ import { catalogFromJson } from "../src/catalog.ts";
 import { SCHEMA_VERSION } from "../src/schema.ts";
 import { createBindings, unavailableBindings } from "./bindings.ts";
 import type { ReadingNotice } from "./imports/notice.ts";
+import { quitWarning } from "./imports/quit.ts";
 import { ollamaPageReader } from "./imports/reader.ts";
 import { createOllamaService } from "./ocr/ollama.ts";
 import type { DesktopBindings, StartupStatus } from "./contract.ts";
@@ -120,6 +121,26 @@ win.bind("discardImport", bindings.discardImport);
 win.bind("getImportReview", bindings.getImportReview);
 win.bind("getImportPage", bindings.getImportPage);
 win.bind("saveImport", bindings.saveImport);
+
+// Closing the window quits the app; the local server below would otherwise keep
+// it running. Readings live only in memory, so unsaved ones are asked about first.
+win.addEventListener("close", (event) => {
+  event.preventDefault();
+  confirmQuit().then((quit) => {
+    if (quit) Deno.exit(0);
+  });
+});
+
+async function confirmQuit(): Promise<boolean> {
+  try {
+    const warning = quitWarning(await bindings.listImports());
+    return !warning ||
+      Boolean(await win.executeJs(`confirm(${JSON.stringify(warning)})`));
+  } catch {
+    // No database to hold readings, or a page that can't ask: nothing to wait for.
+    return true;
+  }
+}
 
 const dist = findAppDist();
 

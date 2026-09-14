@@ -36,13 +36,11 @@ const blocks = computed(() =>
       <Icon name="chevron-down" class="shrink-0 -rotate-90 text-ink-2 transition-transform group-open/report:rotate-0" />
       <span class="w-28 shrink-0 text-sm font-semibold">{{ row.date }}</span>
       <span class="min-w-0 flex-1 truncate text-sm text-ink-2">{{ row.lab }}</span>
-      <span class="hidden gap-2 lg:flex">
-        <span
-          v-for="note in row.specimenNotes"
-          :key="note"
-          class="rounded-full bg-chip px-2.5 py-1 text-xs font-medium whitespace-nowrap text-ink-2"
-        >{{ note }}</span>
-      </span>
+      <!-- A count, not the notes: notes can be long, and the lab name mustn't be squeezed out. -->
+      <span
+        v-if="row.specimenNotes.length"
+        class="hidden shrink-0 rounded-full bg-chip px-2.5 py-1 text-xs font-medium whitespace-nowrap text-ink-2 lg:inline"
+      >{{ plural(row.specimenNotes.length, "specimen note") }}</span>
       <template v-if="row.failed">
         <span class="text-[13px] font-medium text-danger">Couldn't be upgraded</span>
       </template>
