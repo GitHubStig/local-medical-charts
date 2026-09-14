@@ -41,4 +41,4 @@ change later.
 - `vue-tsc` can't run under Deno, so `.vue` files are type-checked by the VS
   Code Vue extension, and TypeScript modules with `tsc`.
 - npm `zod` is a types-only dev dependency so the editor can see report types
-  (the README explains how to remove it later).
+  ([development.md](../development.md) explains how to remove it later).

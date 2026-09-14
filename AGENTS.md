@@ -15,6 +15,8 @@ stored in SQLite. Nothing leaves the computer.
   [docs/architecture/overview.md](docs/architecture/overview.md)
 - **Why it's built this way:** [docs/adr/](docs/adr/)
 - **Each feature's spec, plan and tasks:** [docs/features/](docs/features/)
+- **Running, checks, versions and dependency updates:**
+  [docs/development.md](docs/development.md)
 - **Vision models tried:** [docs/ocr-models.md](docs/ocr-models.md)
 
 **Status (September 2026):** feature complete, not yet released. Everything is
@@ -128,7 +130,8 @@ convention; the owner chose to keep this layout.
   (`src/ollama.ts`). Some models put the formatted reply in `thinking` instead
   of `content`; the client falls back to it.
 - **Vite runs under Deno** (`deno task dev`/`build`). npm `zod` in
-  `app/package.json` is for editor types only (see the README).
+  `app/package.json` is for editor types only (see
+  [docs/development.md](docs/development.md)).
 
 ## Open threads
 

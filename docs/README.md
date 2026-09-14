@@ -10,6 +10,8 @@ feature's spec, plan and tasks.
    moves between them.
 3. [adr/](adr/): one file per significant decision.
 4. [features/](features/): one folder per feature, in the order they're built.
+5. [development.md](development.md): running, checks, versions during
+   development and updating dependencies.
 
 ## Architecture decision records
 

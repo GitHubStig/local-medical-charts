@@ -25,7 +25,7 @@ worm. Findings:
   releases are usually caught and pulled within that window.
 - **No install scripts:** never pass `--allow-scripts`; `app/.npmrc` disables
   scripts and saves exact versions if npm is used anyway.
-- The README documents the update routine:
+- [development.md](../development.md) documents the update routine:
   1. `deno outdated`
   2. `deno update --latest --frozen=false`
   3. review `git diff deno.lock`, test, and commit the files together.
