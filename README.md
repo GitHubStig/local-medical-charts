@@ -34,6 +34,7 @@ then add a report. To work on the UI with fictional sample data instead, run
 | `deno task map`                | Suggest catalog matches for test names the catalog doesn't know               |
 | `deno task upgrade`            | Upgrade stored reports to the current schema version and catalog              |
 | `deno task samples`            | Regenerate the fictional sample reports in `samples/`                         |
+| `deno task classes`            | Check the app's Tailwind classes are in canonical form (`--write` fixes them) |
 
 ## Privacy
 

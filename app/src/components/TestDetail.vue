@@ -56,7 +56,7 @@ function closeOnBackdrop(event: MouseEvent) {
           </div>
         </div>
         <div class="flex shrink-0 items-center gap-2.5">
-          <kbd class="rounded-[5px] border border-line px-[7px] py-[3px] font-mono text-xs text-muted">Esc</kbd>
+          <kbd class="rounded-[5px] border border-line px-1.75 py-0.75 font-mono text-xs text-muted">Esc</kbd>
           <button
             type="button"
             autofocus

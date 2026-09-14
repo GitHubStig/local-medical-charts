@@ -16,7 +16,7 @@ const ICON = {
 
 <template>
   <span
-    class="inline-flex items-center gap-1 rounded-full bg-flag py-[3px] pr-2 pl-1.5 text-xs leading-none font-semibold whitespace-nowrap text-flag-ink"
+    class="inline-flex items-center gap-1 rounded-full bg-flag py-0.75 pr-2 pl-1.5 text-xs leading-none font-semibold whitespace-nowrap text-flag-ink"
   >
     <Icon :name="ICON[kind]" :size="12" class="text-critical" />
     {{ label }}

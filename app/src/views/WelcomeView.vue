@@ -41,7 +41,7 @@ const FORMATS = ["PDF", "JPG", "PNG", "WebP", "JSON"];
       <SettingsLink />
     </div>
 
-    <main class="flex w-full max-w-[640px] flex-col items-center gap-8">
+    <main class="flex w-full max-w-160 flex-col items-center gap-8">
       <div class="flex flex-col items-center gap-3.5 text-center">
         <AppLogo :size="48" />
         <h1 class="text-[30px] font-semibold tracking-tight">Medical Charts</h1>
@@ -61,7 +61,7 @@ const FORMATS = ["PDF", "JPG", "PNG", "WebP", "JSON"];
         <h2 class="text-lg font-semibold">
           {{ working ? "Adding…" : isOverDropZone ? "Drop to add" : "Drop lab reports here" }}
         </h2>
-        <p class="max-w-[460px] text-sm leading-normal text-ink-2">
+        <p class="max-w-115 text-sm leading-normal text-ink-2">
           PDFs or photos of each page, one report or many at a time. Report JSON
           from the command line works too.
         </p>

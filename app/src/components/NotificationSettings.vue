@@ -37,7 +37,7 @@ const helpId = useId();
         @click="setNotifyWhenRead(!notifyWhenRead)"
       >
         <span
-          class="flex h-5 w-[34px] items-center rounded-full p-0.5 transition-colors"
+          class="flex h-5 w-8.5 items-center rounded-full p-0.5 transition-colors"
           :class="notifyWhenRead ? 'bg-ink' : 'bg-line-strong'"
           aria-hidden="true"
         >

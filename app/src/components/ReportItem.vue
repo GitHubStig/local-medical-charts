@@ -57,7 +57,7 @@ const blocks = computed(() =>
       </template>
     </summary>
 
-    <div class="flex flex-col gap-5 pt-2 pr-5 pb-5 pl-[50px]">
+    <div class="flex flex-col gap-5 pt-2 pr-5 pb-5 pl-12.5">
       <div v-if="row.failed" class="flex flex-col gap-1 text-sm">
         <p class="text-danger">{{ row.error }}</p>
         <p class="text-ink-2">
@@ -72,7 +72,7 @@ const blocks = computed(() =>
             <span
               v-for="(line, i) in block.lines"
               :key="i"
-              class="break-words"
+              class="wrap-break-word"
               :class="i === 0
                 ? 'text-sm text-ink'
                 : block.mono

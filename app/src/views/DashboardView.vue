@@ -47,7 +47,7 @@ const { isOverDropZone } = useDropZone(page, {
   <div ref="page" class="min-h-screen">
     <TopBar />
 
-    <main class="mx-auto flex max-w-[1440px] flex-col gap-7 px-4 pt-8 pb-14 sm:px-10">
+    <main class="mx-auto flex max-w-360 flex-col gap-7 px-4 pt-8 pb-14 sm:px-10">
       <ImportsPanel />
 
       <template v-if="current && overview">
