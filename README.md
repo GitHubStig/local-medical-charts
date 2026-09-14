@@ -4,16 +4,30 @@ Chart lab results over time from printed and PDF lab reports. A vision model
 running locally in Ollama reads each page, you check the reading, and every test
 is charted across reports and labs. **Nothing leaves your computer.**
 
+![The dashboard for a fictional patient: reports from two labs, and a chart for every test](docs/images/dashboard.png)
+
+## Try it without Ollama
+
+```sh
+deno install
+deno task dev
+```
+
+This opens the app in your browser with two fictional patients already loaded.
+Adding a PDF or photo there pretends to read it, so you can also see the imports
+panel and the review screen; a fictional report comes back after a few seconds.
+Reports you add aren't kept, so reload to start again. Add `?empty` to the
+address to start with no reports.
+
 ## What you need
 
 - **[Deno](https://deno.com) 2.9.** It's the only thing to install: no Node.js,
   and never `npm install`, which would bypass the lockfile and pinned versions.
-- **[Ollama](https://ollama.com) with a vision model**, to read PDFs and photos.
-  Models that read reports well need about 18–20 GB of memory, for example
-  `qwen3.8:27b-mlx`; see [the models tried](docs/ocr-models.md). Report JSON can
-  be imported without Ollama.
+- **[Ollama](https://ollama.com) with a vision model**, only to read real PDFs
+  and photos. Models that read reports well need about 18–20 GB of memory, for
+  example `qwen3.8:27b-mlx`; see [the models tried](docs/ocr-models.md).
 
-## Getting started
+## Using it with your reports
 
 ```sh
 deno install        # everything from deno.lock
@@ -21,8 +35,8 @@ deno task desktop   # build the app and open its desktop window
 ```
 
 In the app, open **Settings**, choose a model and press **Test connection**,
-then add a report. To work on the UI with fictional sample data instead, run
-`deno task dev` (see [development](docs/development.md)).
+then add a report. Without Ollama, you can still add the report JSON files in
+`samples/`.
 
 | Task                           | What it does                                                                  |
 | ------------------------------ | ----------------------------------------------------------------------------- |
@@ -35,6 +49,22 @@ then add a report. To work on the UI with fictional sample data instead, run
 | `deno task upgrade`            | Upgrade stored reports to the current schema version and catalog              |
 | `deno task samples`            | Regenerate the fictional sample reports in `samples/`                         |
 | `deno task classes`            | Check the app's Tailwind classes are in canonical form (`--write` fixes them) |
+
+## Screenshots
+
+A test's history, with each lab's reference range and every reading:
+
+![The large chart for haemoglobin, with range bands, axes and each reading listed](docs/images/test-chart.png)
+
+A reading waiting to be checked before it's saved:
+
+![The review screen: the page image beside the results read from it, and where the report will be filed](docs/images/review.png)
+
+Choosing the local model and testing the connection:
+
+![Settings: the Ollama address, the chosen model, a passing connection test, notifications and data](docs/images/settings.png)
+
+All people, labs and results shown are fictional.
 
 ## Privacy
 
