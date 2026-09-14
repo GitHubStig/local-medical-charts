@@ -4,8 +4,12 @@ import AppLogo from "./AppLogo.vue";
 import ChartLibraryToggle from "./ChartLibraryToggle.vue";
 import FilePickerButton from "./FilePickerButton.vue";
 import PatientPicker from "./PatientPicker.vue";
+import SettingsLink from "./SettingsLink.vue";
 import ThemeToggle from "./ThemeToggle.vue";
 import Icon from "./Icon.vue";
+
+/** `active` marks the page the bar sits on, e.g. the settings gear while on Settings. */
+defineProps<{ active?: "settings" }>();
 
 const {
   patients,
@@ -13,16 +17,7 @@ const {
   selectPatient,
   busy,
   importFiles,
-  clearAll,
 } = useLibrary();
-
-function confirmClear() {
-  if (
-    confirm("Delete every patient and report from this app? Settings are kept.")
-  ) {
-    clearAll();
-  }
-}
 </script>
 
 <template>
@@ -39,8 +34,9 @@ function confirmClear() {
         <AppLogo />
         <span class="text-[15px] font-semibold whitespace-nowrap max-md:sr-only">Medical Charts</span>
       </div>
-      <span class="h-7 w-px bg-line max-md:hidden" aria-hidden="true"></span>
+      <span v-if="patients.length" class="h-7 w-px bg-line max-md:hidden" aria-hidden="true"></span>
       <PatientPicker
+        v-if="patients.length"
         :patients="patients"
         :selected-id="selectedPatientId"
         @select="selectPatient"
@@ -60,16 +56,7 @@ function confirmClear() {
         <Icon name="plus" />
         <span class="max-lg:sr-only">Add reports</span>
       </FilePickerButton>
-      <button
-        type="button"
-        :disabled="busy"
-        title="Clear all data"
-        class="flex h-11 items-center gap-2 rounded-lg border border-danger-line px-3.5 text-sm font-medium whitespace-nowrap text-danger disabled:opacity-60"
-        @click="confirmClear"
-      >
-        <Icon name="trash" />
-        <span class="max-lg:sr-only">Clear all data</span>
-      </button>
+      <SettingsLink :active="active === 'settings'" />
     </div>
   </header>
 </template>

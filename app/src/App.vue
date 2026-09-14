@@ -2,10 +2,13 @@
 import { onMounted } from "vue";
 import AppLogo from "./components/AppLogo.vue";
 import { startLibrary, useLibrary } from "./composables/useLibrary.ts";
+import { useRoute } from "./composables/useRoute.ts";
 import DashboardView from "./views/DashboardView.vue";
+import SettingsView from "./views/SettingsView.vue";
 import WelcomeView from "./views/WelcomeView.vue";
 
 const { phase, status, patients, error } = useLibrary();
+const { route } = useRoute();
 
 onMounted(startLibrary);
 </script>
@@ -28,6 +31,7 @@ onMounted(startLibrary);
     </p>
   </main>
 
+  <SettingsView v-else-if="route === 'settings'" />
   <!-- Data already stored goes straight to the dashboard; otherwise, the welcome screen. -->
   <DashboardView v-else-if="patients.length > 0" />
   <WelcomeView v-else />
