@@ -1,4 +1,4 @@
-# Medical Charts
+# Local Medical Charts
 
 Chart lab results over time from printed and PDF lab reports. A vision model
 running locally in Ollama reads each page, you check the reading, and every test

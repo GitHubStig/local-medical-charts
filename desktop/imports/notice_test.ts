@@ -42,7 +42,7 @@ Deno.test("a failed import's notice opens the imports panel", () => {
     })),
     {
       title: "Couldn't read a report",
-      body: "Open Medical Charts to see why and try again.",
+      body: "Open Local Medical Charts to see why and try again.",
       tag: "medical-charts-import-3",
       href: "#/",
     },

@@ -30,7 +30,7 @@ export function readingNotice(job: ImportJob): ReadingNotice | null {
   if (job.status === "failed") {
     return {
       title: "Couldn't read a report",
-      body: "Open Medical Charts to see why and try again.",
+      body: "Open Local Medical Charts to see why and try again.",
       tag,
       href: "#/",
     };
