@@ -157,18 +157,17 @@ convention; the owner chose to keep this layout.
   Ask before starting.
 - Per-model prompts: proposed, not built. Any prompt change is compared on the
   fictional pages and the real scans first (see `docs/ocr-models.md`).
-- Small models for 8 GB Macs and 12 GB graphics cards: parked by the owner;
-  `qwen3-vl:4b` is the closest so far (see `docs/ocr-models.md`). Run model
-  comparisons one at a time, never in parallel.
+- Small models: `qwen3-vl:4b` is the app's default, and the owner has run it on
+  an Apple silicon Mac and a 12 GB NVIDIA card; 8 GB Macs are untried (see
+  `docs/ocr-models.md`). Run model comparisons one at a time, never in parallel.
 - More chart types, so the four libraries show more than line charts: proposed,
-  not built. In order of value: a heatmap of every test against every report
-  (cells below, within or above the lab's range, with the value shown); a ranged
-  dot plot of each latest result within its range (one-sided ranges and word
-  results left out); a stacked bar of the white cell breakdown per report
-  (samples would need the other four cell types). Flint 0.5.1 has the heatmap
-  and ranged dot plot for Vega-Lite, ECharts and Plotly but not Chart.js, and
-  the stacked bar for all four; none has been built yet. Avoid radar, rose, pie
-  and dual-axis charts.
+  not built. In order of value: a ranged dot plot of each latest result within
+  its range (one-sided ranges and word results left out); a stacked bar of the
+  white cell breakdown per report (samples would need the other four cell
+  types). Flint 0.5.1 has the ranged dot plot for Vega-Lite, ECharts and Plotly
+  but not Chart.js, and the stacked bar for all four. A heatmap of every test
+  against every report isn't needed: the Tests table shows the same. Avoid
+  radar, rose, pie and dual-axis charts.
 - **Chart features come from Flint, not overlays:** the owner wants new chart
   types and options to arrive through Flint and the chart libraries as they are
   (progressive enhancement), the way chart themes do
@@ -216,6 +215,6 @@ convention; the owner chose to keep this layout.
 - Flint feature request for reference bands: drafted in
   `docs/proposals/flint-reference-bands.md`, not posted; parked by the owner.
   The owner posts it from their own GitHub account.
-- Before publishing: retake the README screenshots in `docs/images/`. They still
-  show the sample values from before every value was nudged; the owner has more
-  changes to make first.
+- Publishing: the history was audited. Old commits hold a report file name and a
+  sample version whose results matched real ones, but no personal names; the
+  owner chose to keep the history as it is.

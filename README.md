@@ -24,8 +24,11 @@ address to start with no reports.
 - **[Deno](https://deno.com) 2.9.** It's the only thing to install: no Node.js,
   and never `npm install`, which would bypass the lockfile and pinned versions.
 - **[Ollama](https://ollama.com) with a vision model**, only to read real PDFs
-  and photos. Models that read reports well need about 18–20 GB of memory, for
-  example `qwen3.8:27b-mlx`; see [the models tried](docs/ocr-models.md).
+  and photos. The app uses `qwen3-vl:4b` unless you choose another
+  (`ollama pull qwen3-vl:4b`). It needs about 5.5 GB of memory and runs on an
+  Apple silicon Mac or a PC with a 12 GB graphics card. Larger models such as
+  `qwen3.8:27b-mlx` (18–20 GB) read scans a little more accurately; see
+  [the models tried](docs/ocr-models.md).
 
 ## Using it with your reports
 
@@ -34,9 +37,9 @@ deno install        # everything from deno.lock
 deno task desktop   # build the app and open its desktop window
 ```
 
-In the app, open **Settings**, choose a model and press **Test connection**,
-then add a report. Without Ollama, you can still add the report JSON files in
-`samples/`.
+In the app, open **Settings** and press **Test connection** (choosing another
+model first if you like), then add a report. Without Ollama, you can still add
+the report JSON files in `samples/`.
 
 | Task                           | What it does                                                                                                |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------- |
@@ -55,6 +58,10 @@ then add a report. Without Ollama, you can still add the report JSON files in
 A test's history, with each lab's reference range and every reading:
 
 ![The large chart for haemoglobin, with range bands, axes and each reading listed](docs/images/test-chart.png)
+
+Every result in a table, a column per report, with flagged results marked:
+
+![The Tests section as a table: tests grouped by section, a column per report, flagged results tinted and labelled](docs/images/test-table.png)
 
 A reading waiting to be checked before it's saved:
 

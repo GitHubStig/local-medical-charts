@@ -309,7 +309,7 @@ Deno.test("settings default, persist across reopening, and survive clearAll", ()
       chartCurve: "smooth",
       chartTheme: "app",
       ollamaHost: "http://localhost:11434",
-      ocrModel: null,
+      ocrModel: "qwen3-vl:4b",
       notifyWhenRead: true,
     });
     assertEquals(store.updateSettings({ theme: "dark" }, now), {
@@ -319,7 +319,7 @@ Deno.test("settings default, persist across reopening, and survive clearAll", ()
       chartCurve: "smooth",
       chartTheme: "app",
       ollamaHost: "http://localhost:11434",
-      ocrModel: null,
+      ocrModel: "qwen3-vl:4b",
       notifyWhenRead: true,
     });
     store.addReport(syntheticReport(), "a.json", catalogV1, now);
@@ -334,7 +334,7 @@ Deno.test("settings default, persist across reopening, and survive clearAll", ()
       chartCurve: "smooth",
       chartTheme: "app",
       ollamaHost: "http://localhost:11434",
-      ocrModel: null,
+      ocrModel: "qwen3-vl:4b",
       notifyWhenRead: true,
     });
     assertEquals(store.listPatients(), []);

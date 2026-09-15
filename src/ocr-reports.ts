@@ -31,7 +31,7 @@ import {
 const DEFAULTS = {
   input: ".data/pipeline/images",
   output: ".data/pipeline/readings",
-  model: "qwen3.8:27b-mlx",
+  model: "qwen3-vl:4b",
   host: "http://localhost:11434",
   retries: "2",
   context: "16384",

@@ -20,6 +20,11 @@ installed model that reads images.
 
 Tested September 2026 on an Apple silicon Mac with Ollama.
 
+The app and the command-line tools now use `qwen3-vl:4b` by default. The earlier
+readings in `.data/pipeline/readings/` were made with `qwen3.8:27b-mlx`; to
+repeat them, pass `--model qwen3.8:27b-mlx` to `deno task ocr` and
+`deno task map`.
+
 ## Large general vision models (the app's prompt and schema)
 
 | Model                  | Memory | Fictional pages   | Time per page |
@@ -98,7 +103,9 @@ page).
 
 - **Fit:** 5.5 GB loaded with the app's 16k context. That should fit a 12 GB
   graphics card, but is likely too tight for an 8 GB Mac, where macOS lets the
-  GPU use only part of the memory. Neither has been tried.
+  GPU use only part of the memory. It has since run well on an Apple silicon Mac
+  and on a PC with a 12 GB NVIDIA graphics card; an 8 GB Mac is still untried.
+  It's the app's default model.
 - **Quirk:** with thinking off and a JSON `format`, Qwen3-VL returns its whole
   reply in `thinking` and leaves `content` empty. Before the client fell back to
   `thinking`, every page failed; the results above are with the fallback.

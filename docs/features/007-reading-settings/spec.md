@@ -23,7 +23,7 @@ can read images, and know it works before waiting minutes for a report.
 2. Ollama address: saved on change, validated as an http(s) address.
 3. Model dropdown listing installed models as "reads images" or "text only";
    text-only models can't be picked; refresh; a saved model that's gone is
-   shown.
+   shown. qwen3-vl:4b is chosen until someone picks another.
 4. Test connection in three steps, stopping at the first failure, each explained
    in plain words: reachable, installed, and reads a small generated test page
    the way reports are read, so a model that can only transcribe fails.
