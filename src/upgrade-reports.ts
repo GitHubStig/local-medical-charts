@@ -1,5 +1,5 @@
 /**
- * upgrade-reports — bring merged reports in "3.data" up to the current schema
+ * upgrade-reports — bring merged reports in ".data/pipeline/readings" up to the current schema
  * version and catalog, re-merging them from their embedded pages.
  *
  * Usage:
@@ -20,7 +20,7 @@ USAGE:
   deno run --allow-read --allow-write src/upgrade-reports.ts [options]
 
 OPTIONS:
-  -d, --data <dir>   Merged reports directory (default: 3.data)
+  -d, --data <dir>   Merged reports directory (default: .data/pipeline/readings)
   -f, --force        Re-merge every report, even ones already current
   -n, --dry-run      Report what would change, write nothing
   -h, --help         Show this help
@@ -37,7 +37,7 @@ async function main() {
     string: ["data"],
     boolean: ["force", "dry-run", "help"],
     alias: { d: "data", f: "force", n: "dry-run", h: "help" },
-    default: { data: "3.data" },
+    default: { data: ".data/pipeline/readings" },
   });
   if (flags.help) {
     console.log(USAGE);
@@ -45,6 +45,11 @@ async function main() {
   }
 
   const dir = resolve(flags.data);
+  if (!(await Deno.stat(dir).catch(() => null))?.isDirectory) {
+    throw new Error(
+      `no merged reports: ${flags.data} doesn't exist — run deno task ocr first`,
+    );
+  }
   const catalog = await loadCatalog();
   const files = [...Deno.readDirSync(dir)]
     .filter((e) => e.isFile && isMergedReport(e.name))

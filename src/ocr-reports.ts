@@ -1,9 +1,9 @@
 /**
  * ocr-reports — OCR lab-report page images into structured JSON.
  *
- * Each image in "2.images" is sent to a local Ollama vision model, which
+ * Each image in ".data/pipeline/images" is sent to a local Ollama vision model, which
  * transcribes it under the rules in src/ocr-prompt.md. Replies are validated
- * against the Zod schema and cached per page in "3.data". Pages are then merged
+ * against the Zod schema and cached per page in ".data/pipeline/readings". Pages are then merged
  * into one report per group, with every result matched against the analyte
  * catalog in src/analytes.json.
  *
@@ -29,8 +29,8 @@ import {
 } from "./schema.ts";
 
 const DEFAULTS = {
-  input: "2.images",
-  output: "3.data",
+  input: ".data/pipeline/images",
+  output: ".data/pipeline/readings",
   model: "qwen3.8:27b-mlx",
   host: "http://localhost:11434",
   retries: "2",
@@ -185,7 +185,9 @@ async function main() {
 
   const inputDir = resolve(flags.input);
   if (!(await Deno.stat(inputDir).catch(() => null))?.isDirectory) {
-    fail(`input directory not found: ${flags.input}`);
+    fail(
+      `input directory not found: ${flags.input} — run deno task extract first`,
+    );
   }
   const outputDir = resolve(flags.output);
 
