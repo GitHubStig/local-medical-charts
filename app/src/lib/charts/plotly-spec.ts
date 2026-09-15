@@ -10,6 +10,7 @@ import { dateMs, type Series } from "../series.ts";
 import { AXIS_MARGIN, chartAxes } from "./axes.ts";
 import { bandEdges, chartBands, chartRows, flintInput } from "./flint-input.ts";
 import type { ChartPalette } from "./palette.ts";
+import { APP_THEME, themeApplies, themePalette, withTheme } from "./themes.ts";
 
 /** Room around a bare chart so markers at the edges aren't clipped. */
 const PADDING = 6;
@@ -40,13 +41,22 @@ function escapeText(text: string): string {
   );
 }
 
-/** `size` is the whole chart; with `axes`, the labels take their room from it. */
+/** Whether Flint styles Plotly charts for this theme. */
+export const supportsTheme = (theme: string): boolean =>
+  themeApplies("plotly", theme, assemblePlotly);
+
+/**
+ * `size` is the whole chart; with `axes`, the labels take their room from it.
+ * A theme Flint styles for Plotly restyles the chart; otherwise it keeps the
+ * app's palette.
+ */
 export function plotlyFigure(
   series: Series,
-  palette: ChartPalette,
+  appPalette: ChartPalette,
   size: { width: number; height: number },
   axes = false,
   curve: ChartCurve = "smooth",
+  theme = APP_THEME,
 ): PlotlyFigure {
   const domain = series.domain;
   if (!domain) throw new Error(`${series.name} has no readings to chart`);
@@ -61,10 +71,20 @@ export function plotlyFigure(
     height: size.height - margin.top - margin.bottom,
   };
   const frame = axes ? chartAxes(series, plot.width) : null;
+  const themed = supportsTheme(theme);
+  const input = flintInput(series, plot, curve);
   const flint = assemblePlotly(
-    flintInput(series, plot, curve),
+    themed ? withTheme(input, theme) : input,
   ) as unknown as FlintPlotly;
   const [line] = flint.data;
+  // Themed, the overlay's own colours come from Flint's output and the theme.
+  const palette = themed
+    ? themePalette(theme, appPalette, {
+      surface: flint.layout.paper_bgcolor,
+      font: flint.layout.font?.family,
+      series: (line.line as { color?: unknown } | undefined)?.color,
+    })
+    : appPalette;
   const [bottom, top] = frame?.y.domain ?? domain.y;
   const [start, end] = domain.x.map(dateMs);
   const rows = chartRows(series);
@@ -92,13 +112,16 @@ export function plotlyFigure(
       ticktext: frame.x.ticks.map((tick) =>
         tick.lines.map(escapeText).join("<br>")
       ),
-      tickfont,
-      ticks: "outside",
-      ticklen: 4,
-      tickcolor: palette.axis,
-      showgrid: false,
-      showline: true,
-      linecolor: palette.axis,
+      // Themed, axis styling is left to Flint's layout.
+      ...(themed ? {} : {
+        tickfont,
+        ticks: "outside",
+        ticklen: 4,
+        tickcolor: palette.axis,
+        showgrid: false,
+        showline: true,
+        linecolor: palette.axis,
+      }),
     }
     : { ...axis, visible: false };
   const yaxis = frame
@@ -108,11 +131,13 @@ export function plotlyFigure(
       tickmode: "array",
       tickvals: frame.y.ticks,
       ticktext: frame.y.ticks.map((value) => VALUE.format(value)),
-      tickfont,
-      ticks: "",
-      showgrid: true,
-      gridcolor: palette.grid,
-      showline: false,
+      ...(themed ? {} : {
+        tickfont,
+        ticks: "",
+        showgrid: true,
+        gridcolor: palette.grid,
+        showline: false,
+      }),
     }
     : { ...axis, visible: false };
 
@@ -129,8 +154,8 @@ export function plotlyFigure(
   // layout go to Plotly.
   return {
     data: [
-      // Flint's line, keeping its curve, restyled to the theme; it never
-      // answers hovers itself.
+      // Flint's line, keeping its curve, in the app's style or Flint's theme;
+      // it never answers hovers itself.
       {
         ...line,
         type: "scatter",
@@ -140,7 +165,7 @@ export function plotlyFigure(
         line: {
           ...(line.line as object),
           color: palette.series,
-          width: 2,
+          ...(themed ? {} : { width: 2 }),
         },
         hoverinfo: "skip",
       },
@@ -168,7 +193,7 @@ export function plotlyFigure(
       ...flint.layout,
       width: size.width,
       height: size.height,
-      font: { family: palette.font },
+      font: themed ? flint.layout.font : { family: palette.font },
       margin: {
         t: margin.top,
         r: margin.right,
@@ -184,8 +209,8 @@ export function plotlyFigure(
         range: [bottom, top],
       },
       showlegend: false,
-      paper_bgcolor: TRANSPARENT,
-      plot_bgcolor: TRANSPARENT,
+      paper_bgcolor: themed ? flint.layout.paper_bgcolor : TRANSPARENT,
+      plot_bgcolor: themed ? flint.layout.plot_bgcolor : TRANSPARENT,
       hovermode: "closest",
       hoverdistance: HOVER_DISTANCE,
       dragmode: false,

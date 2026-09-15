@@ -18,6 +18,7 @@ import {
   flintInput,
 } from "./flint-input.ts";
 import type { ChartPalette } from "./palette.ts";
+import { APP_THEME, themeApplies, withTheme } from "./themes.ts";
 
 /** Room around a bare chart so markers at the edges aren't clipped. */
 const PADDING = 6;
@@ -122,19 +123,30 @@ type FlintChartjs = {
 };
 
 /** `size` is the whole chart; with `axes`, the labels take their room from it. */
+/** Whether Flint styles Chart.js charts for this theme. */
+export const supportsTheme = (theme: string): boolean =>
+  themeApplies("chartjs", theme, assembleChartjs);
+
 export function chartjsConfig(
   series: Series,
   palette: ChartPalette,
   size: { width: number; height: number },
   axes = false,
   curve: ChartCurve = "smooth",
+  theme = APP_THEME,
 ): ChartConfiguration<"line", ChartjsPoint[]> {
   const domain = series.domain;
   if (!domain) throw new Error(`${series.name} has no readings to chart`);
   const plotWidth = size.width -
     (axes ? AXIS_MARGIN.left + AXIS_MARGIN.right : PADDING * 2);
   const frame = axes ? chartAxes(series, plotWidth) : null;
-  const flint = assembleChartjs(flintInput(series, size, curve)) as unknown as
+  // Flint doesn't theme Chart.js yet (see desktop/chart-themes_test.ts). Once it
+  // does, the themed input goes through here, and this overlay needs the
+  // themed branch vega-lite-spec.ts has before the theme fully shows.
+  const input = flintInput(series, size, curve);
+  const flint = assembleChartjs(
+    supportsTheme(theme) ? withTheme(input, theme) : input,
+  ) as unknown as
     & FlintChartjs
     & Record<string, unknown>;
   const [line] = flint.data.datasets;

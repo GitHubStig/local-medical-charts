@@ -20,6 +20,9 @@ Deno.test("a valid settings patch is accepted", () => {
   assertEquals(parseSettingsPatch({ chartCurve: "steps" }), {
     chartCurve: "steps",
   });
+  assertEquals(parseSettingsPatch({ chartTheme: "powerbi-light" }), {
+    chartTheme: "powerbi-light",
+  });
   assertEquals(parseSettingsPatch({}), {});
 });
 
@@ -49,6 +52,13 @@ Deno.test("invalid settings from the page are refused", () => {
     SettingsError,
     "chartCurve must be one of",
   );
+  for (const chartTheme of ["Economist", "", "a theme", 7]) {
+    assertThrows(
+      () => parseSettingsPatch({ chartTheme }),
+      SettingsError,
+      "chartTheme must be",
+    );
+  }
   assertThrows(
     () => parseSettingsPatch({ fontSize: 14 }),
     SettingsError,
@@ -69,12 +79,14 @@ Deno.test("invalid settings from the page are refused", () => {
 Deno.test("stored settings fall back to defaults for anything unknown or invalid", () => {
   assertEquals(normalizeSettings({}), DEFAULT_SETTINGS);
   assertEquals(DEFAULT_SETTINGS.chartCurve, "smooth");
+  assertEquals(DEFAULT_SETTINGS.chartTheme, "app");
   assertEquals(
     normalizeSettings({
       theme: "light",
       selectedPatientId: 2,
       chartLibrary: "echarts",
       chartCurve: "smooth",
+      chartTheme: "nyt",
       retired: true,
     }),
     {
@@ -83,6 +95,7 @@ Deno.test("stored settings fall back to defaults for anything unknown or invalid
       selectedPatientId: 2,
       chartLibrary: "echarts",
       chartCurve: "smooth",
+      chartTheme: "nyt",
     },
   );
   assertEquals(
@@ -92,6 +105,7 @@ Deno.test("stored settings fall back to defaults for anything unknown or invalid
       selectedPatientId: -1,
       chartLibrary: "d3",
       chartCurve: "wavy",
+      chartTheme: "Not a theme!",
     }),
     DEFAULT_SETTINGS,
   );

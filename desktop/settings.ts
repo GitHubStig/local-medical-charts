@@ -23,6 +23,13 @@ export type ChartLibrary = (typeof CHART_LIBRARIES)[number];
 export const CHART_CURVES = ["straight", "smooth", "steps"] as const;
 export type ChartCurve = (typeof CHART_CURVES)[number];
 
+/** The app's own chart look; any other chart theme is one of Flint's. */
+export const APP_CHART_THEME = "app";
+
+/** Checked for shape only: which themes exist depends on the installed Flint. */
+const isChartTheme = (value: unknown): value is string =>
+  typeof value === "string" && /^[a-z0-9][a-z0-9-]{0,39}$/.test(value);
+
 export type Settings = {
   /** "system" follows the operating system's light or dark appearance. */
   theme: Theme;
@@ -30,6 +37,8 @@ export type Settings = {
   selectedPatientId: number | null;
   chartLibrary: ChartLibrary;
   chartCurve: ChartCurve;
+  /** "app" for the app's own look, or the id of one of Flint's themes. */
+  chartTheme: string;
   /** Where Ollama listens, for reading PDFs and photos. */
   ollamaHost: string;
   /** The Ollama model that reads report pages; null until one is chosen. */
@@ -45,6 +54,7 @@ export const DEFAULT_SETTINGS: Settings = {
   selectedPatientId: null,
   chartLibrary: "vega-lite",
   chartCurve: "smooth",
+  chartTheme: APP_CHART_THEME,
   ollamaHost: DEFAULT_OLLAMA_HOST,
   ocrModel: null,
   notifyWhenRead: true,
@@ -119,6 +129,13 @@ export function parseSettingsPatch(value: unknown): Partial<Settings> {
         );
       }
       patch.chartCurve = entry;
+    } else if (key === "chartTheme") {
+      if (!isChartTheme(entry)) {
+        throw new SettingsError(
+          "chartTheme must be app or a theme id such as economist",
+        );
+      }
+      patch.chartTheme = entry;
     } else if (key === "ollamaHost") {
       const origin = ollamaOrigin(entry);
       if (!origin) {
@@ -160,6 +177,9 @@ export function normalizeSettings(stored: Record<string, unknown>): Settings {
     chartCurve: isChartCurve(stored.chartCurve)
       ? stored.chartCurve
       : DEFAULT_SETTINGS.chartCurve,
+    chartTheme: isChartTheme(stored.chartTheme)
+      ? stored.chartTheme
+      : DEFAULT_SETTINGS.chartTheme,
     ollamaHost: ollamaOrigin(stored.ollamaHost) ?? DEFAULT_SETTINGS.ollamaHost,
     ocrModel: isModelName(stored.ocrModel)
       ? stored.ocrModel

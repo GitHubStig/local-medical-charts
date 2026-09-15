@@ -12,6 +12,7 @@ import { dateMs, type Series } from "../series.ts";
 import { AXIS_MARGIN, chartAxes } from "./axes.ts";
 import { bandEdges, chartBands, chartRows, flintInput } from "./flint-input.ts";
 import type { ChartPalette } from "./palette.ts";
+import { APP_THEME, themeApplies, themePalette, withTheme } from "./themes.ts";
 
 /** Room around a bare chart so markers at the edges aren't clipped. */
 const PADDING = 6;
@@ -24,13 +25,22 @@ function withoutFlintKeys(spec: Record<string, unknown>) {
   );
 }
 
-/** `size` is the whole chart; with `axes`, the labels take their room from it. */
+/** Whether Flint styles Vega-Lite charts for this theme. */
+export const supportsTheme = (theme: string): boolean =>
+  themeApplies("vega-lite", theme, assembleVegaLite);
+
+/**
+ * `size` is the whole chart; with `axes`, the labels take their room from it.
+ * A theme Flint styles for Vega-Lite restyles the chart; otherwise it keeps the
+ * app's palette.
+ */
 export function vegaLiteSpec(
   series: Series,
-  palette: ChartPalette,
+  appPalette: ChartPalette,
   size: { width: number; height: number },
   axes = false,
   curve: ChartCurve = "smooth",
+  theme = APP_THEME,
 ): TopLevelSpec {
   const domain = series.domain;
   if (!domain) throw new Error(`${series.name} has no readings to chart`);
@@ -45,15 +55,28 @@ export function vegaLiteSpec(
     height: size.height - margin.top - margin.bottom,
   };
   const frame = axes ? chartAxes(series, plot.width) : null;
+  const themed = supportsTheme(theme);
+  const input = flintInput(series, plot, curve);
   const flint = withoutFlintKeys(
-    assembleVegaLite(flintInput(series, plot, curve)) as Record<
+    assembleVegaLite(themed ? withTheme(input, theme) : input) as Record<
       string,
       unknown
     >,
   );
+  const config = (flint.config ?? {}) as Record<string, unknown>;
+  // Themed, the overlay's own colours come from Flint's output and the theme.
+  const palette = themed
+    ? themePalette(theme, appPalette, {
+      surface: flint.background ?? config.background,
+      font: config.font,
+      series: (flint.mark as { color?: unknown } | undefined)?.color,
+    })
+    : appPalette;
   const [bottom, top] = frame?.y.domain ?? domain.y;
 
-  const label = {
+  // Themed, axis styling is left to Flint's config: only the tick values and
+  // the label layout stay the app's.
+  const label = themed ? {} : {
     labelColor: palette.muted,
     labelFont: palette.font,
     labelFontSize: 11,
@@ -67,6 +90,8 @@ export function vegaLiteSpec(
     ? {
       ...label,
       values: frame.x.ticks.map((tick) => tick.value),
+      // A theme's tick count would thin out the readings' ticks.
+      tickCount: frame.x.ticks.length,
       labelExpr: `${JSON.stringify(xLabels)}[toString(+datum.value)]`,
       labelLineHeight: 15,
       labelPadding: 6,
@@ -74,9 +99,11 @@ export function vegaLiteSpec(
       // would cut lab names short ("Northside …").
       labelLimit: 0,
       labelOverlap: false,
-      grid: false,
-      domainColor: palette.axis,
-      tickColor: palette.axis,
+      ...(themed ? {} : {
+        grid: false,
+        domainColor: palette.axis,
+        tickColor: palette.axis,
+      }),
       title: null,
     }
     : null;
@@ -87,10 +114,16 @@ export function vegaLiteSpec(
       // Plain numbers ("20", "1,000"): "~g" alone writes 20 as "2e+1".
       format: ",.12~g",
       labelPadding: 8,
-      grid: true,
-      gridColor: palette.grid,
-      domain: false,
-      ticks: false,
+      // Every value the shared axes chose is labelled: a theme's tick count or
+      // overlap rule would thin them out.
+      tickCount: frame.y.ticks.length,
+      labelOverlap: false,
+      ...(themed ? {} : {
+        grid: true,
+        gridColor: palette.grid,
+        domain: false,
+        ticks: false,
+      }),
       title: null,
     }
     : null;
@@ -132,9 +165,9 @@ export function vegaLiteSpec(
     height: plot.height,
     padding: margin,
     autosize: { type: "none" },
-    background: "transparent",
+    background: themed ? palette.surface : "transparent",
     config: {
-      ...(flint.config as object),
+      ...config,
       view: { stroke: null },
       aria: false,
     },
@@ -159,16 +192,19 @@ export function vegaLiteSpec(
           y: { ...y, field: "value" },
         },
       },
-      // Flint's line, keeping its curve, restyled to the theme.
+      // Flint's line, keeping its curve, in the app's style or Flint's theme.
       {
         mark: {
           ...(flint.mark as object),
           type: "line",
           point: false,
           color: palette.series,
-          strokeWidth: 2,
-          strokeCap: "round",
-          strokeJoin: "round",
+          // Themed, the line's weight and ends come from Flint's config.
+          ...(themed ? {} : {
+            strokeWidth: 2,
+            strokeCap: "round",
+            strokeJoin: "round",
+          }),
         },
         encoding: { ...(flint.encoding as object), ...window },
       },

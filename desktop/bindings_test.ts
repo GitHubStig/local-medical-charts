@@ -112,6 +112,7 @@ Deno.test("with the database unavailable, status explains, settings default, the
     selectedPatientId: null,
     chartLibrary: "vega-lite",
     chartCurve: "smooth",
+    chartTheme: "app",
     ollamaHost: "http://localhost:11434",
     ocrModel: null,
     notifyWhenRead: true,
