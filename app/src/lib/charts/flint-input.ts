@@ -88,7 +88,7 @@ const INTERPOLATE: Record<ChartCurve, string> = {
 export function flintInput(
   series: Series,
   size: { width: number; height: number },
-  curve: ChartCurve = "straight",
+  curve: ChartCurve = "smooth",
 ): ChartAssemblyInput {
   return {
     data: { values: chartRows(series) },
