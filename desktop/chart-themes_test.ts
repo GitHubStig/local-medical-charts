@@ -126,7 +126,12 @@ Deno.test("a themed Vega-Lite chart takes Flint's styling and keeps the app's fl
   assertEquals([values.length, tickCount], [4, 4]);
   assertEquals(filled.encoding.fill.condition.value, PALETTE.critical);
   assertEquals(hollow.mark.filled, false);
-  assertEquals(bands.data.values, app.layer[0].data.values);
+  // Themed bands stop a pixel inside the plot, so the theme's axis lines show.
+  const [appBand] = app.layer[0].data.values;
+  const [themedBand] = bands.data.values;
+  assertEquals(bands.data.values.length, app.layer[0].data.values.length);
+  assert(themedBand.start > appBand.start && themedBand.low > appBand.low);
+  assert(themedBand.high === appBand.high);
   assertNotEquals(bands.mark.color, PALETTE.band);
 });
 

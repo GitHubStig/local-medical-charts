@@ -153,8 +153,36 @@ export function vegaLiteSpec(
     },
   };
 
-  const bands = chartBands(series, [bottom, top]);
-  const edges = bandEdges(series);
+  // Themed, bands and their edges stop a pixel inside the plot, so a theme's
+  // axis lines, drawn behind the chart's marks, aren't hidden under them.
+  const [xStart, xEnd] = domain.x.map(dateMs);
+  const pixel = {
+    x: (xEnd - xStart) / plot.width,
+    y: (top - bottom) / plot.height,
+  };
+  const insideX = (value: number) =>
+    Math.min(Math.max(value, xStart + pixel.x), xEnd - pixel.x);
+  const insideY = (value: number) =>
+    Math.min(Math.max(value, bottom + pixel.y), top - pixel.y);
+  const bands = chartBands(series, [bottom, top]).map((band) =>
+    themed
+      ? {
+        start: insideX(band.start),
+        end: insideX(band.end),
+        low: insideY(band.low),
+        high: insideY(band.high),
+      }
+      : band
+  );
+  const edges = bandEdges(series).map((edge) =>
+    themed
+      ? {
+        start: insideX(edge.start),
+        end: insideX(edge.end),
+        value: insideY(edge.value),
+      }
+      : edge
+  );
   const colour = {
     condition: { test: "datum.flagged", value: palette.critical },
     value: palette.series,
