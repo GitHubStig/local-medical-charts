@@ -139,6 +139,10 @@ convention; the owner chose to keep this layout.
   started reply that sends nothing for 3 minutes is given up (not retried). Some
   models put the formatted reply in `thinking` instead of `content`; the client
   falls back to it.
+- **Chart themes and overlays:** an overlay that restyles Flint's output hides a
+  Flint theme. Where a theme applies, the overlay keeps Flint's styling and adds
+  only the app's rules. `desktop/chart-themes_test.ts` fails when Flint's theme
+  support changes (see `docs/development.md`, "Chart themes").
 - **Vite runs under Deno** (`deno task dev`/`build`). npm `zod` in
   `app/package.json` is for editor types only (see
   [docs/development.md](docs/development.md)).

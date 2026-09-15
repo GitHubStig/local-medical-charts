@@ -80,12 +80,12 @@ every report, so a catalog change triggers a re-merge.
 
 ### Storage
 
-| Table      | Holds                                                                                            |
-| ---------- | ------------------------------------------------------------------------------------------------ |
-| `patients` | One row per person, keyed by normalised ID number (or name and date of birth)                    |
-| `reports`  | The upload **exactly as received**, the upgraded report, schema version, catalog hash, status    |
-| `results`  | One row per result, rebuilt from the upgraded report, so charts query without parsing JSON       |
-| `settings` | Theme, selected patient, chart library, curve and theme, Ollama address and model, notifications |
+| Table      | Holds                                                                                                  |
+| ---------- | ------------------------------------------------------------------------------------------------------ |
+| `patients` | One row per person, keyed by normalised ID number (or name and date of birth)                          |
+| `reports`  | The upload **exactly as received**, the upgraded report, schema version, catalog hash, status          |
+| `results`  | One row per result, rebuilt from the upgraded report, so charts query without parsing JSON             |
+| `settings` | Theme, selected patient, chart library, curve and chart theme, Ollama address and model, notifications |
 
 On launch, any report whose format or catalog is out of date is upgraded again
 **from its original**. A report that fails is kept and marked failed, never
@@ -135,7 +135,7 @@ under Deno ([ADR 0006](../adr/0006-vue-with-vite-under-deno.md)).
 | Connecting         | `api/index.ts`: real bindings in the window, `api/fake-bindings.ts` in a browser                    |
 | Shared state       | `composables/` (`useLibrary`, `useImports`, `useOcrSettings`, `useTheme`, `useRoute`, …)            |
 | Pure logic, tested | `lib/` (dashboard, test grid, series, formatting, uploads, review, …), tests in `desktop/*_test.ts` |
-| Charts             | `lib/charts/`: Flint input, one spec builder and one lazy-loaded backend per library                |
+| Charts             | `lib/charts/`: Flint input and themes, one spec builder and one lazy-loaded backend per library     |
 | Screens            | `views/`: Welcome, Dashboard, Settings (`#/settings`), Review (`#/review/:id`)                      |
 
 ### Charts
@@ -154,6 +154,11 @@ Flint assembles the same line chart for every library; a small overlay per
 library adds what Flint can't express yet (reference bands, hollow markers for
 `< 5`-style results, shared axes). Each library loads only when chosen
 ([ADR 0010](../adr/0010-flint-chart-spec.md)).
+
+A chart theme from Flint styles a chart only in the libraries Flint themes.
+There, the overlay keeps Flint's styling and adds only the app's rules;
+elsewhere the chart keeps the app's look (`lib/charts/themes.ts`,
+[ADR 0016](../adr/0016-flint-chart-themes.md)).
 
 ## Testing
 

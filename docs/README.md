@@ -32,6 +32,7 @@ each feature's spec, plan and tasks.
 | 0013 | [Fictional data only in the repo](adr/0013-fictional-data-only.md)                                 |
 | 0014 | [Prefer platform APIs](adr/0014-prefer-platform-apis.md)                                           |
 | 0015 | [Build in small, reviewed steps](adr/0015-small-reviewed-steps.md)                                 |
+| 0016 | [Flint's chart themes, with the app's rules kept](adr/0016-flint-chart-themes.md)                  |
 
 ## Features
 
@@ -47,6 +48,7 @@ each feature's spec, plan and tasks.
 | 008 | [PDF and photo import](features/008-pdf-and-photo-import/spec.md)        | Done   |
 | 009 | [Review before saving](features/009-review-before-saving/spec.md)        | Done   |
 | 010 | [Reading notifications](features/010-reading-notifications/spec.md)      | Done   |
+| 011 | [Chart themes](features/011-chart-themes/spec.md)                        | Done   |
 
 ## Writing new docs
 
