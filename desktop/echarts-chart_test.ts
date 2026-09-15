@@ -63,13 +63,13 @@ Deno.test("Flint's ECharts line carries the reference bands, with markers on top
     [0, 40, 35],
   );
 
-  // "<5" is the hollow marker; March's 47 is flagged high.
-  assertEquals(hollow.data.map((d: Loose) => d.value[1]), [5]);
+  // "<7" is the hollow marker; March's 48 is flagged high.
+  assertEquals(hollow.data.map((d: Loose) => d.value[1]), [7]);
   assertEquals(filled.data.at(-1).itemStyle.color, PALETTE.critical);
   assertEquals(targets.id, HOVER_TARGETS);
   assertEquals(
     targets.data.at(-1).tooltip,
-    "18 Mar 2026 · 47 U/L · Harbour Medical Lab · High",
+    "18 Mar 2026 · 48 U/L · Harbour Medical Lab · High",
   );
 });
 

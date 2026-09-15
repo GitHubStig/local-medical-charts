@@ -24,17 +24,17 @@ Deno.test("readings plot in the catalog's unit and keep what the lab printed", a
   const hb = buildSeries(await sampleDashboard("ALEX TAN")).get("haemoglobin")!;
   assertEquals([hb.name, hb.unit], ["Haemoglobin", "g/dL"]);
   assertEquals(hb.points.map((p) => [p.date, p.value, p.lab]), [
-    ["2024-11-12T08:40:00", 12.9, "Northside Pathology"],
-    ["2025-05-20T08:40:00", 12.4, "Northside Pathology"],
-    ["2025-10-03T08:40:00", 11.6, "Harbour Medical Lab"],
-    ["2026-03-18T08:40:00", 12.2, "Harbour Medical Lab"],
+    ["2024-11-12T08:40:00", 12.5, "Northside Pathology"],
+    ["2025-05-20T08:40:00", 12.2, "Northside Pathology"],
+    ["2025-10-03T08:40:00", 11.7, "Harbour Medical Lab"],
+    ["2026-03-18T08:40:00", 12.5, "Harbour Medical Lab"],
   ]);
 
-  // Harbour prints g/L: 116 g/L with (120-155) is 11.6 g/dL against 12 – 15.5.
+  // Harbour prints g/L: 117 g/L with (120-155) is 11.7 g/dL against 12 – 15.5.
   const october = hb.points[2];
   assertEquals(october.printed, {
     name: "Haemoglobin",
-    value: "116",
+    value: "117",
     unit: "g/L",
     range: "(120-155)",
   });
@@ -72,7 +72,7 @@ Deno.test("comparator results plot at their bound; single-sided ranges leave the
   const alt = series.get("alt")!;
   assertEquals(
     [alt.points[0].value, alt.points[0].op, alt.points[0].printed.value],
-    [5, "<", "<5"],
+    [7, "<", "<7"],
   );
   assertEquals(alt.bands.map((b) => [b.min, b.max]), [[0, 40], [null, 35]]);
   assertEquals(alt.points.at(-1)!.flag, "H");
@@ -80,7 +80,7 @@ Deno.test("comparator results plot at their bound; single-sided ranges leave the
 
   // Both labs print ≥ 60, in different unit spellings: one band throughout.
   const egfr = series.get("egfr")!;
-  assertEquals([egfr.points[0].value, egfr.points[0].op], [90, ">="]);
+  assertEquals([egfr.points[0].value, egfr.points[0].op], [60, ">="]);
   assertEquals(egfr.bands, [{
     start: egfr.domain!.x[0],
     end: egfr.domain!.x[1],

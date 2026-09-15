@@ -9,7 +9,7 @@
  *
  * Usage:
  *   deno task ocr
- *   deno task ocr --prefix "2026 March"
+ *   deno task ocr --prefix "sample-report"
  *   deno task ocr --merge-only      # re-merge cached pages after a catalog edit
  */
 import { parseArgs } from "@std/cli/parse-args";
@@ -57,7 +57,7 @@ OPTIONS:
   -h, --help              Show this help
 
 EXAMPLES:
-  deno run -RWN src/ocr-reports.ts --prefix "2026 March"
+  deno run -RWN src/ocr-reports.ts --prefix "sample-report"
   deno run -RWN src/ocr-reports.ts --model gemma4:31b-mlx --force
   deno run -RWN src/ocr-reports.ts --merge-only
 `;

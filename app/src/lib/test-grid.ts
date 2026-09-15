@@ -27,7 +27,7 @@ export type TestCardData = {
     flag: Flag | null;
     collectedAt: string | null;
   };
-  /** "+0.6 since Oct 2025", or null when there's nothing to compare. */
+  /** "+0.8 since Oct 2025", or null when there's nothing to compare. */
   change: string | null;
   /** Beside the value: the change, or how many results there are to compare. */
   note: string;
@@ -120,7 +120,7 @@ function change(
   ) return null;
   const since = monthYear(previous.collectedAt);
   const suffix = since ? ` since ${since}` : "";
-  // Rounded to the shown precision, so 12.2 − 11.6 reads 0.6, not 0.5999999.
+  // Rounded to the shown precision, so 12.5 − 11.7 reads 0.8, not 0.8000000000000007.
   const delta = Number((a.value - b.value).toFixed(2));
   if (delta === 0) return `No change${suffix}`;
   return `${delta > 0 ? "+" : "−"}${number.format(Math.abs(delta))}${suffix}`;
