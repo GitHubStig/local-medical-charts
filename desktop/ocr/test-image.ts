@@ -6,8 +6,6 @@
 import * as mupdf from "mupdf";
 import { simplePdf } from "./simple-pdf.ts";
 
-export const TEST_IMAGE_QUESTION =
-  "What is the potassium result on this page? Reply with the number only.";
 export const TEST_IMAGE_ANSWER = "4.7";
 
 let png: Uint8Array | null = null;
