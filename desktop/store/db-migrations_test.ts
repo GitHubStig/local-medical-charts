@@ -99,7 +99,7 @@ Deno.test("a stale development database gets a clear error, not a missing-table 
   assertThrows(
     () => assertExpectedTables(db),
     DatabaseVersionError,
-    "delete the data folder",
+    "delete the database and its -wal and -shm files",
   );
   db.close();
 });

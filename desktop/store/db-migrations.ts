@@ -5,7 +5,8 @@
  * The version lives in SQLite's `PRAGMA user_version`.
  *
  * DURING DEVELOPMENT everything stays at version 1: change the tables by editing
- * migration 1 in place, then delete the development database (`.data/`). Only
+ * migration 1 in place, then delete the development database
+ * (`.data/medical-charts.db` with its -wal and -shm files). Only
  * once the app is released, append migrations with the next version number
  * and never edit one that has shipped, because existing databases have run it.
  */
@@ -168,7 +169,7 @@ export function assertExpectedTables(db: DatabaseSync): void {
     throw new DatabaseVersionError(
       `the database is missing tables (${
         missing.join(", ")
-      }) — it was created by an earlier development build; delete the data folder (.data/ for deno task desktop) and relaunch`,
+      }) — it was created by an earlier development build; delete the database and its -wal and -shm files (.data/medical-charts.db for deno task desktop), then relaunch`,
     );
   }
 }

@@ -29,7 +29,7 @@ import { ReportSchema, type Specimen, SpecimenSchema } from "./schema.ts";
 import { normalizeUnit, unitKey } from "./units.ts";
 
 const DEFAULTS = {
-  data: "3.data",
+  data: ".data/pipeline/readings",
   catalog: DEFAULT_CATALOG,
   model: "qwen3.8:27b-mlx",
   host: "http://localhost:11434",
@@ -497,6 +497,11 @@ async function main() {
     return;
   }
 
+  if (!(await Deno.stat(dataDir).catch(() => null))?.isDirectory) {
+    throw new CliError(
+      `no merged reports: ${flags.data} doesn't exist — run deno task ocr first`,
+    );
+  }
   const items = await collectUnmatched(dataDir, catalog);
   if (items.length === 0) {
     console.log("every test in the merged reports matches the catalog");
