@@ -154,6 +154,56 @@ deno update --latest --frozen=false --minimum-dependency-age=0 npm:some-package
 Later installs use `deno.lock` as normal; the 7-day rule applies again to the
 next update. Say in the commit message why you took a version that young.
 
+## Chart themes
+
+The Chart theme dropdown lists App and every theme the installed Flint ships. A
+theme shows in a chart library only where Flint styles that library's charts for
+it ([ADR 0016](adr/0016-flint-chart-themes.md)). With flint-chart 0.5.1 that's
+Vega-Lite and Plotly; ECharts and Chart.js keep the App look.
+
+### After updating Flint or a chart library
+
+1. Update as in [Updating dependencies](#updating-dependencies), then run
+   `deno task test`.
+2. `desktop/chart-themes_test.ts` checks which libraries each theme applies to,
+   and fails on purpose when that changes:
+   - **"Flint now themes ECharts" (or Chart.js):** give that library's overlay
+     the themed branch below, then move the library to the supported list in the
+     test.
+   - **"Flint no longer themes …":** the charts already fall back to the App
+     look, so only the test needs updating. Check Flint's release notes for why.
+3. New themes need nothing: they appear in the dropdown and the same test covers
+   them. A theme Flint removes shows as App.
+4. Check the themes by eye (below).
+
+### Giving an overlay the themed branch
+
+`vega-lite-spec.ts` and `plotly-spec.ts` are the examples. When the library's
+`supportsTheme(theme)` is true:
+
+- Pass the theme to Flint with `withTheme`.
+- Build the overlay's colours with `themePalette`, from the background, font and
+  line colour in Flint's output.
+- Stop overriding what the theme sets: the background, font, line colour and
+  weight, and axis styling (grid, axis lines, tick and label colours and sizes).
+- Keep the app's rules: flagged results in the palette's `critical` colour,
+  hollow markers for bounds, the reference bands and their edges, and the shared
+  axes' tick values with every tick labelled. A theme can thin ticks
+  (Vega-Lite's `tickCount`) or hide axis lines under the bands, so check both.
+- App must look exactly as before; the "naming the app theme changes nothing"
+  test checks that.
+
+### Checking themes by eye
+
+In `deno task dev`, for each theme in each library that supports it:
+
+- Look at the cards and the large view, in light and dark mode.
+- Flagged results are red, bounds are hollow, the reference bands and the
+  theme's axis lines are visible, every date and value on the axes is labelled,
+  and the latest range label is readable.
+- Theme fonts scale with the chart, so judge label sizes in the large view
+  rather than in a narrow window.
+
 ## Known workarounds
 
 ### npm `zod` for the app's editor types
