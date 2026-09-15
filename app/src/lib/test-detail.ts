@@ -17,7 +17,7 @@ export type DetailRow = {
   printed: string;
   /** The test name the lab printed: "ALT (SGPT)". */
   printedName: string;
-  /** In the series' unit, as charted: "< 5 U/L". */
+  /** In the series' unit, as charted: "< 7 U/L". */
   standard: string;
   range: string | null;
   flag: Flag | null;

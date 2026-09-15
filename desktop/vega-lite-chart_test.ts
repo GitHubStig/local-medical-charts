@@ -41,14 +41,14 @@ Deno.test("chart rows carry exact times, bounds, flags and hover text", async ()
   const rows = chartRows(alt);
   assertEquals(rows[0], {
     date: Date.UTC(2024, 10, 12, 8, 40),
-    value: 5,
+    value: 7,
     bound: true,
     flagged: false,
-    tooltip: "12 Nov 2024 · < 5 U/L · Northside Pathology",
+    tooltip: "12 Nov 2024 · < 7 U/L · Northside Pathology",
   });
   assertEquals(
     rows[3].tooltip,
-    "18 Mar 2026 · 47 U/L · Harbour Medical Lab · High",
+    "18 Mar 2026 · 48 U/L · Harbour Medical Lab · High",
   );
 });
 

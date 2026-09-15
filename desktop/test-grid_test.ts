@@ -48,11 +48,11 @@ Deno.test("cards show catalog names and values in standard units, with the lab r
   assertEquals([hb.name, hb.unit, hb.latest.display, hb.range], [
     "Haemoglobin",
     "g/dL",
-    "12.2",
+    "12.5",
     "12 – 15.5",
   ]);
   assertEquals([hb.change, hb.readingCount, hb.span], [
-    "+0.6 since Oct 2025",
+    "+0.8 since Oct 2025",
     4,
     "Nov 2024 – Mar 2026",
   ]);
@@ -65,12 +65,12 @@ Deno.test("flags come from the latest reading; comparators don't produce a chang
   const grid = buildTestGrid(await alexDashboard());
   const alt = card(grid, "alt");
   assertEquals([alt.latest.display, alt.latest.flag, alt.change, alt.range], [
-    "47",
+    "48",
     "H",
-    "+16 since Oct 2025",
+    "+15 since Oct 2025",
     "< 35",
   ]);
-  assertEquals(card(grid, "egfr").change, "+3 since Oct 2025");
+  assertEquals(card(grid, "egfr").change, "−2 since Oct 2025");
   assertEquals(grid.groups.map((g) => g.flagged), [0, 2, 0, 0, 1, 0]);
 });
 
@@ -142,7 +142,7 @@ Deno.test("with a single report, cards say a trend needs another report and show
 
   // With several reports, the note is the change.
   const alex = card(buildTestGrid(await alexDashboard()), "haemoglobin");
-  assertEquals(alex.note, "+0.6 since Oct 2025");
+  assertEquals(alex.note, "+0.8 since Oct 2025");
 });
 
 Deno.test("filters are described in words, or not at all when none is on", () => {

@@ -65,9 +65,9 @@ Or data-driven: a second table with `x`, `x2`, `y` and `y2` fields.
 
 | Date        | Value (g/dL) | Lab range |
 | ----------- | ------------ | --------- |
-| 12 Nov 2024 | 12.9         | 11.5–16   |
-| 20 May 2025 | 12.4         | 11.5–16   |
-| 3 Oct 2025  | 11.6         | 12–15.5   |
-| 18 Mar 2026 | 12.2         | 12–15.5   |
+| 12 Nov 2024 | 12.5         | 11.5–16   |
+| 20 May 2025 | 12.2         | 11.5–16   |
+| 3 Oct 2025  | 11.7         | 12–15.5   |
+| 18 Mar 2026 | 12.5         | 12–15.5   |
 
 I'm happy to try a build against all four backends.

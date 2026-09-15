@@ -27,7 +27,7 @@ Deno.test("the value scale sits on round numbers that cover the whole window", a
 
   // Small values keep tidy decimals, without floating-point noise.
   const hba1c = chartAxes(await sampleSeries("ALEX TAN", "hba1c"), WIDE)!;
-  assertEquals(hba1c.y.ticks, [5.2, 5.4, 5.6, 5.8, 6]);
+  assertEquals(hba1c.y.ticks, [5.4, 5.6, 5.8, 6, 6.2]);
 });
 
 Deno.test("each reading gets its date and lab under the chart, thinned when space is short", async () => {
