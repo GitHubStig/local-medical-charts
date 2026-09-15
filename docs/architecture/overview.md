@@ -1,6 +1,6 @@
 # Architecture overview
 
-Medical Charts has three parts that share one data model:
+Local Medical Charts has three parts that share one data model:
 
 1. **The pipeline** (`src/`): turns page images into validated, versioned report
    JSON. Usable on its own from the command line.
@@ -90,7 +90,7 @@ every report, so a catalog change triggers a re-merge.
 On launch, any report whose format or catalog is out of date is upgraded again
 **from its original**. A report that fails is kept and marked failed, never
 deleted. The database lives in the OS app-data folder
-(`~/Library/Application Support/Medical Charts` on macOS), or `.data/` in
+(`~/Library/Application Support/Local Medical Charts` on macOS), or `.data/` in
 development.
 
 ### Reading PDFs and photos

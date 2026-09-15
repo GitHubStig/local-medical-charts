@@ -1,7 +1,7 @@
 # Docs
 
-How Medical Charts is meant to work, why it's built the way it is, and each
-feature's spec, plan and tasks.
+How Local Medical Charts is meant to work, why it's built the way it is, and
+each feature's spec, plan and tasks.
 
 ## Start here
 

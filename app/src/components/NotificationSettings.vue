@@ -23,7 +23,7 @@ const helpId = useId();
         <span :id="helpId" class="text-[13px]" :class="saveError ? 'text-danger' : 'text-ink-2'">
           {{
             saveError
-            ?? "Only while Medical Charts isn’t in front. Notifications never include names, labs or results."
+            ?? "Only while Local Medical Charts isn’t in front. Notifications never include names, labs or results."
           }}
         </span>
       </div>

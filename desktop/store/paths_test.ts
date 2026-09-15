@@ -6,22 +6,22 @@ const env = (vars: Record<string, string>) => ({ get: (k: string) => vars[k] });
 Deno.test("app data follows each platform's convention", () => {
   assertEquals(
     appDataDir("darwin", env({ HOME: "/Users/example" })),
-    "/Users/example/Library/Application Support/Medical Charts",
+    "/Users/example/Library/Application Support/Local Medical Charts",
   );
   assertEquals(
     appDataDir(
       "windows",
       env({ APPDATA: "C:\\Users\\example\\AppData\\Roaming" }),
     ),
-    "C:\\Users\\example\\AppData\\Roaming\\Medical Charts",
+    "C:\\Users\\example\\AppData\\Roaming\\Local Medical Charts",
   );
   assertEquals(
     appDataDir("linux", env({ HOME: "/home/example" })),
-    "/home/example/.local/share/medical-charts",
+    "/home/example/.local/share/local-medical-charts",
   );
   assertEquals(
     appDataDir("linux", env({ HOME: "/home/example", XDG_DATA_HOME: "/data" })),
-    "/data/medical-charts",
+    "/data/local-medical-charts",
   );
 });
 

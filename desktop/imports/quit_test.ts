@@ -25,13 +25,13 @@ Deno.test("quitting with nothing unsaved asks nothing", () => {
 Deno.test("quitting with an unsaved reading asks first", () => {
   assertEquals(
     quitWarning([job(1, "ready"), job(2, "failed")]),
-    "Quit Medical Charts? A reading isn't saved yet and will be lost.",
+    "Quit Local Medical Charts? A reading isn't saved yet and will be lost.",
   );
 });
 
 Deno.test("waiting, reading and ready imports all count as unsaved", () => {
   assertEquals(
     quitWarning([job(1, "ready"), job(2, "reading"), job(3, "waiting")]),
-    "Quit Medical Charts? 3 readings aren't saved yet and will be lost.",
+    "Quit Local Medical Charts? 3 readings aren't saved yet and will be lost.",
   );
 });

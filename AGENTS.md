@@ -1,4 +1,4 @@
-# Medical Charts: notes for AI agents
+# Local Medical Charts: notes for AI agents
 
 Read this first. It's the shortest path to working on this repo without undoing
 decisions that were made on purpose. Longer explanations live in `docs/`.
