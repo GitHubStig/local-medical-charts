@@ -32,7 +32,7 @@ function closeOnBackdrop(event: MouseEvent) {
   <dialog
     ref="dialog"
     :aria-labelledby="titleId"
-    class="mx-auto mt-16 mb-auto max-h-[calc(100dvh-5rem)] w-[min(72rem,calc(100vw-2rem))] max-w-none overflow-hidden rounded-[14px] bg-surface text-ink shadow-[0_24px_64px_rgb(28_25_23/0.3)] backdrop:bg-[rgb(28_25_23/0.5)]"
+    class="mx-auto mt-16 mb-auto max-h-[calc(100dvh-5rem)] w-[min(72rem,calc(100vw-2rem))] max-w-none overflow-hidden rounded-[14px] bg-surface text-ink shadow-[0_24px_64px_rgb(28_25_23/0.3)] backdrop:bg-[rgb(28_25_23/0.5)] dark:border dark:border-line-strong dark:backdrop:bg-black/70"
     @click="closeOnBackdrop"
     @close="emit('close')"
   >
