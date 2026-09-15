@@ -33,3 +33,12 @@ Deno.test("a report's interpretation and notes fold apart from the report", () =
   );
   assertEquals(isFoldOpen(memory, 1, reportRegion(7, "notes"), false), false);
 });
+
+Deno.test("whether Tests shows its table is remembered like a fold", () => {
+  const memory = new Map<string, boolean>();
+  assertEquals(isFoldOpen(memory, 1, "tests:table", false), false);
+  rememberFold(memory, 1, "tests:table", true);
+  assertEquals(isFoldOpen(memory, 1, "tests:table", false), true);
+  assertEquals(isFoldOpen(memory, 1, "tests", true), true);
+  assertEquals(isFoldOpen(memory, 2, "tests:table", false), false);
+});

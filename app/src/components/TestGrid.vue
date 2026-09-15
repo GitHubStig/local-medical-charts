@@ -14,6 +14,8 @@ import { useFolds } from "../composables/useFolds.ts";
 import { useTestFilters } from "../composables/useTestFilters.ts";
 import TestCard from "./TestCard.vue";
 import TestDetail from "./TestDetail.vue";
+import TestTable from "./TestTable.vue";
+import { buildTestTable } from "../lib/test-table.ts";
 import TextResults from "./TextResults.vue";
 import Icon from "./Icon.vue";
 
@@ -34,6 +36,15 @@ const shown = computed(() =>
     flaggedOnly: flaggedOnly.value,
   })
 );
+// The table takes the search here and flagged-only itself: it keeps a test
+// flagged in any report, where a card only shows the latest result.
+const table = computed(() =>
+  buildTestTable(
+    props.dashboard,
+    filterTestGrid(grid.value.groups, { query: query.value, flaggedOnly: false }),
+    { flaggedOnly: flaggedOnly.value },
+  )
+);
 const text = computed(() => buildTextResults(props.dashboard));
 const shownRows = computed(() =>
   filterTextRows(text.value.rows, {
@@ -51,6 +62,18 @@ const showText = computed(() =>
   text.value.rows.length > 0 &&
   (shownRows.value.length > 0 || textFilteredBy.value !== null)
 );
+// Cards or a table of every result, remembered for each patient like the folds.
+const VIEWS = [
+  { value: "cards", label: "Cards" },
+  { value: "table", label: "Table" },
+] as const;
+type TestsView = (typeof VIEWS)[number]["value"];
+const view = computed<TestsView>(() =>
+  isOpen(patientId.value, "tests:table", false) ? "table" : "cards"
+);
+const setView = (next: TestsView) =>
+  setOpen(patientId.value, "tests:table", next === "table");
+
 // The test shown in the zoomed view, by its card's key.
 const openKey = ref<string | null>(null);
 const openSeries = computed(() =>
@@ -127,6 +150,22 @@ const summaryNote = computed(() =>
               </span>
               Flagged only
             </button>
+            <div role="radiogroup" aria-label="Show tests as" class="flex gap-0.5 rounded-[9px] bg-chip p-0.75">
+              <button
+                v-for="option in VIEWS"
+                :key="option.value"
+                type="button"
+                role="radio"
+                :aria-checked="view === option.value"
+                class="flex h-9.5 items-center rounded-md px-3 text-[13px] whitespace-nowrap transition-colors"
+                :class="view === option.value
+                  ? 'bg-surface font-semibold text-ink shadow-sm'
+                  : 'font-medium text-ink-2 hover:text-ink'"
+                @click="setView(option.value)"
+              >
+                {{ option.label }}
+              </button>
+            </div>
           </div>
           <span class="text-[13px] text-muted">
             {{ plural(totalCards, "test") }}<template v-if="grid.textOnlyCount">
@@ -134,7 +173,7 @@ const summaryNote = computed(() =>
           </span>
         </div>
 
-        <p v-if="shown.length === 0" class="flex flex-wrap items-center gap-2 text-sm text-ink-2">
+        <p v-if="(view === 'table' ? table.groups.length : shown.length) === 0" class="flex flex-wrap items-center gap-2 text-sm text-ink-2">
           <template v-if="filters">
             No tests match{{ query.trim() ? ` “${query.trim()}”` : "" }}{{
               flaggedOnly ? " among flagged results" : ""
@@ -150,8 +189,14 @@ const summaryNote = computed(() =>
           <template v-else>No results with numbers to chart yet.</template>
         </p>
 
+        <TestTable
+          v-if="view === 'table' && table.groups.length"
+          :table="table"
+          @open="openKey = $event"
+        />
+
         <section
-          v-for="group in shown"
+          v-for="group in view === 'cards' ? shown : []"
           :key="group.name"
           class="flex flex-col gap-3"
           :aria-label="group.name"
