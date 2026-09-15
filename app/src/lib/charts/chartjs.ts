@@ -10,18 +10,23 @@ import {
   PointElement,
   Tooltip,
 } from "chart.js";
-import { chartjsConfig, type ChartjsPoint } from "./chartjs-spec.ts";
+import {
+  chartjsConfig,
+  type ChartjsPoint,
+  supportsTheme,
+} from "./chartjs-spec.ts";
 import type { ChartBackend } from "./types.ts";
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip);
 
 export const chartjs: ChartBackend = {
+  supportsTheme,
   // Resolves once drawn: Chart.js draws synchronously when animation is off.
   // deno-lint-ignore require-await
   async render(
     element,
     series,
-    { palette, curve, width, height, axes, onTooltip },
+    { palette, curve, theme, width, height, axes, onTooltip },
   ) {
     const canvas = document.createElement("canvas");
     canvas.style.display = "block";
@@ -33,6 +38,7 @@ export const chartjs: ChartBackend = {
       { width, height },
       axes,
       curve,
+      theme,
     );
     const options = config.options!;
     // Sharp on high-density screens: the canvas backs each CSS pixel with more.

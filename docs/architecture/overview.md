@@ -80,12 +80,12 @@ every report, so a catalog change triggers a re-merge.
 
 ### Storage
 
-| Table      | Holds                                                                                         |
-| ---------- | --------------------------------------------------------------------------------------------- |
-| `patients` | One row per person, keyed by normalised ID number (or name and date of birth)                 |
-| `reports`  | The upload **exactly as received**, the upgraded report, schema version, catalog hash, status |
-| `results`  | One row per result, rebuilt from the upgraded report, so charts query without parsing JSON    |
-| `settings` | Theme, selected patient, chart library and curve, Ollama address and model, notifications     |
+| Table      | Holds                                                                                            |
+| ---------- | ------------------------------------------------------------------------------------------------ |
+| `patients` | One row per person, keyed by normalised ID number (or name and date of birth)                    |
+| `reports`  | The upload **exactly as received**, the upgraded report, schema version, catalog hash, status    |
+| `results`  | One row per result, rebuilt from the upgraded report, so charts query without parsing JSON       |
+| `settings` | Theme, selected patient, chart library, curve and theme, Ollama address and model, notifications |
 
 On launch, any report whose format or catalog is out of date is upgraded again
 **from its original**. A report that fails is kept and marked failed, never

@@ -33,7 +33,7 @@ const { addFiles, starting } = useImports();
     <div class="flex min-w-0 items-center gap-5">
       <div class="flex items-center gap-2.5">
         <AppLogo />
-        <span class="text-[15px] font-semibold whitespace-nowrap max-md:sr-only">Local Medical Charts</span>
+        <span class="text-[15px] font-semibold whitespace-nowrap max-2xl:sr-only">Local Medical Charts</span>
       </div>
       <span v-if="patients.length && !active" class="h-7 w-px bg-line max-md:hidden" aria-hidden="true"></span>
       <PatientPicker
