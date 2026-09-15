@@ -37,6 +37,11 @@ const SPELLINGS: Record<string, string> = {
   "g/l": "g/L",
   "l/l": "L/L",
   "mg/dl": "mg/dL",
+  "mg/l": "mg/L",
+  "mg/mmol": "mg/mmol",
+  // Urine albumin / creatinine ratio, printed with the substance in the unit.
+  "mgalb/mmol": "mg/mmol",
+  "mg/g": "mg/g",
   "mmol/l": "mmol/L",
   "umol/l": "umol/L",
   "nmol/l": "nmol/L",
