@@ -68,7 +68,7 @@ Deno.test("invalid settings from the page are refused", () => {
 
 Deno.test("stored settings fall back to defaults for anything unknown or invalid", () => {
   assertEquals(normalizeSettings({}), DEFAULT_SETTINGS);
-  assertEquals(DEFAULT_SETTINGS.chartCurve, "straight");
+  assertEquals(DEFAULT_SETTINGS.chartCurve, "smooth");
   assertEquals(
     normalizeSettings({
       theme: "light",

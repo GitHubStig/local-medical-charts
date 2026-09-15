@@ -31,8 +31,9 @@ flags. The app shouldn't be locked into one charting library.
    result, and the latest range labelled beside its band.
 5. Colours come from the theme, so charts follow light and dark mode.
 6. The line is straight, smooth or stepped, chosen from a dropdown beside the
-   library and remembered. Smooth never bulges past a reading, and steps hold
-   each result until the next reading, the same in every library.
+   library and remembered; smooth unless changed. Smooth never bulges past a
+   reading, and steps hold each result until the next reading, the same in every
+   library.
 
 ## Acceptance criteria
 

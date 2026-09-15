@@ -40,7 +40,7 @@ Deno.test("fake bindings: settings persist in the storage they're given", async 
     theme: "dark",
     selectedPatientId: null,
     chartLibrary: "vega-lite",
-    chartCurve: "straight",
+    chartCurve: "smooth",
     ollamaHost: "http://localhost:11434",
     ocrModel: null,
     notifyWhenRead: true,

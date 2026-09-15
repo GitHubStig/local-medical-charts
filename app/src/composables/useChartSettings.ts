@@ -14,7 +14,7 @@ import { errorMessage } from "../api/index.ts";
 type ChartSettings = Pick<Settings, "chartLibrary" | "chartCurve">;
 
 const chartLibrary = ref<ChartLibrary>("vega-lite");
-const chartCurve = ref<ChartCurve>("straight");
+const chartCurve = ref<ChartCurve>("smooth");
 const saveError = ref<string | null>(null);
 let bindings: DesktopBindings | null = null;
 
