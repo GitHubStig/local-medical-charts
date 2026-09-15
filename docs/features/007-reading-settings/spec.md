@@ -11,7 +11,7 @@ can read images, and know it works before waiting minutes for a report.
 - As a user, I set the Ollama address, pick a model, and see which models can
   read images.
 - As a user, I press Test connection and learn whether Ollama is running, the
-  model is installed, and it can actually read an image.
+  model is installed, and it can actually read a report page.
 - As a user, destructive actions like clearing all data are out of the way.
 
 ## Requirements
@@ -25,7 +25,8 @@ can read images, and know it works before waiting minutes for a report.
    text-only models can't be picked; refresh; a saved model that's gone is
    shown.
 4. Test connection in three steps, stopping at the first failure, each explained
-   in plain words: reachable, installed, reads a small generated test image.
+   in plain words: reachable, installed, and reads a small generated test page
+   the way reports are read, so a model that can only transcribe fails.
 5. Clear all data moves here from the top bar.
 6. No cloud providers or API keys
    ([ADR 0001](../../adr/0001-local-only-processing.md)).
@@ -36,6 +37,8 @@ can read images, and know it works before waiting minutes for a report.
   running.
 - A text-only model can't be selected, and testing one says it can't read
   images.
+- A model that can only transcribe, such as glm-ocr or deepseek-ocr, fails the
+  reading step and is told to choose another model.
 - The browser version shows the same wording, from a fictional model list.
 
 ## Out of scope
