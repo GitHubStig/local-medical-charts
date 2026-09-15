@@ -115,10 +115,10 @@ const SuggestionFileSchema = z.object({
   suggestions: z.array(SuggestionSchema),
 });
 
-type Suggestion = z.infer<typeof SuggestionSchema>;
+export type Suggestion = z.infer<typeof SuggestionSchema>;
 
 /** Unmatched names across merged reports, re-checked against today's catalog. */
-async function collectUnmatched(
+export async function collectUnmatched(
   dataDir: string,
   catalog: CatalogIndex,
 ): Promise<Item[]> {
@@ -354,7 +354,7 @@ async function suggest(
 }
 
 /** Applies accepted suggestions; returns the ones still pending review. */
-function apply(
+export function applySuggestions(
   suggestions: Suggestion[],
   index: CatalogIndex,
 ): { catalog: Catalog; applied: string[]; pending: Suggestion[] } {
@@ -470,7 +470,7 @@ async function main() {
     const file = SuggestionFileSchema.parse(
       JSON.parse(await Deno.readTextFile(suggestionsPath)),
     );
-    const result = apply(file.suggestions, catalog);
+    const result = applySuggestions(file.suggestions, catalog);
     if (result.applied.length === 0) {
       console.log(`no accepted suggestions in ${SUGGESTIONS_FILE}`);
       return;
