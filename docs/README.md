@@ -33,6 +33,7 @@ each feature's spec, plan and tasks.
 | 0014 | [Prefer platform APIs](adr/0014-prefer-platform-apis.md)                                           |
 | 0015 | [Build in small, reviewed steps](adr/0015-small-reviewed-steps.md)                                 |
 | 0016 | [Flint's chart themes, with the app's rules kept](adr/0016-flint-chart-themes.md)                  |
+| 0017 | [New chart features come from Flint, not overlays](adr/0017-chart-features-from-flint.md)          |
 
 ## Features
 
