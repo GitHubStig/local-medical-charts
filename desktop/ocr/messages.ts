@@ -19,10 +19,14 @@ export const ocrMessages = {
     `${model} can't read images. Choose a model marked “Reads images”.`,
   readOk: (seconds: number) =>
     `Read a test image correctly in ${seconds.toFixed(1)} s`,
+  wrongFormat: (model: string) =>
+    `${model} couldn't return the test image in the format reports are read in. Choose another model.`,
+  repeating: (model: string) =>
+    `${model} kept repeating itself on the test image and was stopped. Choose another model.`,
   misread: (model: string, reply: string) =>
     `${model} read the test image as “${
       reply.slice(0, 40)
-    }”, not the value on it.`,
+    }”, not what's printed on it.`,
   readSlow: (model: string) =>
     `${model} didn't finish reading the test image in time.`,
   readFailed: (model: string, detail: string) =>

@@ -59,7 +59,8 @@ prompt, no page repeated (see [Prompt changes](#prompt-changes)).
 
 Neither can fill in the app's JSON: with the app's prompt, old or new, both
 failed or returned no results on every page. They can only transcribe, so on
-their own they don't fit the app.
+their own they don't fit the app. Test connection reads its test page the way
+reports are read, so it fails them.
 
 | Model                 | Size         | Memory | Prompt                                             | Fictional pages          | Real scans (124 results)                                                         | Time per page |
 | --------------------- | ------------ | ------ | -------------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------- | ------------- |

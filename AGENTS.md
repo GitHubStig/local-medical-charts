@@ -137,8 +137,9 @@ convention; the owner chose to keep this layout.
   rows forever; replies are streamed, capped and stopped when they repeat
   (`src/ollama.ts`). Ollama can also leave a finished reply's stream open, so a
   started reply that sends nothing for 3 minutes is given up (not retried). Some
-  models put the formatted reply in `thinking` instead of `content`; the client
-  falls back to it.
+  models put the formatted reply in `thinking` instead of `content`, or think
+  even when told not to; the client falls back to `thinking`, and Test
+  connection reads its test page through the same client.
 - **Chart themes and overlays:** an overlay that restyles Flint's output hides a
   Flint theme. Where a theme applies, the overlay keeps Flint's styling and adds
   only the app's rules. `desktop/chart-themes_test.ts` fails when Flint's theme

@@ -1,16 +1,15 @@
 /**
  * Checks the Ollama setup for the settings page: which models are installed and
  * which can read images, and a three-step connection test. Reading report pages
- * goes through src/ollama.ts; this module only checks that it can work.
+ * goes through src/ollama.ts; the last check reads a small test page through the
+ * same reader imports use.
  */
-import { encodeBase64 } from "@std/encoding/base64";
+import { OllamaHttpError, OllamaReplyError } from "../../src/ollama.ts";
+import type { PageExtraction } from "../../src/schema.ts";
+import { ollamaPageReader } from "../imports/reader.ts";
 import type { OcrCheck, OcrModel, OcrModelList, OcrTest } from "../types.ts";
 import { ocrMessages } from "./messages.ts";
-import {
-  TEST_IMAGE_ANSWER,
-  TEST_IMAGE_QUESTION,
-  testImagePng,
-} from "./test-image.ts";
+import { TEST_IMAGE_ANSWER, testImagePng } from "./test-image.ts";
 
 export type OllamaService = {
   listModels(host: string): Promise<OcrModelList>;
@@ -38,6 +37,63 @@ function describe(host: string, err: unknown): string {
   // fetch rejects with a TypeError when nothing is listening.
   if (err instanceof TypeError) return ocrMessages.unreachable(host);
   return err instanceof Error ? err.message : String(err);
+}
+
+/**
+ * Whether a model read the test page as printed (test-image.ts): one potassium
+ * row of 4.7 mmol/L with its 3.5 to 5.1 range, and nothing made up. A model
+ * that can only transcribe can get the number right and still invent the rest.
+ */
+function readAsPrinted(page: PageExtraction): boolean {
+  const [row, ...others] = page.tests;
+  const [measurement, ...more] = row?.measurements ?? [];
+  return !!measurement && others.length === 0 && more.length === 0 &&
+    /potassium/i.test(row.name) &&
+    measurement.value.trim() === TEST_IMAGE_ANSWER &&
+    /^mmol\/l$/i.test(measurement.unit?.trim() ?? "") &&
+    /3\.5\D+5\.1/.test(measurement.referenceText ?? "");
+}
+
+/** What a model read, briefly: each row's name and values, for the settings page. */
+function reading(page: PageExtraction): string {
+  return page.tests.map((test) =>
+    [
+      test.name,
+      test.measurements.map((m) => [m.value, m.unit].filter(Boolean).join(" "))
+        .join(", "),
+    ].join(" ")
+  ).join("; ");
+}
+
+/** Why reading the test page failed, in words for the settings page. */
+function readError(host: string, model: string, err: unknown): string {
+  // The reader wraps what went wrong; the causes underneath say which.
+  const causes: unknown[] = [];
+  for (
+    let e = err;
+    e !== undefined;
+    e = e instanceof Error ? e.cause : undefined
+  ) {
+    causes.push(e);
+  }
+  if (causes.some(isTimeout)) return ocrMessages.readSlow(model);
+  const reply = causes.find((e) => e instanceof OllamaReplyError);
+  if (reply) {
+    return reply.reason === "repeating"
+      ? ocrMessages.repeating(model)
+      : reply.reason === "stalled"
+      ? ocrMessages.readSlow(model)
+      : ocrMessages.wrongFormat(model);
+  }
+  if (causes.some((e) => e instanceof OllamaHttpError && e.status === 404)) {
+    return ocrMessages.notInstalled(model);
+  }
+  // fetch rejects with a TypeError when nothing is listening.
+  const unreachable = causes.find((e) => e instanceof TypeError);
+  return unreachable ? describe(host, unreachable) : ocrMessages.readFailed(
+    model,
+    err instanceof Error ? err.message : String(err),
+  );
 }
 
 export function createOllamaService(
@@ -174,39 +230,35 @@ export function createOllamaService(
 
     const started = Date.now();
     try {
-      const reply = await call<{ message?: { content?: string } }>(
-        host,
-        "/api/chat",
-        READ_MS,
+      // The same reader, prompt and format as imports, so a model that can only
+      // transcribe fails here rather than on someone's first report.
+      const reader = await ollamaPageReader(host, model, {
+        pageMinutes: READ_MS / 60_000,
+      });
+      const page = await reader.read(
         {
-          model,
-          stream: false,
-          // Only models that think accept the switch; thinking adds nothing to reading a number.
-          ...(info.capabilities?.includes("thinking") ? { think: false } : {}),
-          options: { temperature: 0, num_predict: 16 },
-          messages: [{
-            role: "user",
-            content: TEST_IMAGE_QUESTION,
-            images: [encodeBase64(testImage())],
-          }],
+          name: "test-image.png",
+          type: "image/png",
+          bytes: testImage(),
+          origin: "rendered",
         },
+        1,
+        1,
+        new AbortController().signal,
       );
-      const text = (reply.message?.content ?? "").trim();
-      const read = text.includes(TEST_IMAGE_ANSWER);
+      const read = readAsPrinted(page);
       checks.push({
         step: "reads-images",
         ok: read,
         message: read
           ? ocrMessages.readOk((Date.now() - started) / 1000)
-          : ocrMessages.misread(model, text),
+          : ocrMessages.misread(model, reading(page)),
       });
     } catch (err) {
       checks.push({
         step: "reads-images",
         ok: false,
-        message: isTimeout(err)
-          ? ocrMessages.readSlow(model)
-          : ocrMessages.readFailed(model, describe(host, err)),
+        message: readError(host, model, err),
       });
     }
     return result();
