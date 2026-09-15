@@ -181,6 +181,21 @@ convention; the owner chose to keep this layout.
     without a live Ollama.
   - **First step when resumed:** a gap audit of what a rebuild needs that
     `docs/` doesn't pin down.
+- Swappable page reading (a provider other than Ollama): parked by the owner
+  until a second provider is actually chosen.
+  - **Already provider-neutral:** everything after a page is read takes a
+    `PageExtraction`, and the import queue only uses the `PageReader` interface
+    (`desktop/imports/reader.ts`), which `desktop/main.ts` passes into the
+    bindings.
+  - **Ollama-specific today:** the `ollamaHost` and `ocrModel` settings, the
+    Settings page's model list and connection test (`desktop/ocr/ollama.ts`,
+    `listOcrModels` and `testOcr` in the contract), the reader's error wording,
+    and the command-line pipeline (`src/ocr-reports.ts`, `src/map-analytes.ts`
+    through `src/ollama.ts`).
+  - **When it's picked up:** add an adapter implementing `PageReader`, a
+    provider choice in Settings with each provider's own fields and connection
+    test, and provider-neutral names for those settings and contract calls. A
+    cloud provider needs ADR 0001 revisited first.
 - Flint feature request for reference bands: drafted in
   `docs/proposals/flint-reference-bands.md`, not posted; parked by the owner.
   The owner posts it from their own GitHub account.
