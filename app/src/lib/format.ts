@@ -65,7 +65,7 @@ const COMPARATORS: Record<string, string> = {
   ">=": "≥",
 };
 
-/** A value in its unit, with any comparator: "47 U/L", "< 5 U/L", "≥ 90 mL/min/1.73m²". */
+/** A value in its unit, with any comparator: "48 U/L", "< 7 U/L", "≥ 60 mL/min/1.73m²". */
 export function formatMeasurement(
   value: number,
   op: string | null,

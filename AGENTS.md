@@ -200,6 +200,6 @@ convention; the owner chose to keep this layout.
 - Flint feature request for reference bands: drafted in
   `docs/proposals/flint-reference-bands.md`, not posted; parked by the owner.
   The owner posts it from their own GitHub account.
-- Before publishing: replace the `--prefix` usage example in
-  `src/ocr-reports.ts` with a neutral one, and nudge four sample values that
-  coincide with real results (owner will do this cleanup).
+- Before publishing: retake the README screenshots in `docs/images/`. They still
+  show the sample values from before every value was nudged; the owner has more
+  changes to make first.

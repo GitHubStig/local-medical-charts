@@ -66,7 +66,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 12.9
+        "value": 12.5
       },
       "unit": "g/dL",
       "range": {
@@ -78,11 +78,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 12.9,
+        "value": 12.5,
         "unit": "g/dL"
       },
       "printed": {
-        "value": "12.9",
+        "value": "12.5",
         "unit": "g/dL",
         "referenceText": "11.5 - 16.0",
         "marker": null
@@ -101,7 +101,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 6.1
+        "value": 6.5
       },
       "unit": "x10^9/L",
       "range": {
@@ -113,11 +113,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 6.1,
+        "value": 6.5,
         "unit": "x10^9/L"
       },
       "printed": {
-        "value": "6.1",
+        "value": "6.5",
         "unit": "x10^9/L",
         "referenceText": "4.0 - 11.0",
         "marker": null
@@ -136,7 +136,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 245
+        "value": 233
       },
       "unit": "x10^9/L",
       "range": {
@@ -148,11 +148,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 245,
+        "value": 233,
         "unit": "x10^9/L"
       },
       "printed": {
-        "value": "245",
+        "value": "233",
         "unit": "x10^9/L",
         "referenceText": "150 - 400",
         "marker": null
@@ -171,7 +171,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 58
+        "value": 54
       },
       "unit": "%",
       "range": {
@@ -183,11 +183,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 58,
+        "value": 54,
         "unit": "%"
       },
       "printed": {
-        "value": "58",
+        "value": "54",
         "unit": "%",
         "referenceText": "40 - 75",
         "marker": null
@@ -206,7 +206,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 3.4
+        "value": 3.5
       },
       "unit": "x10^9/L",
       "range": {
@@ -218,11 +218,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 3.4,
+        "value": 3.5,
         "unit": "x10^9/L"
       },
       "printed": {
-        "value": "3.4",
+        "value": "3.5",
         "unit": "x10^9/L",
         "referenceText": "2.0 - 7.5",
         "marker": null
@@ -241,7 +241,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 5.4
+        "value": 5.7
       },
       "unit": "mmol/L",
       "range": {
@@ -253,11 +253,11 @@
       "flagSource": "printed",
       "standard": {
         "op": null,
-        "value": 5.4,
+        "value": 5.7,
         "unit": "mmol/L"
       },
       "printed": {
-        "value": "5.4",
+        "value": "5.7",
         "unit": "mmol/L",
         "referenceText": "< 5.2",
         "marker": "H"
@@ -276,7 +276,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 3.5
+        "value": 3.4
       },
       "unit": "mmol/L",
       "range": {
@@ -288,11 +288,11 @@
       "flagSource": "printed",
       "standard": {
         "op": null,
-        "value": 3.5,
+        "value": 3.4,
         "unit": "mmol/L"
       },
       "printed": {
-        "value": "3.5",
+        "value": "3.4",
         "unit": "mmol/L",
         "referenceText": "< 3.4",
         "marker": "H"
@@ -311,7 +311,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 1.3
+        "value": 1.2
       },
       "unit": "mmol/L",
       "range": {
@@ -323,11 +323,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 1.3,
+        "value": 1.2,
         "unit": "mmol/L"
       },
       "printed": {
-        "value": "1.3",
+        "value": "1.2",
         "unit": "mmol/L",
         "referenceText": "> 1.0",
         "marker": null
@@ -346,7 +346,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 1.6
+        "value": 1.4
       },
       "unit": "mmol/L",
       "range": {
@@ -358,11 +358,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 1.6,
+        "value": 1.4,
         "unit": "mmol/L"
       },
       "printed": {
-        "value": "1.6",
+        "value": "1.4",
         "unit": "mmol/L",
         "referenceText": "< 1.7",
         "marker": null
@@ -381,7 +381,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 71
+        "value": 75
       },
       "unit": "umol/L",
       "range": {
@@ -393,11 +393,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 71,
+        "value": 75,
         "unit": "umol/L"
       },
       "printed": {
-        "value": "71",
+        "value": "75",
         "unit": "µmol/L",
         "referenceText": "45 - 90",
         "marker": null
@@ -417,7 +417,7 @@
       "result": {
         "kind": "comparator",
         "op": ">=",
-        "value": 90
+        "value": 60
       },
       "unit": "mL/min/1.73m²",
       "range": {
@@ -429,11 +429,11 @@
       "flagSource": null,
       "standard": {
         "op": ">=",
-        "value": 90,
+        "value": 60,
         "unit": "mL/min/1.73m²"
       },
       "printed": {
-        "value": ">=90",
+        "value": ">=60",
         "unit": "ml/min/1.73m^2",
         "referenceText": "(Ref.Range:>= 60)",
         "marker": null
@@ -452,7 +452,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 4.3
+        "value": 4
       },
       "unit": "mmol/L",
       "range": {
@@ -464,11 +464,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 4.3,
+        "value": 4,
         "unit": "mmol/L"
       },
       "printed": {
-        "value": "4.3",
+        "value": "4.0",
         "unit": "mmol/L",
         "referenceText": "3.5 - 5.1",
         "marker": null
@@ -487,7 +487,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 4.8
+        "value": 5
       },
       "unit": "mmol/L",
       "range": {
@@ -499,11 +499,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 4.8,
+        "value": 5,
         "unit": "mmol/L"
       },
       "printed": {
-        "value": "4.8",
+        "value": "5.0",
         "unit": "mmol/L",
         "referenceText": "2.5 - 7.8",
         "marker": null
@@ -522,7 +522,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 5.4
+        "value": 5.5
       },
       "unit": "%",
       "range": {
@@ -533,11 +533,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 5.4,
+        "value": 5.5,
         "unit": "%"
       },
       "printed": {
-        "value": "5.4",
+        "value": "5.5",
         "unit": "%",
         "referenceText": "Normal <5.7%; Prediabetes 5.7-6.2%; Diabetes >=6.3%",
         "marker": null
@@ -556,7 +556,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 5.1
+        "value": 5.4
       },
       "unit": "mmol/L",
       "range": {
@@ -568,11 +568,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 5.1,
+        "value": 5.4,
         "unit": "mmol/L"
       },
       "printed": {
-        "value": "5.1",
+        "value": "5.4",
         "unit": "mmol/L",
         "referenceText": "3.9 - 6.0",
         "marker": null
@@ -592,7 +592,7 @@
       "result": {
         "kind": "comparator",
         "op": "<",
-        "value": 5
+        "value": 7
       },
       "unit": "U/L",
       "range": {
@@ -604,11 +604,11 @@
       "flagSource": null,
       "standard": {
         "op": "<",
-        "value": 5,
+        "value": 7,
         "unit": "U/L"
       },
       "printed": {
-        "value": "<5",
+        "value": "<7",
         "unit": "IU/L",
         "referenceText": "0 - 40",
         "marker": null
@@ -627,7 +627,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 22
+        "value": 19
       },
       "unit": "U/L",
       "range": {
@@ -639,11 +639,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 22,
+        "value": 19,
         "unit": "U/L"
       },
       "printed": {
-        "value": "22",
+        "value": "19",
         "unit": "IU/L",
         "referenceText": "5 - 35",
         "marker": null
@@ -662,7 +662,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 1.8
+        "value": 2
       },
       "unit": "uIU/mL",
       "range": {
@@ -674,11 +674,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 1.8,
+        "value": 2,
         "unit": "uIU/mL"
       },
       "printed": {
-        "value": "1.8",
+        "value": "2.0",
         "unit": "uIU/mL",
         "referenceText": "0.4 - 4.0",
         "marker": null
@@ -697,7 +697,7 @@
       ],
       "result": {
         "kind": "numeric",
-        "value": 13.2
+        "value": 13
       },
       "unit": "pmol/L",
       "range": {
@@ -709,11 +709,11 @@
       "flagSource": null,
       "standard": {
         "op": null,
-        "value": 13.2,
+        "value": 13,
         "unit": "pmol/L"
       },
       "printed": {
-        "value": "13.2",
+        "value": "13.0",
         "unit": "pmol/L",
         "referenceText": "9.0 - 19.0",
         "marker": null
@@ -951,7 +951,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "12.9",
+                "value": "12.5",
                 "unit": "g/dL",
                 "referenceText": "11.5 - 16.0",
                 "marker": null
@@ -968,7 +968,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "6.1",
+                "value": "6.5",
                 "unit": "x10^9/L",
                 "referenceText": "4.0 - 11.0",
                 "marker": null
@@ -985,7 +985,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "245",
+                "value": "233",
                 "unit": "x10^9/L",
                 "referenceText": "150 - 400",
                 "marker": null
@@ -1002,13 +1002,13 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "58",
+                "value": "54",
                 "unit": "%",
                 "referenceText": "40 - 75",
                 "marker": null
               },
               {
-                "value": "3.4",
+                "value": "3.5",
                 "unit": "x10^9/L",
                 "referenceText": "2.0 - 7.5",
                 "marker": null
@@ -1025,7 +1025,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "5.4",
+                "value": "5.7",
                 "unit": "mmol/L",
                 "referenceText": "< 5.2",
                 "marker": "H"
@@ -1042,7 +1042,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "3.5",
+                "value": "3.4",
                 "unit": "mmol/L",
                 "referenceText": "< 3.4",
                 "marker": "H"
@@ -1059,7 +1059,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "1.3",
+                "value": "1.2",
                 "unit": "mmol/L",
                 "referenceText": "> 1.0",
                 "marker": null
@@ -1076,7 +1076,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "1.6",
+                "value": "1.4",
                 "unit": "mmol/L",
                 "referenceText": "< 1.7",
                 "marker": null
@@ -1093,7 +1093,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "71",
+                "value": "75",
                 "unit": "µmol/L",
                 "referenceText": "45 - 90",
                 "marker": null
@@ -1110,7 +1110,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": ">=90",
+                "value": ">=60",
                 "unit": "ml/min/1.73m^2",
                 "referenceText": "(Ref.Range:>= 60)",
                 "marker": null
@@ -1127,7 +1127,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "4.3",
+                "value": "4.0",
                 "unit": "mmol/L",
                 "referenceText": "3.5 - 5.1",
                 "marker": null
@@ -1144,7 +1144,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "4.8",
+                "value": "5.0",
                 "unit": "mmol/L",
                 "referenceText": "2.5 - 7.8",
                 "marker": null
@@ -1212,7 +1212,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "5.4",
+                "value": "5.5",
                 "unit": "%",
                 "referenceText": "Normal <5.7%; Prediabetes 5.7-6.2%; Diabetes >=6.3%",
                 "marker": null
@@ -1229,7 +1229,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "5.1",
+                "value": "5.4",
                 "unit": "mmol/L",
                 "referenceText": "3.9 - 6.0",
                 "marker": null
@@ -1246,7 +1246,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "<5",
+                "value": "<7",
                 "unit": "IU/L",
                 "referenceText": "0 - 40",
                 "marker": null
@@ -1263,7 +1263,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "22",
+                "value": "19",
                 "unit": "IU/L",
                 "referenceText": "5 - 35",
                 "marker": null
@@ -1280,7 +1280,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "1.8",
+                "value": "2.0",
                 "unit": "uIU/mL",
                 "referenceText": "0.4 - 4.0",
                 "marker": null
@@ -1297,7 +1297,7 @@
             "nameZh": null,
             "measurements": [
               {
-                "value": "13.2",
+                "value": "13.0",
                 "unit": "pmol/L",
                 "referenceText": "9.0 - 19.0",
                 "marker": null

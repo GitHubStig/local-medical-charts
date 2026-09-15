@@ -55,13 +55,13 @@ Deno.test("Flint's Chart.js line sits under the markers, on the series' window",
   assertEquals([line.borderColor, line.pointRadius], [PALETTE.series, 0]);
   assert(line.order > filled.order, "the line draws under the markers");
 
-  // "<5" is the hollow marker; March's 47 is flagged high.
-  assertEquals(hollow.data.map((p: Loose) => p.y), [5]);
+  // "<7" is the hollow marker; March's 48 is flagged high.
+  assertEquals(hollow.data.map((p: Loose) => p.y), [7]);
   assertEquals(hollow.pointBackgroundColor, PALETTE.surface);
   assertEquals(filled.pointBackgroundColor.at(-1), PALETTE.critical);
   assertEquals(
     filled.data.at(-1).tooltip,
-    "18 Mar 2026 · 47 U/L · Harbour Medical Lab · High",
+    "18 Mar 2026 · 48 U/L · Harbour Medical Lab · High",
   );
   assertEquals(config.plugins.map((p: Loose) => p.id), ["referenceBands"]);
 });

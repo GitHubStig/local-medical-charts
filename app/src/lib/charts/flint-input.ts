@@ -16,7 +16,7 @@ export type ChartRow = {
   /** Whether the value is a bound ("< 5"), drawn as a hollow marker. */
   bound: boolean;
   flagged: boolean;
-  /** One line of hover text: "18 Mar 2026 · 47 U/L · Harbour Medical Lab · High". */
+  /** One line of hover text: "18 Mar 2026 · 48 U/L · Harbour Medical Lab · High". */
   tooltip: string;
 };
 

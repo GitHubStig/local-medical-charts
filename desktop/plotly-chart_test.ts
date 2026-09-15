@@ -68,12 +68,12 @@ Deno.test("Flint's Plotly line gets the bands as shapes and markers on top, on t
     [line.mode, line.line.color, line.hoverinfo],
     ["lines", PALETTE.series, "skip"],
   );
-  // "<5" is the hollow marker; March's 47 is flagged high.
-  assertEquals([hollow.y, hollow.marker.color], [[5], PALETTE.surface]);
+  // "<7" is the hollow marker; March's 48 is flagged high.
+  assertEquals([hollow.y, hollow.marker.color], [[7], PALETTE.surface]);
   assertEquals(filled.marker.color.at(-1), PALETTE.critical);
   assertEquals(
     filled.customdata.at(-1),
-    "18 Mar 2026 · 47 U/L · Harbour Medical Lab · High",
+    "18 Mar 2026 · 48 U/L · Harbour Medical Lab · High",
   );
 });
 

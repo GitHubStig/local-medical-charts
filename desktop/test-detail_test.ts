@@ -20,7 +20,7 @@ Deno.test("the header names the test, where it belongs, and its latest reading",
     [alt.title, alt.subtitle, alt.meta],
     ["ALT", "Alanine Aminotransferase", "Liver · blood · U/L"],
   );
-  assertEquals(alt.latest, { value: "47 U/L", date: "18 Mar 2026", flag: "H" });
+  assertEquals(alt.latest, { value: "48 U/L", date: "18 Mar 2026", flag: "H" });
 
   // Only abbreviations get a spelled-out subtitle.
   assertEquals((await alexDetail("haemoglobin")).subtitle, null);
@@ -42,9 +42,9 @@ Deno.test("every reading is listed newest first, as printed and as charted", asy
     reportId: alt.rows[0].reportId,
     date: "18 Mar 2026",
     lab: "Harbour Medical Lab",
-    printed: "47 U/L",
+    printed: "48 U/L",
     printedName: "ALT",
-    standard: "47 U/L",
+    standard: "48 U/L",
     range: "< 35",
     flag: "H",
     bound: null,
@@ -53,14 +53,14 @@ Deno.test("every reading is listed newest first, as printed and as charted", asy
   const first = alt.rows[3];
   assertEquals(
     [first.printed, first.printedName, first.standard, first.range],
-    ["<5 IU/L", "ALT (SGPT)", "< 5 U/L", "0 – 40"],
+    ["<7 IU/L", "ALT (SGPT)", "< 7 U/L", "0 – 40"],
   );
   assertEquals([first.flag, first.bound], [null, "Below reportable limit"]);
 
   const egfr = await alexDetail("egfr");
   assertEquals(
     [egfr.rows[3].standard, egfr.rows[3].bound],
-    ["≥ 90 mL/min/1.73m²", "Above reportable limit"],
+    ["≥ 60 mL/min/1.73m²", "Above reportable limit"],
   );
 });
 
