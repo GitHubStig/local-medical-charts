@@ -9,15 +9,15 @@ Deno tests build and check them.
 
 ## Modules
 
-| File                                                                           | Role                                                                |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| `app/src/lib/series.ts`                                                        | Series per analyte: points, units, range bands and edges            |
-| `app/src/lib/charts/flint-input.ts`                                            | One Flint line chart plus overlay data                              |
-| `app/src/lib/charts/*-spec.ts`                                                 | Vega-Lite, ECharts, Chart.js and Plotly configs with their overlays |
-| `app/src/lib/charts/{vega-lite,echarts,chartjs,plotly}.ts`                     | Lazy-loaded renderers                                               |
-| `app/src/lib/charts/axes.ts`, `palette.ts`                                     | Shared axis ticks; colours resolved from CSS tokens                 |
-| `app/src/components/TestChart.vue`, `TestDetail.vue`, `ChartLibraryToggle.vue` | Card chart, large view (native `<dialog>`), switcher                |
-| `app/src/composables/useChartLibrary.ts`                                       | Chosen library, stored in settings                                  |
+| File                                                                     | Role                                                                          |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `app/src/lib/series.ts`                                                  | Series per analyte: points, units, range bands and edges                      |
+| `app/src/lib/charts/flint-input.ts`                                      | One Flint line chart plus overlay data                                        |
+| `app/src/lib/charts/*-spec.ts`                                           | Vega-Lite, ECharts, Chart.js and Plotly configs with their overlays           |
+| `app/src/lib/charts/{vega-lite,echarts,chartjs,plotly}.ts`               | Lazy-loaded renderers                                                         |
+| `app/src/lib/charts/axes.ts`, `palette.ts`                               | Shared axis ticks; colours resolved from CSS tokens                           |
+| `app/src/components/TestChart.vue`, `TestDetail.vue`, `ChartOptions.vue` | Card chart, large view (native `<dialog>`), chart library and curve dropdowns |
+| `app/src/composables/useChartSettings.ts`                                | Chosen library and curve, stored in settings                                  |
 
 ## Order
 

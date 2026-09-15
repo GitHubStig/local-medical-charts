@@ -19,7 +19,7 @@ import {
 import { importedPatient, resolveSelection } from "../lib/selection.ts";
 import { plural } from "../lib/format.ts";
 import { beginActivity } from "./useActivity.ts";
-import { initChartLibrary } from "./useChartLibrary.ts";
+import { initChartSettings } from "./useChartSettings.ts";
 import { forgetFolds } from "./useFolds.ts";
 import { initImports } from "./useImports.ts";
 import { initNotifications } from "./useNotifications.ts";
@@ -83,7 +83,7 @@ export async function startLibrary(): Promise<void> {
     api.value = await connectApi();
     const settings = await api.value.bindings.getSettings();
     await initTheme(api.value.bindings, settings);
-    initChartLibrary(api.value.bindings, settings);
+    initChartSettings(api.value.bindings, settings);
     initOcrSettings(api.value.bindings, settings);
     initNotifications(api.value.bindings, settings);
     status.value = await api.value.bindings.getStartupStatus();

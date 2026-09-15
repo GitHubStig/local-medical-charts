@@ -111,3 +111,14 @@ Deno.test("the large chart gets value and date axes, and names the latest range"
     [false, []],
   );
 });
+
+Deno.test("Flint's Plotly line is straight, a spline, or steps that hold each result", async () => {
+  const hb = await alexSeries("haemoglobin");
+  const shape = (choice: "straight" | "smooth" | "steps") =>
+    (plotlyFigure(hb, PALETTE, SIZE, false, choice) as Loose).data[0].line
+      .shape;
+  assertEquals(
+    [shape("straight"), shape("smooth"), shape("steps")],
+    ["linear", "spline", "hv"],
+  );
+});

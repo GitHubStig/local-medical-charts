@@ -137,3 +137,17 @@ Deno.test("the large chart gets value and date axes, and names the latest range"
     [false, false],
   );
 });
+
+Deno.test("Chart.js smooths monotonically and holds each result until the next, like the other libraries", async () => {
+  const hb = await alexSeries("haemoglobin");
+  const line = (choice: "straight" | "smooth" | "steps") => {
+    const [dataset] = (chartjsConfig(hb, PALETTE, SIZE, false, choice) as Loose)
+      .data.datasets;
+    return [dataset.cubicInterpolationMode ?? null, dataset.stepped];
+  };
+  assertEquals([line("straight"), line("smooth"), line("steps")], [
+    [null, false],
+    ["monotone", false],
+    [null, "before"],
+  ]);
+});

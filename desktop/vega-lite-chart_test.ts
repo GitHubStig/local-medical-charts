@@ -148,3 +148,13 @@ Deno.test("every sample's large chart compiles without Vega-Lite warnings", asyn
     }
   }
 });
+
+Deno.test("the line's curve comes through Flint: straight, monotone smooth, or steps that hold each result", async () => {
+  const hb = await alexSeries("haemoglobin");
+  const curve = (choice: "straight" | "smooth" | "steps") =>
+    layers(vegaLiteSpec(hb, PALETTE, SIZE, false, choice))[2].mark.interpolate;
+  assertEquals(
+    [curve("straight"), curve("smooth"), curve("steps")],
+    ["linear", "monotone", "step-after"],
+  );
+});
