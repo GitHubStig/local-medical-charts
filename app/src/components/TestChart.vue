@@ -16,7 +16,7 @@ const props = withDefaults(
 const element = ref<HTMLElement | null>(null);
 const { width } = useElementSize(element);
 const { resolved } = useTheme();
-const { chartLibrary, chartCurve } = useChartSettings();
+const { chartLibrary, chartCurve, chartTheme } = useChartSettings();
 const tooltip = ref<ChartTooltip>(null);
 const failed = ref<string | null>(null);
 const chart = shallowRef<RenderedChart | null>(null);
@@ -55,6 +55,7 @@ async function draw() {
     const rendered = await backend.render(target, props.series, {
       palette: readPalette(),
       curve: chartCurve.value,
+      theme: chartTheme.value,
       width: w,
       height: props.height,
       axes: props.axes,
@@ -68,9 +69,16 @@ async function draw() {
   }
 }
 
-// Redraw for new data, a new width, another chart library or curve, or a theme
-// switch (after <html data-theme> changes).
-watch([() => props.series, width, resolved, chartLibrary, chartCurve], draw, {
+// Redraw for new data, a new width, another chart library, curve or chart
+// theme, or a light or dark switch (after <html data-theme> changes).
+watch([
+  () => props.series,
+  width,
+  resolved,
+  chartLibrary,
+  chartCurve,
+  chartTheme,
+], draw, {
   flush: "post",
 });
 

@@ -4,7 +4,7 @@
  * loads when this backend is in use.
  */
 import Plotly from "plotly.js-basic-dist-min";
-import { plotlyFigure } from "./plotly-spec.ts";
+import { plotlyFigure, supportsTheme } from "./plotly-spec.ts";
 import type { ChartBackend } from "./types.ts";
 
 type HoverEvent = {
@@ -13,10 +13,11 @@ type HoverEvent = {
 };
 
 export const plotly: ChartBackend = {
+  supportsTheme,
   async render(
     element,
     series,
-    { palette, curve, width, height, axes, onTooltip },
+    { palette, curve, theme, width, height, axes, onTooltip },
   ) {
     const { data, layout, config } = plotlyFigure(
       series,
@@ -24,6 +25,7 @@ export const plotly: ChartBackend = {
       { width, height },
       axes,
       curve,
+      theme,
     );
     const plot = await Plotly.newPlot(element, data, layout, config);
     plot.on("plotly_hover", (hover: HoverEvent) => {

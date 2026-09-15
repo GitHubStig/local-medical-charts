@@ -16,6 +16,8 @@ export type ChartOptions = {
   palette: ChartPalette;
   /** How the line joins the readings. */
   curve: ChartCurve;
+  /** A Flint theme id, or "app" for the app's own look. */
+  theme: string;
   /** The element's full size; axes, when shown, take their room from it. */
   width: number;
   height: number;
@@ -27,6 +29,8 @@ export type ChartOptions = {
 export type RenderedChart = { destroy(): void };
 
 export type ChartBackend = {
+  /** Whether Flint styles this library's charts for the theme. */
+  supportsTheme(theme: string): boolean;
   render(
     element: HTMLElement,
     series: Series,

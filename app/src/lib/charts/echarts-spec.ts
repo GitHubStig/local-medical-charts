@@ -18,6 +18,7 @@ import { dateMs, type Series } from "../series.ts";
 import { AXIS_MARGIN, chartAxes } from "./axes.ts";
 import { bandEdges, chartBands, chartRows, flintInput } from "./flint-input.ts";
 import type { ChartPalette } from "./palette.ts";
+import { APP_THEME, themeApplies, withTheme } from "./themes.ts";
 
 use([
   LineChart,
@@ -45,12 +46,17 @@ function withoutFlintKeys(option: Record<string, unknown>) {
 }
 
 /** `size` is the whole chart; with `axes`, the labels take their room from it. */
+/** Whether Flint styles ECharts charts for this theme. */
+export const supportsTheme = (theme: string): boolean =>
+  themeApplies("echarts", theme, assembleECharts);
+
 export function echartsOption(
   series: Series,
   palette: ChartPalette,
   size: { width: number; height: number },
   axes = false,
   curve: ChartCurve = "smooth",
+  theme = APP_THEME,
 ): EChartsCoreOption {
   const domain = series.domain;
   if (!domain) throw new Error(`${series.name} has no readings to chart`);
@@ -65,8 +71,14 @@ export function echartsOption(
     height: size.height - margin.top - margin.bottom,
   };
   const frame = axes ? chartAxes(series, plot.width) : null;
+  // Flint doesn't theme ECharts yet (see desktop/chart-themes_test.ts). Once it
+  // does, the themed input goes through here, and this overlay needs the
+  // themed branch vega-lite-spec.ts has before the theme fully shows.
+  const input = flintInput(series, plot, curve);
   const flint = withoutFlintKeys(
-    assembleECharts(flintInput(series, plot, curve)) as Record<string, unknown>,
+    assembleECharts(
+      supportsTheme(theme) ? withTheme(input, theme) : input,
+    ) as Record<string, unknown>,
   );
   const [line] = flint.series as Record<string, unknown>[];
   const [bottom, top] = frame?.y.domain ?? domain.y;
