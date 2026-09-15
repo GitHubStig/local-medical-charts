@@ -84,14 +84,35 @@ Deno.test("report details show where each date came from", async () => {
     "19 Mar 2026, 21:14 · 2 pages",
     "alex-tan-2026-03-18.json",
   ]);
-  assertEquals(h.interpretation[0].page, 2);
-  assertEquals(h.interpretation[0].lines.length, 3);
+  // Two blocks printed on page 2, under one heading: the HbA1c ranges (three
+  // lines) and a note to read HbA1c with glucose.
+  assertEquals(h.interpretation.map((p) => [p.page, p.lines.length]), [[2, 4]]);
   assertEquals(h.notes, []);
 
   const n = reportDetails(northside, northside.report!, "UTC");
   assertEquals(n.dates[0], "Received 12 Nov 2024, 08:40");
   assertEquals(n.doctor, ["Dr Priya Nair", "Riverside Family Clinic"]);
   assertEquals(n.referenceNumbers.map((f) => f.label), ["R/N", "VN/AN"]);
+});
+
+Deno.test("interpretation notes printed on the same page sit under one page heading", async () => {
+  const [harbour] = (await sampleDashboard("ALEX TAN")).reports;
+  // Fictional blocks: two printed on page 2, one on page 3.
+  const report = {
+    ...harbour.report!,
+    interpretation: [
+      { page: 2, text: "Normal < 5.7%; Prediabetes 5.7 - 6.2%" },
+      { page: 2, text: "Diabetes >= 6.3%" },
+      { page: 3, text: "Fasting sample" },
+    ],
+  };
+  assertEquals(reportDetails(harbour, report, "UTC").interpretation, [
+    {
+      page: 2,
+      lines: ["Normal < 5.7%", "Prediabetes 5.7 - 6.2%", "Diabetes >= 6.3%"],
+    },
+    { page: 3, lines: ["Fasting sample"] },
+  ]);
 });
 
 Deno.test("a report whose upgrade failed is listed with its reason", () => {

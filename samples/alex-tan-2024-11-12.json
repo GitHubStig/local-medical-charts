@@ -53,7 +53,20 @@
   "specimenNotes": [
     "Comment: Fasting"
   ],
-  "interpretation": [],
+  "interpretation": [
+    {
+      "page": 1,
+      "text": "eGFR is calculated with the CKD-EPI 2021 equation"
+    },
+    {
+      "page": 2,
+      "text": "HbA1c is reported in NGSP units"
+    },
+    {
+      "page": 2,
+      "text": "Glucose and lipids are best interpreted on a fasting sample"
+    }
+  ],
   "tests": [
     {
       "analyte": "haemoglobin",
@@ -1154,7 +1167,9 @@
           }
         ],
         "continuationText": null,
-        "interpretation": [],
+        "interpretation": [
+          "eGFR is calculated with the CKD-EPI 2021 equation"
+        ],
         "specimenNotes": [
           "Comment: Fasting"
         ],
@@ -1409,7 +1424,10 @@
           }
         ],
         "continuationText": null,
-        "interpretation": [],
+        "interpretation": [
+          "HbA1c is reported in NGSP units",
+          "Glucose and lipids are best interpreted on a fasting sample"
+        ],
         "specimenNotes": [],
         "warnings": []
       },

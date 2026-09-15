@@ -444,6 +444,36 @@ const SAMPLES: Sample[] = [
   },
 ];
 
+/**
+ * What each lab prints under "Interpretation", by page. Like real reports, a
+ * page can carry several separate blocks, which the dashboard groups under one
+ * page heading. A block's lines are joined with "; ", as the OCR returns them.
+ */
+function printedInterpretation(sample: Sample, page: number): string[] {
+  const northside = sample.lab === "northside";
+  if (page === 1) {
+    return [
+      ...(northside && sample.values.egfr
+        ? ["eGFR is calculated with the CKD-EPI 2021 equation"]
+        : []),
+      ...(sample.notes.some((note) => /haemolysis/i.test(note))
+        ? [
+          "Haemolysed sample: potassium may be falsely raised; repeat if clinically indicated",
+        ]
+        : []),
+    ];
+  }
+  return northside
+    ? [
+      "HbA1c is reported in NGSP units",
+      "Glucose and lipids are best interpreted on a fasting sample",
+    ]
+    : [
+      "Diagnostic values of HbA1c: Normal < 5.7% (< 39 mmol/mol); Prediabetes 5.7 - 6.2% (39 - 44 mmol/mol); Diabetes >= 6.3% (>= 45 mmol/mol)",
+      "Interpret HbA1c together with fasting glucose",
+    ];
+}
+
 function printedDate(iso: string, lab: Lab, time: string): string {
   const [y, m, d] = iso.split("-");
   return lab === "northside"
@@ -494,11 +524,7 @@ for (const sample of SAMPLES) {
       }],
     tests,
     continuationText: null,
-    interpretation: i === 1 && !n
-      ? [
-        "Diagnostic values of HbA1c: Normal < 5.7% (< 39 mmol/mol); Prediabetes 5.7 - 6.2% (39 - 44 mmol/mol); Diabetes >= 6.3% (>= 45 mmol/mol)",
-      ]
-      : [],
+    interpretation: printedInterpretation(sample, i + 1),
     specimenNotes: i === 0 ? sample.notes : [],
     warnings: [],
   }));
