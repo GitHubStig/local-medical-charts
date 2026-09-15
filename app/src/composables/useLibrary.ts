@@ -20,6 +20,7 @@ import { importedPatient, resolveSelection } from "../lib/selection.ts";
 import { plural } from "../lib/format.ts";
 import { beginActivity } from "./useActivity.ts";
 import { initChartLibrary } from "./useChartLibrary.ts";
+import { forgetFolds } from "./useFolds.ts";
 import { initImports } from "./useImports.ts";
 import { initNotifications } from "./useNotifications.ts";
 import { initOcrSettings } from "./useOcrSettings.ts";
@@ -196,6 +197,7 @@ export function useLibrary() {
     clearAll: () =>
       withBusy(async () => {
         await bindings().clearAll();
+        forgetFolds();
         lastImport.value = null;
         await refreshPatients();
         selectPatient(null);

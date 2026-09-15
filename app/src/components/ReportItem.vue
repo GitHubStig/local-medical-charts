@@ -1,13 +1,23 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { DashboardReport } from "../../../desktop/contract.ts";
+import { useFolds } from "../composables/useFolds.ts";
 import { reportDetails, reportRow } from "../lib/dashboard.ts";
+import { reportRegion } from "../lib/folds.ts";
 import { plural } from "../lib/format.ts";
 import FlagPill from "./FlagPill.vue";
 import Icon from "./Icon.vue";
 
-const props = defineProps<{ entry: DashboardReport; initiallyOpen: boolean }>();
+/** `newest` opens the row until the person folds or opens it themselves. */
+const props = defineProps<{
+  entry: DashboardReport;
+  patientId: number;
+  newest: boolean;
+}>();
 const emit = defineEmits<{ remove: [reportId: number] }>();
+
+const { isOpen, setOpen } = useFolds();
+const toggled = (event: Event) => (event.target as HTMLDetailsElement).open;
 
 const row = computed(() => reportRow(props.entry));
 const details = computed(() =>
@@ -29,7 +39,11 @@ const blocks = computed(() =>
 </script>
 
 <template>
-  <details :open="initiallyOpen" class="group/report border-b border-line last:border-b-0">
+  <details
+    :open="isOpen(patientId, reportRegion(entry.id), newest)"
+    class="group/report border-b border-line last:border-b-0"
+    @toggle="setOpen(patientId, reportRegion(entry.id), toggled($event))"
+  >
     <summary
       class="flex min-h-13 cursor-pointer list-none items-center gap-3.5 px-5 py-2 hover:bg-hairline [&::-webkit-details-marker]:hidden"
     >
@@ -106,7 +120,12 @@ const blocks = computed(() =>
           v-if="details.interpretation.length || details.notes.length"
           class="flex flex-col gap-1"
         >
-          <details v-if="details.interpretation.length" class="group/interp">
+          <details
+            v-if="details.interpretation.length"
+            :open="isOpen(patientId, reportRegion(entry.id, 'interpretation'), false)"
+            class="group/interp"
+            @toggle="setOpen(patientId, reportRegion(entry.id, 'interpretation'), toggled($event))"
+          >
             <summary
               class="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-lg px-2.5 text-[13px] text-ink-2 hover:bg-chip [&::-webkit-details-marker]:hidden"
             >
@@ -123,7 +142,12 @@ const blocks = computed(() =>
             </div>
           </details>
 
-          <details v-if="details.notes.length" class="group/notes">
+          <details
+            v-if="details.notes.length"
+            :open="isOpen(patientId, reportRegion(entry.id, 'notes'), false)"
+            class="group/notes"
+            @toggle="setOpen(patientId, reportRegion(entry.id, 'notes'), toggled($event))"
+          >
             <summary
               class="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-lg px-2.5 text-[13px] text-ink-2 hover:bg-chip [&::-webkit-details-marker]:hidden"
             >
