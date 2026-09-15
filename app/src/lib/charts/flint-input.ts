@@ -5,6 +5,7 @@
  * from the overlay data here.
  */
 import type { ChartAssemblyInput } from "flint-chart/core";
+import type { ChartCurve } from "../../../../desktop/settings.ts";
 import { FLAGS } from "../flags.ts";
 import { dayMonthYear, formatMeasurement } from "../format.ts";
 import { dateMs, type Series, type SeriesPoint } from "../series.ts";
@@ -74,9 +75,20 @@ export function bandEdges(series: Series): BandEdge[] {
   );
 }
 
+/**
+ * Flint's curve for each choice. Smooth is monotone, so the line never bulges
+ * past a reading; steps hold each result until the next one.
+ */
+const INTERPOLATE: Record<ChartCurve, string> = {
+  straight: "linear",
+  smooth: "monotone",
+  steps: "step-after",
+};
+
 export function flintInput(
   series: Series,
   size: { width: number; height: number },
+  curve: ChartCurve = "straight",
 ): ChartAssemblyInput {
   return {
     data: { values: chartRows(series) },
@@ -91,6 +103,7 @@ export function flintInput(
         y: { field: "value", type: "quantitative" },
       },
       canvasSize: size,
+      chartProperties: { interpolate: INTERPOLATE[curve] },
     },
     field_display_names: { date: "Collected", value: series.name },
   };

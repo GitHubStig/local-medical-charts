@@ -6,6 +6,7 @@
  */
 import type { ChartConfiguration, Plugin, Scale } from "chart.js";
 import { assembleChartjs } from "flint-chart/chartjs";
+import type { ChartCurve } from "../../../../desktop/settings.ts";
 import { dateMs, type Series } from "../series.ts";
 import { AXIS_MARGIN, type ChartAxes, chartAxes } from "./axes.ts";
 import {
@@ -126,13 +127,14 @@ export function chartjsConfig(
   palette: ChartPalette,
   size: { width: number; height: number },
   axes = false,
+  curve: ChartCurve = "straight",
 ): ChartConfiguration<"line", ChartjsPoint[]> {
   const domain = series.domain;
   if (!domain) throw new Error(`${series.name} has no readings to chart`);
   const plotWidth = size.width -
     (axes ? AXIS_MARGIN.left + AXIS_MARGIN.right : PADDING * 2);
   const frame = axes ? chartAxes(series, plotWidth) : null;
-  const flint = assembleChartjs(flintInput(series, size)) as unknown as
+  const flint = assembleChartjs(flintInput(series, size, curve)) as unknown as
     & FlintChartjs
     & Record<string, unknown>;
   const [line] = flint.data.datasets;
@@ -209,7 +211,8 @@ export function chartjsConfig(
     type: "line",
     data: {
       datasets: [
-        // Flint's line, restyled to the theme. Higher `order` draws underneath.
+        // Flint's line, keeping its curve, restyled to the theme. Higher
+        // `order` draws underneath.
         {
           ...line,
           label: series.name,
@@ -219,7 +222,12 @@ export function chartjsConfig(
           borderCapStyle: "round",
           borderJoinStyle: "round",
           backgroundColor: "transparent",
-          tension: 0,
+          // Flint's smoothing can bulge past a reading, and its step-after
+          // steps come out as Chart.js's "after", which changes value straight
+          // after the previous reading. Monotone smoothing and "before" steps
+          // match the other libraries: each result holds until the next.
+          ...(curve === "smooth" ? { cubicInterpolationMode: "monotone" } : {}),
+          ...(curve === "steps" ? { stepped: "before" } : {}),
           fill: false,
           pointRadius: 0,
           pointHoverRadius: 0,

@@ -7,6 +7,7 @@
 import { assembleVegaLite } from "flint-chart/vegalite";
 import { parse, View } from "vega";
 import { compile, type TopLevelSpec } from "vega-lite";
+import type { ChartCurve } from "../../../../desktop/settings.ts";
 import { dateMs, type Series } from "../series.ts";
 import { AXIS_MARGIN, chartAxes } from "./axes.ts";
 import { bandEdges, chartBands, chartRows, flintInput } from "./flint-input.ts";
@@ -29,6 +30,7 @@ export function vegaLiteSpec(
   palette: ChartPalette,
   size: { width: number; height: number },
   axes = false,
+  curve: ChartCurve = "straight",
 ): TopLevelSpec {
   const domain = series.domain;
   if (!domain) throw new Error(`${series.name} has no readings to chart`);
@@ -44,7 +46,10 @@ export function vegaLiteSpec(
   };
   const frame = axes ? chartAxes(series, plot.width) : null;
   const flint = withoutFlintKeys(
-    assembleVegaLite(flintInput(series, plot)) as Record<string, unknown>,
+    assembleVegaLite(flintInput(series, plot, curve)) as Record<
+      string,
+      unknown
+    >,
   );
   const [bottom, top] = frame?.y.domain ?? domain.y;
 
@@ -154,7 +159,7 @@ export function vegaLiteSpec(
           y: { ...y, field: "value" },
         },
       },
-      // Flint's line, restyled to the theme.
+      // Flint's line, keeping its curve, restyled to the theme.
       {
         mark: {
           ...(flint.mark as object),

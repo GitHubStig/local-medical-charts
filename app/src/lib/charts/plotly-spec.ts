@@ -5,6 +5,7 @@
  * imported here, so Deno tests can build the figure.
  */
 import { assemblePlotly } from "flint-chart/plotly";
+import type { ChartCurve } from "../../../../desktop/settings.ts";
 import { dateMs, type Series } from "../series.ts";
 import { AXIS_MARGIN, chartAxes } from "./axes.ts";
 import { bandEdges, chartBands, chartRows, flintInput } from "./flint-input.ts";
@@ -45,6 +46,7 @@ export function plotlyFigure(
   palette: ChartPalette,
   size: { width: number; height: number },
   axes = false,
+  curve: ChartCurve = "straight",
 ): PlotlyFigure {
   const domain = series.domain;
   if (!domain) throw new Error(`${series.name} has no readings to chart`);
@@ -60,7 +62,7 @@ export function plotlyFigure(
   };
   const frame = axes ? chartAxes(series, plot.width) : null;
   const flint = assemblePlotly(
-    flintInput(series, plot),
+    flintInput(series, plot, curve),
   ) as unknown as FlintPlotly;
   const [line] = flint.data;
   const [bottom, top] = frame?.y.domain ?? domain.y;
@@ -127,7 +129,8 @@ export function plotlyFigure(
   // layout go to Plotly.
   return {
     data: [
-      // Flint's line, restyled to the theme; it never answers hovers itself.
+      // Flint's line, keeping its curve, restyled to the theme; it never
+      // answers hovers itself.
       {
         ...line,
         type: "scatter",
@@ -138,7 +141,6 @@ export function plotlyFigure(
           ...(line.line as object),
           color: palette.series,
           width: 2,
-          shape: "linear",
         },
         hoverinfo: "skip",
       },

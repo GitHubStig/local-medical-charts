@@ -6,6 +6,7 @@
  * can run them.
  */
 import type { Series } from "../series.ts";
+import type { ChartCurve } from "../../../../desktop/settings.ts";
 import type { ChartPalette } from "./palette.ts";
 
 /** Hover text and where the pointer is, in viewport pixels; null hides it. */
@@ -13,6 +14,8 @@ export type ChartTooltip = { text: string; x: number; y: number } | null;
 
 export type ChartOptions = {
   palette: ChartPalette;
+  /** How the line joins the readings. */
+  curve: ChartCurve;
   /** The element's full size; axes, when shown, take their room from it. */
   width: number;
   height: number;

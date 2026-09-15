@@ -17,6 +17,9 @@ Deno.test("a valid settings patch is accepted", () => {
   assertEquals(parseSettingsPatch({ chartLibrary: "echarts" }), {
     chartLibrary: "echarts",
   });
+  assertEquals(parseSettingsPatch({ chartCurve: "steps" }), {
+    chartCurve: "steps",
+  });
   assertEquals(parseSettingsPatch({}), {});
 });
 
@@ -42,6 +45,11 @@ Deno.test("invalid settings from the page are refused", () => {
     "chartLibrary must be one of",
   );
   assertThrows(
+    () => parseSettingsPatch({ chartCurve: "bumpy" }),
+    SettingsError,
+    "chartCurve must be one of",
+  );
+  assertThrows(
     () => parseSettingsPatch({ fontSize: 14 }),
     SettingsError,
     "unknown setting",
@@ -60,11 +68,13 @@ Deno.test("invalid settings from the page are refused", () => {
 
 Deno.test("stored settings fall back to defaults for anything unknown or invalid", () => {
   assertEquals(normalizeSettings({}), DEFAULT_SETTINGS);
+  assertEquals(DEFAULT_SETTINGS.chartCurve, "straight");
   assertEquals(
     normalizeSettings({
       theme: "light",
       selectedPatientId: 2,
       chartLibrary: "echarts",
+      chartCurve: "smooth",
       retired: true,
     }),
     {
@@ -72,11 +82,17 @@ Deno.test("stored settings fall back to defaults for anything unknown or invalid
       theme: "light",
       selectedPatientId: 2,
       chartLibrary: "echarts",
+      chartCurve: "smooth",
     },
   );
   assertEquals(
     // A library that's been removed falls back too.
-    normalizeSettings({ theme: 42, selectedPatientId: -1, chartLibrary: "d3" }),
+    normalizeSettings({
+      theme: 42,
+      selectedPatientId: -1,
+      chartLibrary: "d3",
+      chartCurve: "wavy",
+    }),
     DEFAULT_SETTINGS,
   );
 });
