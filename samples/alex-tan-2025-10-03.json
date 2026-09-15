@@ -51,8 +51,16 @@
   ],
   "interpretation": [
     {
+      "page": 1,
+      "text": "Haemolysed sample: potassium may be falsely raised; repeat if clinically indicated"
+    },
+    {
       "page": 2,
       "text": "Diagnostic values of HbA1c: Normal < 5.7% (< 39 mmol/mol); Prediabetes 5.7 - 6.2% (39 - 44 mmol/mol); Diabetes >= 6.3% (>= 45 mmol/mol)"
+    },
+    {
+      "page": 2,
+      "text": "Interpret HbA1c together with fasting glucose"
     }
   ],
   "tests": [
@@ -1193,7 +1201,9 @@
           }
         ],
         "continuationText": null,
-        "interpretation": [],
+        "interpretation": [
+          "Haemolysed sample: potassium may be falsely raised; repeat if clinically indicated"
+        ],
         "specimenNotes": [
           "Specimen Comment: Haemolysis +"
         ],
@@ -1457,7 +1467,8 @@
         ],
         "continuationText": null,
         "interpretation": [
-          "Diagnostic values of HbA1c: Normal < 5.7% (< 39 mmol/mol); Prediabetes 5.7 - 6.2% (39 - 44 mmol/mol); Diabetes >= 6.3% (>= 45 mmol/mol)"
+          "Diagnostic values of HbA1c: Normal < 5.7% (< 39 mmol/mol); Prediabetes 5.7 - 6.2% (39 - 44 mmol/mol); Diabetes >= 6.3% (>= 45 mmol/mol)",
+          "Interpret HbA1c together with fasting glucose"
         ],
         "specimenNotes": [],
         "warnings": []

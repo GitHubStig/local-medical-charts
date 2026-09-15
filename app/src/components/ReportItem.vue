@@ -130,12 +130,14 @@ const blocks = computed(() =>
               class="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-lg px-2.5 text-[13px] text-ink-2 hover:bg-chip [&::-webkit-details-marker]:hidden"
             >
               <Icon name="chevron-right" class="transition-transform group-open/interp:rotate-90" />
-              Interpretation · {{ plural(details.interpretation.length, "note") }}
+              Interpretation · {{
+                plural(details.interpretation.reduce((count, page) => count + page.lines.length, 0), "note")
+              }}
             </summary>
             <div class="mt-1 flex flex-col gap-3 rounded-lg bg-page px-4 py-3">
-              <div v-for="(block, i) in details.interpretation" :key="i" class="flex flex-col gap-0.5">
-                <span class="text-xs text-muted">Page {{ block.page }}</span>
-                <p v-for="(line, j) in block.lines" :key="j" class="text-[13px] text-ink-2">
+              <div v-for="page in details.interpretation" :key="page.page" class="flex flex-col gap-0.5">
+                <span class="text-xs text-muted">Page {{ page.page }}</span>
+                <p v-for="(line, j) in page.lines" :key="j" class="text-[13px] text-ink-2">
                   {{ line }}
                 </p>
               </div>
