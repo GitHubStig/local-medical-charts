@@ -78,8 +78,8 @@ result over time, across labs, entirely on your own computer.
   [ocr-models.md](ocr-models.md)).
 - **Speed:** a page takes about a minute to read on a fast Mac. Reading happens
   in the background while the app stays usable.
-- **Platform:** macOS first. Deno Desktop also targets Windows and Linux, which
-  are untested.
+- **Platform:** macOS first. It also runs on Windows 11, tried with a 12 GB
+  NVIDIA graphics card; Linux, which Deno Desktop also targets, is untested.
 
 ## Success looks like
 

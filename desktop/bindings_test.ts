@@ -114,7 +114,7 @@ Deno.test("with the database unavailable, status explains, settings default, the
     chartCurve: "smooth",
     chartTheme: "app",
     ollamaHost: "http://localhost:11434",
-    ocrModel: null,
+    ocrModel: "qwen3-vl:4b",
     notifyWhenRead: true,
   });
   await assertRejects(
@@ -144,7 +144,7 @@ Deno.test("real bindings: OCR checks use the saved Ollama address and model", as
     await b.testOcr();
     assertEquals(calls, [
       ["listModels", "http://localhost:11434"],
-      ["test", "http://localhost:11434", null],
+      ["test", "http://localhost:11434", "qwen3-vl:4b"],
       ["test", "http://192.168.1.20:11434", "qwen3.8:27b-mlx"],
     ]);
   } finally {
@@ -220,6 +220,7 @@ Deno.test("real bindings: without a model, no page reader is opened", async () =
     pageReader: standInPageReader(opened),
   });
   try {
+    await b.updateSettings({ ocrModel: null });
     const pdf = packFiles([{ name: "example-lab.pdf", bytes: examplePdf() }]);
     await b.startImport(pdf.files, pdf.bytes);
     const [job] = await settledImports(b);

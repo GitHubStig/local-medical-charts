@@ -31,7 +31,7 @@ import { normalizeUnit, unitKey } from "./units.ts";
 const DEFAULTS = {
   data: ".data/pipeline/readings",
   catalog: DEFAULT_CATALOG,
-  model: "qwen3.8:27b-mlx",
+  model: "qwen3-vl:4b",
   host: "http://localhost:11434",
   retries: "2",
   context: "32768",

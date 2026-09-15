@@ -71,6 +71,12 @@ const FAKE_MODELS: OcrModel[] = [
     contextLength: 2048,
   },
   {
+    name: "qwen3-vl:4b",
+    readsImages: true,
+    parameterSize: "4.4B",
+    contextLength: 262144,
+  },
+  {
     name: "qwen3.8:27b-mlx",
     readsImages: true,
     parameterSize: "27.8B",
