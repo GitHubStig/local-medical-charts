@@ -49,6 +49,26 @@ Code extension suggests:
 The root font size is left at the browser default, so scale values match the
 mockups' pixels exactly.
 
+## Local data
+
+`.data/` holds everything real on this machine. Git ignores everything in it
+except an empty `.gitkeep`, so the folder exists in a fresh clone.
+
+| Path                                      | What it is                                                                                                                                                                                                            |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.data/medical-charts.db`, `-wal`, `-shm` | The desktop app's database during development (`MEDICAL_CHARTS_DATA_DIR=.data` in the `desktop` task). A packaged app uses the OS app-data folder instead, e.g. `~/Library/Application Support/Local Medical Charts`. |
+| `.data/pipeline/reports/`                 | Report PDFs for the command-line pipeline                                                                                                                                                                             |
+| `.data/pipeline/images/`                  | Page images from `deno task extract`                                                                                                                                                                                  |
+| `.data/pipeline/readings/`                | Page readings and merged reports from `deno task ocr`                                                                                                                                                                 |
+
+- **Resetting the database:** quit the app, then delete `medical-charts.db`
+  together with its `-wal` and `-shm` files. The `-wal` file can hold most of
+  the recent changes, so never delete one without the others.
+- **Don't delete all of `.data/` to reset:** that also deletes the pipeline's
+  reports and readings.
+- Everything here is real personal data; see the rules in `AGENTS.md` and
+  [ADR 0013](adr/0013-fictional-data-only.md).
+
 ## Versions during development
 
 Until the app is complete, everything stays at **version 1**: the report JSON
@@ -57,8 +77,9 @@ format (`SCHEMA_VERSION` in `src/schema.ts`) and the database
 migrations, then reset local data
 ([ADR 0004](adr/0004-versions-stay-at-1-until-release.md)):
 
-- **Database changed:** delete `.data/` and relaunch `deno task desktop`. An
-  out-of-date development database stops with an error saying so.
+- **Database changed:** delete the development database (see
+  [Local data](#local-data)) and relaunch `deno task desktop`. An out-of-date
+  development database stops with an error saying so.
 - **Report format changed:** regenerate reports with
   `deno task ocr --merge-only` (or run the OCR again if page files changed),
   then re-import them.

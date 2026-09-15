@@ -16,8 +16,9 @@ those migrations would only be noise.
 - Until the owner declares the app released, the report `SCHEMA_VERSION` and the
   database migrations both stay at **version 1**.
 - Changes edit version 1 in place: the Zod schemas, or migration 1's SQL.
-- After such a change, local data is reset: delete `.data/` for the database,
-  and regenerate reports for the JSON format.
+- After such a change, local data is reset: delete the development database
+  (`.data/medical-charts.db` with its `-wal` and `-shm` files), and regenerate
+  reports for the JSON format.
 - A development database created before a change fails with a message saying to
   delete it, instead of misbehaving.
 

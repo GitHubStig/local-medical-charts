@@ -11,8 +11,9 @@ installed model that reads images.
   unit, range and flag was scored against the sample it was drawn from.
 - **Real reports:** three scanned PDFs (17 pages) read on the same machine, with
   nothing leaving it. Two of them (11 pages, 124 results) were scored against
-  the earlier `qwen3.8:27b-mlx` readings in `3.data/`, which nobody had checked,
-  so a difference can be either model's mistake. Only counts were recorded.
+  the earlier `qwen3.8:27b-mlx` readings in `.data/pipeline/readings/`, which
+  nobody had checked, so a difference can be either model's mistake. Only counts
+  were recorded.
 - **Two ways of asking:** the app's own prompt (`src/ocr-prompt.md`) with the
   JSON schema, as the app reads pages; and, for OCR-only models, their own short
   prompts, scored by finding each result in the text they returned.
