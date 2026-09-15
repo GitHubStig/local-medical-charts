@@ -165,9 +165,20 @@ convention; the owner chose to keep this layout.
   (cells below, within or above the lab's range, with the value shown); a ranged
   dot plot of each latest result within its range (one-sided ranges and word
   results left out); a stacked bar of the white cell breakdown per report
-  (samples would need the other four cell types). Flint 0.5.1 lists these for
-  all four libraries, but none has been built yet, so first check each renders
-  in all four. Avoid radar, rose, pie and dual-axis charts.
+  (samples would need the other four cell types). Flint 0.5.1 has the heatmap
+  and ranged dot plot for Vega-Lite, ECharts and Plotly but not Chart.js, and
+  the stacked bar for all four; none has been built yet. Avoid radar, rose, pie
+  and dual-axis charts.
+- **Chart features come from Flint, not overlays:** the owner wants new chart
+  types and options to arrive through Flint and the chart libraries as they are
+  (progressive enhancement), the way chart themes do
+  ([ADR 0017](docs/adr/0017-chart-features-from-flint.md)). Don't add overlay
+  code for a new feature; the existing overlays only cover what ADR 0010 lists.
+- Parked by the owner, because each needs overlay code in all four libraries:
+  - **"Distance from range" lollipop:** a stem from the lab range's edge to each
+    result outside it.
+  - **Median line:** an optional dashed "Your median" line in the large view,
+    never replacing the reference band.
 - Rebuild benchmark: parked by the owner. The idea is to hand a new AI model
   `docs/` in an empty repo and compare what it builds against this repo.
   - **Missing from `docs/` today:** the report JSON format, the analyte catalog,
