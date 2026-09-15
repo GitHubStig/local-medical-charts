@@ -44,7 +44,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: "system",
   selectedPatientId: null,
   chartLibrary: "vega-lite",
-  chartCurve: "straight",
+  chartCurve: "smooth",
   ollamaHost: DEFAULT_OLLAMA_HOST,
   ocrModel: null,
   notifyWhenRead: true,

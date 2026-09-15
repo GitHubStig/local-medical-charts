@@ -30,7 +30,7 @@ export function vegaLiteSpec(
   palette: ChartPalette,
   size: { width: number; height: number },
   axes = false,
-  curve: ChartCurve = "straight",
+  curve: ChartCurve = "smooth",
 ): TopLevelSpec {
   const domain = series.domain;
   if (!domain) throw new Error(`${series.name} has no readings to chart`);
