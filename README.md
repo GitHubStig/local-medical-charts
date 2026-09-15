@@ -4,6 +4,12 @@ Chart lab results over time from printed and PDF lab reports. A vision model
 running locally in Ollama reads each page, you check the reading, and every test
 is charted across reports and labs. **Nothing leaves your computer.**
 
+> **Not medical advice.** Local Medical Charts isn't a medical device, and it
+> doesn't diagnose or interpret results. It shows what your lab reports printed,
+> against each lab's own reference ranges. A model reads the pages and can get
+> things wrong, so check each reading against the report, and talk to a doctor
+> about your results.
+
 ![The dashboard for a fictional patient: reports from two labs, and a chart for every test](docs/images/dashboard.png)
 
 ## Try it without Ollama
