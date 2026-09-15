@@ -8,7 +8,7 @@
 import { join as posixJoin } from "@std/path/posix";
 import { join as windowsJoin } from "@std/path/windows";
 
-export const APP_NAME = "Medical Charts";
+export const APP_NAME = "Local Medical Charts";
 export const DATABASE_FILE = "medical-charts.db";
 
 type Env = { get(key: string): string | undefined };
@@ -31,7 +31,7 @@ export function appDataDir(os: typeof Deno.build.os, env: Env): string {
   // Linux and other Unix-likes follow the XDG base directory convention.
   return posixJoin(
     env.get("XDG_DATA_HOME") || posixJoin(home, ".local", "share"),
-    "medical-charts",
+    "local-medical-charts",
   );
 }
 

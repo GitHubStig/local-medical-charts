@@ -30,7 +30,7 @@ onMounted(startLibrary);
     class="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-4 px-6 text-center"
   >
     <AppLogo :size="40" />
-    <h1 class="text-xl font-semibold">Medical Charts can't open its data</h1>
+    <h1 class="text-xl font-semibold">Local Medical Charts can't open its data</h1>
     <p class="text-sm text-ink-2">
       {{ status && !status.ok ? status.error : error }}
     </p>

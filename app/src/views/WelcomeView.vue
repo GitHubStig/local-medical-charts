@@ -44,7 +44,7 @@ const FORMATS = ["PDF", "JPG", "PNG", "WebP", "JSON"];
     <main class="flex w-full max-w-160 flex-col items-center gap-8">
       <div class="flex flex-col items-center gap-3.5 text-center">
         <AppLogo :size="48" />
-        <h1 class="text-[30px] font-semibold tracking-tight">Medical Charts</h1>
+        <h1 class="text-[30px] font-semibold tracking-tight">Local Medical Charts</h1>
         <p class="text-base leading-normal text-ink-2">
           See how lab results change over time, across every report and lab.
         </p>

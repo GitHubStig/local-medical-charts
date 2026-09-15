@@ -14,6 +14,6 @@ export function quitWarning(jobs: readonly ImportJob[]): string | null {
     ).length;
   if (unsaved === 0) return null;
   return unsaved === 1
-    ? "Quit Medical Charts? A reading isn't saved yet and will be lost."
-    : `Quit Medical Charts? ${unsaved} readings aren't saved yet and will be lost.`;
+    ? "Quit Local Medical Charts? A reading isn't saved yet and will be lost."
+    : `Quit Local Medical Charts? ${unsaved} readings aren't saved yet and will be lost.`;
 }

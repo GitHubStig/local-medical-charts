@@ -1,4 +1,4 @@
-# Product: Medical Charts
+# Product: Local Medical Charts
 
 ## The problem
 
@@ -14,7 +14,7 @@ uploading health records to someone else's server.
 
 ## What it does
 
-Medical Charts turns those printed reports into one place that shows every
+Local Medical Charts turns those printed reports into one place that shows every
 result over time, across labs, entirely on your own computer.
 
 1. **Add reports.** Drop in a PDF or photos of the pages (or report JSON from

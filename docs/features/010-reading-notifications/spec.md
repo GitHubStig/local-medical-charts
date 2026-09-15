@@ -23,8 +23,8 @@ to see whether the reading is ready or has failed.
 2. **Generic wording**, fixed in one place:
    - ready: "Report ready to review", "6 pages read. Check the results before
      saving."
-   - failed: "Couldn't read a report", "Open Medical Charts to see why and try
-     again."
+   - failed: "Couldn't read a report", "Open Local Medical Charts to see why and
+     try again."
 
    No file names (they often contain a patient's name), patient, lab, model,
    results or error text.

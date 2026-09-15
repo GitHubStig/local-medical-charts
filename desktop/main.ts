@@ -39,7 +39,7 @@ function findAppDist(): string | null {
 
 // The first BrowserWindow adopts the window the runtime already opened.
 const win = new Deno.BrowserWindow<DesktopBindings>({
-  title: "Medical Charts",
+  title: "Local Medical Charts",
   width: 1440,
   height: 900,
 });
@@ -148,7 +148,7 @@ const dist = findAppDist();
 Deno.serve((request) => {
   if (!dist) {
     return new Response(
-      "<!doctype html><title>Medical Charts</title><p>The app hasn't been built. Run <code>deno task desktop</code>, which builds it first.</p>",
+      "<!doctype html><title>Local Medical Charts</title><p>The app hasn't been built. Run <code>deno task desktop</code>, which builds it first.</p>",
       { headers: { "content-type": "text/html; charset=utf-8" } },
     );
   }
