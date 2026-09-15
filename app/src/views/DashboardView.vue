@@ -53,10 +53,11 @@ const { isOverDropZone } = useDropZone(page, {
       <template v-if="current && overview">
         <PatientSummary :key="`summary-${current.patient.id}`" :overview="overview" />
         <SingleReportNotice v-if="overview.singleReport" />
-        <!-- Keyed by patient, so expanded reports reset when switching patients. -->
+        <!-- Keyed by patient, so its rows mount with that patient's remembered folds (useFolds). -->
         <ReportsSection
           :key="`reports-${current.patient.id}`"
           :reports="current.reports"
+          :patient-id="current.patient.id"
           @remove="confirmRemove"
         />
         <TestGrid :dashboard="current" />

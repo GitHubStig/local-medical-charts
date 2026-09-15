@@ -17,7 +17,9 @@ can read images, and know it works before waiting minutes for a report.
 ## Requirements
 
 1. A Settings page at `#/settings`, reached from a gear in the top bar and on
-   the welcome screen.
+   the welcome screen. Its top bar leaves out the patient picker, the chart
+   library toggle and Add reports, which don't apply there, and pressing the
+   gear again closes Settings.
 2. Ollama address: saved on change, validated as an http(s) address.
 3. Model dropdown listing installed models as "reads images" or "text only";
    text-only models can't be picked; refresh; a saved model that's gone is

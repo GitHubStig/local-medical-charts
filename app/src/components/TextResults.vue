@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useFolds } from "../composables/useFolds.ts";
 import { FLAGS } from "../lib/flags.ts";
 import { plural } from "../lib/format.ts";
 import type { TextColumn, TextRow } from "../lib/text-results.ts";
@@ -9,10 +10,13 @@ import Icon from "./Icon.vue";
 const props = defineProps<{
   columns: readonly TextColumn[];
   rows: readonly TextRow[];
+  patientId: number;
   /** The filters in words while they're on but out of sight (Tests is folded); otherwise null. */
   filteredBy?: string | null;
 }>();
 const emit = defineEmits<{ clear: [] }>();
+
+const { isOpen, setOpen } = useFolds();
 
 // "Urinalysis · 6 tests", or "… · filtered"
 const summary = computed(() =>
@@ -25,7 +29,11 @@ const summary = computed(() =>
 </script>
 
 <template>
-  <details open class="group/text rounded-xl border border-line bg-surface">
+  <details
+    :open="isOpen(patientId, 'text', true)"
+    class="group/text rounded-xl border border-line bg-surface"
+    @toggle="setOpen(patientId, 'text', ($event.target as HTMLDetailsElement).open)"
+  >
     <summary
       class="flex min-h-13 cursor-pointer list-none flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-xl px-5 py-2 [&::-webkit-details-marker]:hidden"
     >

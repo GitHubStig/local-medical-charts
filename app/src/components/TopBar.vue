@@ -10,8 +10,12 @@ import SettingsLink from "./SettingsLink.vue";
 import ThemeToggle from "./ThemeToggle.vue";
 import Icon from "./Icon.vue";
 
-/** `active` marks the page the bar sits on, e.g. the settings gear while on Settings. */
-defineProps<{ active?: "settings" }>();
+/**
+ * `active` marks the page the bar sits on. Settings and review aren't about the
+ * patient the dashboard shows (a report under review may be someone else's), so
+ * both leave the patient picker out.
+ */
+defineProps<{ active?: "settings" | "review" }>();
 
 const { patients, selectedPatientId, selectPatient, busy } = useLibrary();
 const { addFiles, starting } = useImports();
@@ -31,20 +35,24 @@ const { addFiles, starting } = useImports();
         <AppLogo />
         <span class="text-[15px] font-semibold whitespace-nowrap max-md:sr-only">Medical Charts</span>
       </div>
-      <span v-if="patients.length" class="h-7 w-px bg-line max-md:hidden" aria-hidden="true"></span>
+      <span v-if="patients.length && !active" class="h-7 w-px bg-line max-md:hidden" aria-hidden="true"></span>
       <PatientPicker
-        v-if="patients.length"
+        v-if="patients.length && !active"
         :patients="patients"
         :selected-id="selectedPatientId"
         @select="selectPatient"
       />
     </div>
 
-    <!-- Narrower windows drop the words and keep the icons; names stay for screen readers. -->
+    <!--
+      Narrower windows drop the words and keep the icons; names stay for screen readers.
+      Settings has no charts and adds no reports, so it leaves those two out.
+    -->
     <div class="flex flex-wrap items-center gap-3 lg:gap-4">
-      <ChartLibraryToggle compact />
+      <ChartLibraryToggle v-if="active !== 'settings'" compact />
       <ThemeToggle compact />
       <FilePickerButton
+        v-if="active !== 'settings'"
         :disabled="busy || starting"
         title="Add reports"
         class="flex h-11 items-center gap-2 rounded-lg bg-ink px-3.5 text-sm font-medium whitespace-nowrap text-page disabled:opacity-60 lg:px-4"

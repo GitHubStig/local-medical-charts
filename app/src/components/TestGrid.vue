@@ -10,6 +10,7 @@ import {
   filterTestGrid,
 } from "../lib/test-grid.ts";
 import { buildTextResults, filterTextRows } from "../lib/text-results.ts";
+import { useFolds } from "../composables/useFolds.ts";
 import { useTestFilters } from "../composables/useTestFilters.ts";
 import TestCard from "./TestCard.vue";
 import TestDetail from "./TestDetail.vue";
@@ -19,7 +20,11 @@ import Icon from "./Icon.vue";
 const props = defineProps<{ dashboard: Dashboard }>();
 
 // Kept while switching patients, so a filter stays on as you compare people.
-const { query, flaggedOnly, testsOpen, clear } = useTestFilters();
+const { query, flaggedOnly, clear } = useTestFilters();
+// Whether Tests is open is remembered for each patient.
+const { isOpen, setOpen } = useFolds();
+const patientId = computed(() => props.dashboard.patient.id);
+const testsOpen = computed(() => isOpen(patientId.value, "tests", true));
 
 const grid = computed(() => buildTestGrid(props.dashboard));
 const series = computed(() => buildSeries(props.dashboard));
@@ -75,7 +80,7 @@ const summaryNote = computed(() =>
     <details
       :open="testsOpen"
       class="group/tests rounded-xl border border-line bg-surface"
-      @toggle="testsOpen = ($event.target as HTMLDetailsElement).open"
+      @toggle="setOpen(patientId, 'tests', ($event.target as HTMLDetailsElement).open)"
     >
       <summary
         class="flex min-h-13 cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-5 [&::-webkit-details-marker]:hidden"
@@ -175,6 +180,7 @@ const summaryNote = computed(() =>
       v-if="showText"
       :columns="text.columns"
       :rows="shownRows"
+      :patient-id="patientId"
       :filtered-by="textFilteredBy"
       @clear="clear"
     />

@@ -1,14 +1,21 @@
 <script setup lang="ts">
 import type { DashboardReport } from "../../../desktop/contract.ts";
+import { useFolds } from "../composables/useFolds.ts";
 import ReportItem from "./ReportItem.vue";
 import Icon from "./Icon.vue";
 
-defineProps<{ reports: readonly DashboardReport[] }>();
+defineProps<{ reports: readonly DashboardReport[]; patientId: number }>();
 const emit = defineEmits<{ remove: [reportId: number] }>();
+
+const { isOpen, setOpen } = useFolds();
 </script>
 
 <template>
-  <details open class="group/section rounded-xl border border-line bg-surface">
+  <details
+    :open="isOpen(patientId, 'reports', true)"
+    class="group/section rounded-xl border border-line bg-surface"
+    @toggle="setOpen(patientId, 'reports', ($event.target as HTMLDetailsElement).open)"
+  >
     <summary
       class="flex min-h-13 cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-5 [&::-webkit-details-marker]:hidden"
     >
@@ -24,7 +31,8 @@ const emit = defineEmits<{ remove: [reportId: number] }>();
         v-for="(entry, index) in reports"
         :key="entry.id"
         :entry="entry"
-        :initially-open="index === 0"
+        :patient-id="patientId"
+        :newest="index === 0"
         @remove="emit('remove', $event)"
       />
     </div>
