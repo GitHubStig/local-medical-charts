@@ -41,13 +41,20 @@ export type Settings = {
   chartTheme: string;
   /** Where Ollama listens, for reading PDFs and photos. */
   ollamaHost: string;
-  /** The Ollama model that reads report pages; null until one is chosen. */
+  /** The Ollama model that reads report pages; null if the choice is cleared. */
   ocrModel: string | null;
   /** Show a system notification when a reading finishes while the window isn't in front. */
   notifyWhenRead: boolean;
 };
 
 export const DEFAULT_OLLAMA_HOST = "http://localhost:11434";
+
+/**
+ * The model chosen until someone picks another: small enough for an Apple
+ * silicon Mac or a 12 GB graphics card, and it reads reports well enough
+ * (docs/ocr-models.md).
+ */
+export const DEFAULT_OCR_MODEL = "qwen3-vl:4b";
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: "system",
@@ -56,7 +63,7 @@ export const DEFAULT_SETTINGS: Settings = {
   chartCurve: "smooth",
   chartTheme: APP_CHART_THEME,
   ollamaHost: DEFAULT_OLLAMA_HOST,
-  ocrModel: null,
+  ocrModel: DEFAULT_OCR_MODEL,
   notifyWhenRead: true,
 };
 

@@ -141,6 +141,7 @@ export function defineContractTests(
   });
 
   test("without a model, an import fails and says where to choose one", async (b) => {
+    await b.updateSettings({ ocrModel: null });
     await startWith(b, [{ name: "IMG_1.png", bytes: PNG_BYTES }]);
     const [job] = await settledImports(b);
     assertEquals(job.status, "failed");
@@ -357,7 +358,7 @@ export function defineContractTests(
       chartCurve: "smooth",
       chartTheme: "app",
       ollamaHost: "http://localhost:11434",
-      ocrModel: null,
+      ocrModel: "qwen3-vl:4b",
       notifyWhenRead: true,
     });
   });
@@ -372,7 +373,7 @@ export function defineContractTests(
       chartCurve: "smooth",
       chartTheme: "app",
       ollamaHost: "http://localhost:11434",
-      ocrModel: null,
+      ocrModel: "qwen3-vl:4b",
       notifyWhenRead: true,
     });
     await b.updateSettings({ selectedPatientId: null });
@@ -390,7 +391,7 @@ export function defineContractTests(
       chartCurve: "smooth",
       chartTheme: "app",
       ollamaHost: "http://localhost:11434",
-      ocrModel: null,
+      ocrModel: "qwen3-vl:4b",
       notifyWhenRead: true,
     });
     assertEquals(await b.updateSettings({ theme: "light" }), {
@@ -400,7 +401,7 @@ export function defineContractTests(
       chartCurve: "smooth",
       chartTheme: "app",
       ollamaHost: "http://localhost:11434",
-      ocrModel: null,
+      ocrModel: "qwen3-vl:4b",
       notifyWhenRead: true,
     });
     await assertRejects(() => b.updateSettings({ theme: "sepia" } as never));
@@ -414,7 +415,7 @@ export function defineContractTests(
       chartCurve: "smooth",
       chartTheme: "app",
       ollamaHost: "http://localhost:11434",
-      ocrModel: null,
+      ocrModel: "qwen3-vl:4b",
       notifyWhenRead: true,
     });
   });

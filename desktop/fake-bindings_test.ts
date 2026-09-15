@@ -43,7 +43,7 @@ Deno.test("fake bindings: settings persist in the storage they're given", async 
     chartCurve: "smooth",
     chartTheme: "app",
     ollamaHost: "http://localhost:11434",
-    ocrModel: null,
+    ocrModel: "qwen3-vl:4b",
     notifyWhenRead: true,
   });
 });
@@ -54,9 +54,13 @@ Deno.test("fake bindings: OCR setup answers from a fictional model list, with th
   assert(list.ok);
   assertEquals(
     list.models.filter((m) => m.readsImages).map((m) => m.name),
-    ["gemma3:27b", "qwen3.8:27b-mlx"],
+    ["gemma3:27b", "qwen3-vl:4b", "qwen3.8:27b-mlx"],
   );
 
+  // The recommended model is chosen from the start.
+  assertEquals((await b.testOcr()).ok, true);
+
+  await b.updateSettings({ ocrModel: null });
   const noModel = await b.testOcr();
   assertEquals(
     [noModel.ok, noModel.checks.at(-1)?.message],
