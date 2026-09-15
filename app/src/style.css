@@ -7,7 +7,7 @@
 @import "@fontsource/ibm-plex-mono/400.css";
 
 /*
- * Colours from the design canvas (design/), light and dark. The resolved theme
+ * The app's colours, light and dark. The resolved theme
  * is set on <html data-theme="light|dark"> (see composables/useTheme.ts), so a
  * class like bg-page or text-ink-2 switches automatically — no dark: variants
  * needed for these tokens.
