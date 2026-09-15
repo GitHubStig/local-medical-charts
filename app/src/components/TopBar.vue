@@ -30,7 +30,12 @@ const { addFiles, starting } = useImports();
   <header
     class="relative z-20 flex min-h-18 flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-line bg-surface px-4 py-3.5 sm:px-10 md:sticky md:top-0"
   >
-    <div class="flex min-w-0 items-center gap-5">
+    <!--
+      The patient's side: which patient, and adding reports. Settings adds no
+      reports, so it leaves the button out. Reports are filed under the patient
+      each one names, not the one chosen here, as the hover text says.
+    -->
+    <div class="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-3">
       <div class="flex items-center gap-2.5">
         <AppLogo />
         <span class="text-[15px] font-semibold whitespace-nowrap max-2xl:sr-only">Local Medical Charts</span>
@@ -42,25 +47,27 @@ const { addFiles, starting } = useImports();
         :selected-id="selectedPatientId"
         @select="selectPatient"
       />
-    </div>
-
-    <!--
-      Narrower windows drop the words and keep the icons; names stay for screen readers.
-      Settings has no charts and adds no reports, so it leaves those two out.
-    -->
-    <div class="flex flex-wrap items-center gap-3 lg:gap-4">
-      <ChartOptions v-if="active !== 'settings'" compact />
-      <ThemeToggle compact />
       <FilePickerButton
         v-if="active !== 'settings'"
         :disabled="busy || starting"
-        title="Add reports"
+        title="Add reports. Each report is filed under the patient it names."
         class="flex h-11 items-center gap-2 rounded-lg bg-ink px-3.5 text-sm font-medium whitespace-nowrap text-page disabled:opacity-60 lg:px-4"
         @files="addFiles"
       >
         <Icon name="plus" />
         <span class="max-lg:sr-only">{{ busy || starting ? "Adding…" : "Add reports" }}</span>
       </FilePickerButton>
+    </div>
+
+    <!--
+      How the charts look. Narrower windows drop the words and keep the icons;
+      names stay for screen readers. Settings has no charts, so it leaves the chart
+      options out. The light and dark switch sits beside the settings button, so
+      neither moves when the chart options drop out.
+    -->
+    <div class="flex flex-wrap items-center gap-3 lg:gap-4">
+      <ChartOptions v-if="active !== 'settings'" compact />
+      <ThemeToggle compact />
       <SettingsLink :active="active === 'settings'" />
     </div>
 
