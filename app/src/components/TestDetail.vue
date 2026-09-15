@@ -55,18 +55,16 @@ function closeOnBackdrop(event: MouseEvent) {
             </template>
           </div>
         </div>
-        <div class="flex shrink-0 items-center gap-2.5">
-          <kbd class="rounded-[5px] border border-line px-1.75 py-0.75 font-mono text-xs text-muted">Esc</kbd>
-          <button
-            type="button"
-            autofocus
-            aria-label="Close"
-            class="flex size-11 items-center justify-center rounded-lg border border-line text-ink-2 hover:text-ink"
-            @click="dialog?.close()"
-          >
-            <Icon name="close" />
-          </button>
-        </div>
+        <button
+          type="button"
+          autofocus
+          aria-label="Close"
+          class="flex h-11 shrink-0 items-center gap-2 rounded-lg border border-line pr-2.5 pl-3 text-ink-2 hover:text-ink"
+          @click="dialog?.close()"
+        >
+          <kbd class="font-mono text-xs text-muted">Esc</kbd>
+          <Icon name="close" />
+        </button>
       </header>
 
       <div class="flex flex-col gap-3.5 px-8 pb-5.5">
