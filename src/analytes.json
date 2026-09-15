@@ -384,6 +384,21 @@
       "id": "urine_epithelial", "name": "Urine epithelial cells", "specimen": "urine", "group": "Urinalysis", "unit": "",
       "aliases": ["Epithelial Cells"],
       "units": { "": 1 }
+    },
+    {
+      "id": "urine_albumin", "name": "Urine albumin", "specimen": "urine", "group": "Urinalysis", "unit": "mg/L",
+      "aliases": ["Urine Albumin", "Urine Microalbumin", "Microalbumin", "Albumin"],
+      "units": { "mg/L": 1 }
+    },
+    {
+      "id": "urine_creatinine", "name": "Urine creatinine", "specimen": "urine", "group": "Urinalysis", "unit": "mmol/L",
+      "aliases": ["Urine Creatinine", "Creatinine"],
+      "units": { "mmol/L": 1, "umol/L": 0.001, "mg/dL": 0.0884 }
+    },
+    {
+      "id": "urine_acr", "name": "Urine albumin / creatinine ratio", "specimen": "urine", "group": "Urinalysis", "unit": "mg/mmol",
+      "aliases": ["ACR", "Urine ACR", "UACR", "Albumin/Creatinine Ratio", "Albumin Creatinine Ratio", "Microalbumin/Creatinine Ratio"],
+      "units": { "mg/mmol": 1, "mg/g": 0.113 }
     }
   ]
 }

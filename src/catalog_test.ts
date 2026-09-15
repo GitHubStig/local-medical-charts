@@ -208,3 +208,15 @@ Deno.test("every analyte sits in a dashboard group, and urine tests under Urinal
     }
   }
 });
+
+Deno.test("urine albumin, creatinine and their ratio match urine analytes in their own units", () => {
+  assertEquals(analyteOf("Urine Albumin", "mg/L", "urine"), "urine_albumin");
+  assertEquals(
+    analyteOf("Urine Creatinine", "mmol/L", "urine"),
+    "urine_creatinine",
+  );
+  assertEquals(analyteOf("ACR", "mg Alb/mmol", "urine"), "urine_acr");
+  // The blood tests keep their names.
+  assertEquals(analyteOf("Creatinine", "umol/L", "blood"), "creatinine");
+  assertEquals(analyteOf("Albumin", "g/L", "blood"), "albumin");
+});
