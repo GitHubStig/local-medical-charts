@@ -29,12 +29,18 @@ which reports do we have, and how has each test changed?
    remove a report.
 5. Tests in their own collapsible section, showing the test and flagged counts
    when folded: search and a flagged-only filter, then the test grid grouped by
-   catalog group. Folding stays as it was when switching patients.
+   catalog group.
 6. Text results in their own collapsible section after Tests, filtered by the
    same search and flagged-only filter. While Tests is folded and a filter is
    on, the text results say so and offer to clear it, even when none match.
 7. One-report notice explaining that trends need a second report.
 8. Top bar stays in reach while scrolling; clickable things look clickable.
+9. Every foldable region (Reports, each report row and its interpretation and
+   extraction notes, Tests, Text results) is remembered for each patient while
+   the app is open: switching patients, or visiting Settings or a review and
+   coming back, finds them as they were left. A patient not yet opened starts
+   with Reports, Tests and Text results open and the newest report open. Clear
+   all data forgets them.
 
 ## Acceptance criteria
 
@@ -45,6 +51,8 @@ which reports do we have, and how has each test changed?
   they show "Filtered in Tests" and a way to clear it.
 - The dashboard loads a different patient without showing the previous one's
   data.
+- Folding Tests for Alex Tan, then switching to Sam Rivera and back, or visiting
+  Settings and back, shows Alex Tan's Tests still folded and Sam Rivera's open.
 
 ## Out of scope
 

@@ -122,7 +122,7 @@ const FILING_ICON = {
 
 <template>
   <div class="min-h-screen">
-    <TopBar />
+    <TopBar active="review" />
 
     <main class="mx-auto flex max-w-360 flex-col gap-5 px-4 pt-6 pb-14 sm:px-10">
       <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">

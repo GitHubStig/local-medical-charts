@@ -19,7 +19,9 @@ be filed.
 
 ## Requirements
 
-1. Review screen at `#/review/:id`, reached from a ready import.
+1. Review screen at `#/review/:id`, reached from a ready import. Its top bar
+   leaves out the patient picker, since the report may belong to someone other
+   than the patient the dashboard shows.
 2. Filing banner: existing patient (and how it matched), new patient, or can't
    be saved (no identity read); identity warnings; a similar saved report (same
    patient, lab and collection time).
