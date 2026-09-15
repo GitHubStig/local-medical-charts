@@ -68,7 +68,8 @@ function shownValue(result: StoredResult) {
     : { value: result.value, op: result.op };
 }
 
-function display(result: StoredResult): string {
+/** The value as a card shows it: in the card's unit, with any comparator. */
+export function display(result: StoredResult): string {
   if (result.resultKind === "text") return result.text ?? "";
   const { value, op } = shownValue(result);
   if (value === null) return "";

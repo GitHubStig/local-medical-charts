@@ -9,6 +9,9 @@
 - [x] Reports section with collapsible details and remove
 - [x] Catalog groups in `analytes.json`; test grid grouped by them
 - [x] Search and flagged-only filter
+- [x] Tests as a table: a column per report, each cell's lab range in its hover
+      text, rows open the large chart, flagged-only keeping a test flagged in
+      any report, the choice remembered per patient; tests; browser check
 - [x] Text results section
 - [x] Tests section folds with its filters; text results note a hidden filter;
       filter wording tests; browser check

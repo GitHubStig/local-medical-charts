@@ -5,10 +5,14 @@
  * can be tested without Vue (useFolds holds the Map).
  */
 
-/** Reports, Tests and Text results; a report row; a report's interpretation or extraction notes. */
+/**
+ * Reports, Tests and Text results; whether Tests shows its table rather than
+ * cards; a report row; a report's interpretation or extraction notes.
+ */
 export type FoldRegion =
   | "reports"
   | "tests"
+  | "tests:table"
   | "text"
   | `report:${number}`
   | `report:${number}:interpretation`
