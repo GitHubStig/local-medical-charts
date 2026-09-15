@@ -114,10 +114,30 @@ export type ReportDetails = {
   dates: string[];
   extraction: string[];
   referenceNumbers: { label: string; value: string }[];
+  /** One entry per page, in page order, with every note printed on it. */
   interpretation: { page: number; lines: string[] }[];
   /** OCR warnings from the report, plus results the catalog couldn't match. */
   notes: string[];
 };
+
+/**
+ * Interpretation under one heading per page. The pipeline keeps each printed
+ * block separately and joins a block's lines with "; ", so a page with several
+ * blocks would otherwise repeat its page number.
+ */
+function interpretationByPage(
+  blocks: ReportWithoutPages["interpretation"],
+): ReportDetails["interpretation"] {
+  const pages = new Map<number, string[]>();
+  for (const block of blocks) {
+    const lines = pages.get(block.page) ?? [];
+    lines.push(...block.text.split(/;\s+/).filter(Boolean));
+    pages.set(block.page, lines);
+  }
+  return [...pages]
+    .map(([page, lines]) => ({ page, lines }))
+    .sort((a, b) => a.page - b.page);
+}
 
 export function reportDetails(
   entry: DashboardReport,
@@ -158,11 +178,7 @@ export function reportDetails(
       entry.fileName,
     ),
     referenceNumbers: report.headerFields,
-    // The pipeline joins a block's printed lines with "; ".
-    interpretation: report.interpretation.map((block) => ({
-      page: block.page,
-      lines: block.text.split(/;\s+/).filter(Boolean),
-    })),
+    interpretation: interpretationByPage(report.interpretation),
     notes: [
       ...report.warnings,
       ...report.unmapped.map((u) =>
