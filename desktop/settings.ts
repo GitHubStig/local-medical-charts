@@ -19,12 +19,17 @@ export const CHART_LIBRARIES = [
 ] as const;
 export type ChartLibrary = (typeof CHART_LIBRARIES)[number];
 
+/** How a chart's line joins the readings: straight, a smooth curve, or steps. */
+export const CHART_CURVES = ["straight", "smooth", "steps"] as const;
+export type ChartCurve = (typeof CHART_CURVES)[number];
+
 export type Settings = {
   /** "system" follows the operating system's light or dark appearance. */
   theme: Theme;
   /** The patient the dashboard last showed; null before one is chosen. */
   selectedPatientId: number | null;
   chartLibrary: ChartLibrary;
+  chartCurve: ChartCurve;
   /** Where Ollama listens, for reading PDFs and photos. */
   ollamaHost: string;
   /** The Ollama model that reads report pages; null until one is chosen. */
@@ -39,6 +44,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: "system",
   selectedPatientId: null,
   chartLibrary: "vega-lite",
+  chartCurve: "straight",
   ollamaHost: DEFAULT_OLLAMA_HOST,
   ocrModel: null,
   notifyWhenRead: true,
@@ -53,6 +59,9 @@ const isTheme = (value: unknown): value is Theme =>
 
 const isChartLibrary = (value: unknown): value is ChartLibrary =>
   (CHART_LIBRARIES as readonly unknown[]).includes(value);
+
+const isChartCurve = (value: unknown): value is ChartCurve =>
+  (CHART_CURVES as readonly unknown[]).includes(value);
 
 /** An http(s) address with nothing after the port, tidied to its origin; null if it isn't one. */
 function ollamaOrigin(value: unknown): string | null {
@@ -103,6 +112,13 @@ export function parseSettingsPatch(value: unknown): Partial<Settings> {
         );
       }
       patch.chartLibrary = entry;
+    } else if (key === "chartCurve") {
+      if (!isChartCurve(entry)) {
+        throw new SettingsError(
+          `chartCurve must be one of ${CHART_CURVES.join(", ")}`,
+        );
+      }
+      patch.chartCurve = entry;
     } else if (key === "ollamaHost") {
       const origin = ollamaOrigin(entry);
       if (!origin) {
@@ -141,6 +157,9 @@ export function normalizeSettings(stored: Record<string, unknown>): Settings {
     chartLibrary: isChartLibrary(stored.chartLibrary)
       ? stored.chartLibrary
       : DEFAULT_SETTINGS.chartLibrary,
+    chartCurve: isChartCurve(stored.chartCurve)
+      ? stored.chartCurve
+      : DEFAULT_SETTINGS.chartCurve,
     ollamaHost: ollamaOrigin(stored.ollamaHost) ?? DEFAULT_SETTINGS.ollamaHost,
     ocrModel: isModelName(stored.ocrModel)
       ? stored.ocrModel

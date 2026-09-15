@@ -13,6 +13,7 @@ import {
 import { type EChartsCoreOption, init, use } from "echarts/core";
 import { SVGRenderer } from "echarts/renderers";
 import { assembleECharts } from "flint-chart/echarts";
+import type { ChartCurve } from "../../../../desktop/settings.ts";
 import { dateMs, type Series } from "../series.ts";
 import { AXIS_MARGIN, chartAxes } from "./axes.ts";
 import { bandEdges, chartBands, chartRows, flintInput } from "./flint-input.ts";
@@ -49,6 +50,7 @@ export function echartsOption(
   palette: ChartPalette,
   size: { width: number; height: number },
   axes = false,
+  curve: ChartCurve = "straight",
 ): EChartsCoreOption {
   const domain = series.domain;
   if (!domain) throw new Error(`${series.name} has no readings to chart`);
@@ -64,7 +66,7 @@ export function echartsOption(
   };
   const frame = axes ? chartAxes(series, plot.width) : null;
   const flint = withoutFlintKeys(
-    assembleECharts(flintInput(series, plot)) as Record<string, unknown>,
+    assembleECharts(flintInput(series, plot, curve)) as Record<string, unknown>,
   );
   const [line] = flint.series as Record<string, unknown>[];
   const [bottom, top] = frame?.y.domain ?? domain.y;
@@ -163,7 +165,8 @@ export function echartsOption(
         : { show: false }),
     },
     series: [
-      // Flint's line, restyled to the theme, carrying the bands behind it.
+      // Flint's line, keeping its curve, restyled to the theme, carrying the
+      // bands behind it.
       {
         ...line,
         type: "line",

@@ -3,7 +3,7 @@ import { computed, onMounted, ref, useId } from "vue";
 import { FLAGS } from "../lib/flags.ts";
 import type { Series } from "../lib/series.ts";
 import type { TestDetail } from "../lib/test-detail.ts";
-import ChartLibraryToggle from "./ChartLibraryToggle.vue";
+import ChartOptions from "./ChartOptions.vue";
 import FlagPill from "./FlagPill.vue";
 import Icon from "./Icon.vue";
 import TestChart from "./TestChart.vue";
@@ -86,7 +86,7 @@ function closeOnBackdrop(event: MouseEvent) {
             </li>
             <li v-else-if="series.bandedRange">Banded range: see the table</li>
           </ul>
-          <ChartLibraryToggle />
+          <ChartOptions />
         </div>
 
         <TestChart v-if="series.domain" :series="series" :height="320" axes />

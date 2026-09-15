@@ -17,10 +17,14 @@ type HoverEvent = {
 export const echarts: ChartBackend = {
   // Resolves once drawn: ECharts renders synchronously when animation is off.
   // deno-lint-ignore require-await
-  async render(element, series, { palette, width, height, axes, onTooltip }) {
+  async render(
+    element,
+    series,
+    { palette, curve, width, height, axes, onTooltip },
+  ) {
     const size = { width, height };
     const chart = echartsInstance(size, element);
-    chart.setOption(echartsOption(series, palette, size, axes));
+    chart.setOption(echartsOption(series, palette, size, axes, curve));
     chart.on("mouseover", { seriesId: HOVER_TARGETS }, (params: unknown) => {
       const { data, event } = params as HoverEvent;
       const pointer = event?.event;

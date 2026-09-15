@@ -121,3 +121,17 @@ Deno.test("the large chart gets value and date axes, and names the latest range"
     assert(svg.includes(text), `the chart shows ${text}`);
   }
 });
+
+Deno.test("Flint's ECharts line is straight, smooth, or steps that hold each result", async () => {
+  const hb = await alexSeries("haemoglobin");
+  const line = (choice: "straight" | "smooth" | "steps") => {
+    const [series] = (echartsOption(hb, PALETTE, SIZE, false, choice) as Loose)
+      .series;
+    return [series.smooth ?? false, series.step ?? null];
+  };
+  assertEquals([line("straight"), line("smooth"), line("steps")], [
+    [false, null],
+    [true, null],
+    [false, "end"],
+  ]);
+});

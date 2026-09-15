@@ -2,7 +2,7 @@
 import { useImports } from "../composables/useImports.ts";
 import { useLibrary } from "../composables/useLibrary.ts";
 import AppLogo from "./AppLogo.vue";
-import ChartLibraryToggle from "./ChartLibraryToggle.vue";
+import ChartOptions from "./ChartOptions.vue";
 import FilePickerButton from "./FilePickerButton.vue";
 import PatientPicker from "./PatientPicker.vue";
 import ProgressLine from "./ProgressLine.vue";
@@ -49,7 +49,7 @@ const { addFiles, starting } = useImports();
       Settings has no charts and adds no reports, so it leaves those two out.
     -->
     <div class="flex flex-wrap items-center gap-3 lg:gap-4">
-      <ChartLibraryToggle v-if="active !== 'settings'" compact />
+      <ChartOptions v-if="active !== 'settings'" compact />
       <ThemeToggle compact />
       <FilePickerButton
         v-if="active !== 'settings'"

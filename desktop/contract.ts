@@ -14,7 +14,7 @@
  * object. Every binding returns a Promise on both sides.
  */
 import type { ReportWithoutPages } from "./report-data.ts";
-import type { ChartLibrary, Settings, Theme } from "./settings.ts";
+import type { ChartCurve, ChartLibrary, Settings, Theme } from "./settings.ts";
 import type {
   FiledReport,
   ImportFileInfo,
@@ -34,6 +34,7 @@ import type {
 } from "./types.ts";
 
 export type {
+  ChartCurve,
   ChartLibrary,
   FiledReport,
   ImportFileInfo,
