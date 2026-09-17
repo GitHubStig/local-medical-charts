@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// desktop/icon.png, the Dock icon, is this logo drawn large: redraw it when this changes.
 withDefaults(defineProps<{ size?: number }>(), { size: 28 });
 </script>
 

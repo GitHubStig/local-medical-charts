@@ -82,6 +82,22 @@ const openSeries = computed(() =>
 const openDetail = computed(() =>
   openSeries.value ? testDetail(openSeries.value, props.dashboard.reports) : null
 );
+// Left and right in the zoomed view step through the tests as they're shown:
+// the current view, search and flagged-only decide which and in what order.
+const openOrder = computed(() =>
+  (view.value === "table"
+    ? table.value.groups.flatMap((g) => g.rows.map((r) => r.key))
+    : shown.value.flatMap((g) => g.cards.map((c) => c.key)))
+    .filter((key) => series.value.has(key))
+);
+const openIndex = computed(() =>
+  openKey.value ? openOrder.value.indexOf(openKey.value) : -1
+);
+/** Opens the previous or next test, stopping at either end. */
+function step(by: -1 | 1) {
+  const next = openOrder.value[openIndex.value + by];
+  if (openIndex.value >= 0 && next) openKey.value = next;
+}
 
 const totalCards = computed(() =>
   grid.value.groups.reduce((n, g) => n + g.cards.length, 0)
@@ -230,11 +246,13 @@ const summaryNote = computed(() =>
       @clear="clear"
     />
 
+    <!-- No key: the dialog stays open while stepping, and only its contents change. -->
     <TestDetail
       v-if="openSeries && openDetail"
-      :key="openKey ?? ''"
       :series="openSeries"
       :detail="openDetail"
+      :position="openIndex >= 0 ? { index: openIndex, total: openOrder.length } : null"
+      @step="step"
       @close="openKey = null"
     />
   </div>

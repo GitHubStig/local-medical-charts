@@ -17,6 +17,16 @@ fake can't quietly drift from the real thing
 ([ADR 0008](adr/0008-bindings-contract-and-fake.md)). Add `?empty` to the dev
 URL to start with no reports.
 
+### App name and icon
+
+The desktop window's name and Dock icon come from `desktop.app` in `deno.json`
+(`name`, and `icons.macos` pointing at `desktop/icon.png`). Deno 2.9 reads it
+for `deno task desktop` too, not only for packaged builds. The icon is the
+in-app logo (`app/src/components/AppLogo.vue`) in its light-mode colours: a
+1024×1024 PNG, transparent outside the rounded square, which is 824×824 in the
+middle so it sits at the same size as other Dock icons. Redraw it when the logo
+changes. Windows (`.ico`) and Linux icons aren't set up.
+
 ## Checks
 
 Before a change is done:
