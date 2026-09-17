@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useId } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useId, useTemplateRef } from "vue";
 import { plural } from "../lib/format.ts";
 import { moveItem } from "../lib/uploads.ts";
 import Icon from "./Icon.vue";
@@ -13,7 +13,7 @@ const emit = defineEmits<{
   cancel: [];
 }>();
 
-const dialog = ref<HTMLDialogElement | null>(null);
+const dialog = useTemplateRef("dialog");
 const titleId = useId();
 // Files stay unwrapped: a reactive proxy can't call their methods.
 const order = shallowRef<File[]>([...props.photos]);

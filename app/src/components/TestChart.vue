@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useElementSize } from "@vueuse/core";
-import { onBeforeUnmount, ref, shallowRef, watch } from "vue";
+import { onBeforeUnmount, ref, shallowRef, useTemplateRef, watch } from "vue";
 import { useChartSettings } from "../composables/useChartSettings.ts";
 import { useTheme } from "../composables/useTheme.ts";
 import { CHART_BACKENDS } from "../lib/charts/backends.ts";
@@ -13,7 +13,7 @@ const props = withDefaults(
   { height: 64, axes: false },
 );
 
-const element = ref<HTMLElement | null>(null);
+const element = useTemplateRef("element");
 const { width } = useElementSize(element);
 const { resolved } = useTheme();
 const { chartLibrary, chartCurve, chartTheme } = useChartSettings();
