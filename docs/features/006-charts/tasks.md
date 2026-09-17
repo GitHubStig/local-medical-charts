@@ -16,4 +16,7 @@
 - [x] Spec tests for all four libraries and the axes
 - [x] Curve setting (straight, smooth, steps) passed to Flint, with fixes where
       a library draws it differently
-- [x] Chart library and curve as dropdowns in the top bar and large view
+- [x] Chart library and curve as dropdowns in the top bar (no longer in the
+      large view)
+- [x] Left and right (keys, or buttons in the header) step through the tests
+      shown while the large view is open

@@ -1,17 +1,24 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, useId } from "vue";
+import { computed, nextTick, onMounted, ref, useId, watch } from "vue";
 import { FLAGS } from "../lib/flags.ts";
 import type { Series } from "../lib/series.ts";
 import type { TestDetail } from "../lib/test-detail.ts";
-import ChartOptions from "./ChartOptions.vue";
 import FlagPill from "./FlagPill.vue";
 import Icon from "./Icon.vue";
 import TestChart from "./TestChart.vue";
 
-const props = defineProps<{ series: Series; detail: TestDetail }>();
-const emit = defineEmits<{ close: [] }>();
+const props = defineProps<{
+  series: Series;
+  detail: TestDetail;
+  /** Where this test sits among the tests shown; null when it isn't among them. */
+  position: { index: number; total: number } | null;
+}>();
+const emit = defineEmits<{ close: []; step: [by: -1 | 1] }>();
 
 const dialog = ref<HTMLDialogElement | null>(null);
+const body = ref<HTMLElement | null>(null);
+const previous = ref<HTMLButtonElement | null>(null);
+const next = ref<HTMLButtonElement | null>(null);
 const titleId = useId();
 
 // Legend entries only for what this chart actually draws.
@@ -21,6 +28,30 @@ const hasFlags = computed(() => props.series.points.some((p) => p.flag));
 // A native modal dialog: the page behind becomes inert, focus stays inside,
 // Esc closes it, and focus returns to the card afterwards.
 onMounted(() => dialog.value?.showModal());
+
+// Stepping to another test starts it from the top, like opening it would.
+watch(() => props.series, () => body.value?.scrollTo({ top: 0 }));
+
+/** Left and right step to the previous or next test. */
+function stepOnArrow(event: KeyboardEvent) {
+  const by = event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : 0;
+  if (!by || !props.position) return;
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+  event.preventDefault();
+  emit("step", by);
+}
+
+/**
+ * Steps from a button. At the first or last test that button turns disabled and
+ * the browser drops its focus, which would leave the arrow keys with nowhere to
+ * go, so focus moves to the other button.
+ */
+async function stepFrom(by: -1 | 1) {
+  emit("step", by);
+  await nextTick();
+  const [from, to] = by < 0 ? [previous, next] : [next, previous];
+  if (from.value?.disabled) to.value?.focus();
+}
 
 /** Clicks that land on the dialog element itself, not its panel, are on the backdrop. */
 function closeOnBackdrop(event: MouseEvent) {
@@ -34,9 +65,10 @@ function closeOnBackdrop(event: MouseEvent) {
     :aria-labelledby="titleId"
     class="mx-auto mt-16 mb-auto max-h-[calc(100dvh-5rem)] w-[min(72rem,calc(100vw-2rem))] max-w-none overflow-hidden rounded-[14px] bg-surface text-ink shadow-[0_24px_64px_rgb(28_25_23/0.3)] backdrop:bg-[rgb(28_25_23/0.5)] dark:border dark:border-line-strong dark:backdrop:bg-black/70"
     @click="closeOnBackdrop"
+    @keydown="stepOnArrow"
     @close="emit('close')"
   >
-    <div class="flex max-h-[calc(100dvh-5rem)] flex-col overflow-y-auto">
+    <div ref="body" class="flex max-h-[calc(100dvh-5rem)] flex-col overflow-y-auto">
       <header class="flex items-start justify-between gap-6 px-8 pt-6 pb-4.5">
         <div class="flex min-w-0 flex-col gap-2">
           <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -55,39 +87,61 @@ function closeOnBackdrop(event: MouseEvent) {
             </template>
           </div>
         </div>
-        <button
-          type="button"
-          autofocus
-          aria-label="Close"
-          class="flex h-11 shrink-0 items-center gap-2 rounded-lg border border-line pr-2.5 pl-3 text-ink-2 hover:text-ink"
-          @click="dialog?.close()"
-        >
-          <kbd class="font-mono text-xs text-muted">Esc</kbd>
-          <Icon name="close" />
-        </button>
+        <div class="flex shrink-0 items-center gap-2">
+          <!-- The same steps as left and right, for a mouse or a touch screen. -->
+          <template v-if="position && position.total > 1">
+            <button
+              type="button"
+              ref="previous"
+              aria-label="Previous test"
+              :disabled="position.index === 0"
+              class="flex size-11 items-center justify-center rounded-lg border border-line text-ink-2 hover:text-ink disabled:opacity-60 disabled:hover:text-ink-2"
+              @click="stepFrom(-1)"
+            >
+              <Icon name="chevron-left" />
+            </button>
+            <button
+              type="button"
+              ref="next"
+              aria-label="Next test"
+              :disabled="position.index === position.total - 1"
+              class="flex size-11 items-center justify-center rounded-lg border border-line text-ink-2 hover:text-ink disabled:opacity-60 disabled:hover:text-ink-2"
+              @click="stepFrom(1)"
+            >
+              <Icon name="chevron-right" />
+            </button>
+          </template>
+          <button
+            type="button"
+            autofocus
+            aria-label="Close"
+            class="flex h-11 items-center gap-2 rounded-lg border border-line pr-2.5 pl-3 text-ink-2 hover:text-ink"
+            @click="dialog?.close()"
+          >
+            <kbd class="font-mono text-xs text-muted">Esc</kbd>
+            <Icon name="close" />
+          </button>
+        </div>
       </header>
 
       <div class="flex flex-col gap-3.5 px-8 pb-5.5">
-        <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-          <ul class="flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-ink-2" aria-label="Legend">
-            <li class="flex items-center gap-2">
-              <span class="size-2.5 rounded-full bg-series" aria-hidden="true"></span>Result
-            </li>
-            <li v-if="hasBounds" class="flex items-center gap-2">
-              <span class="size-2.5 rounded-full border-2 border-series bg-surface" aria-hidden="true"></span>Reported
-              as a bound, e.g. &lt; 5
-            </li>
-            <li v-if="hasFlags" class="flex items-center gap-2">
-              <span class="size-2.5 rounded-full bg-critical" aria-hidden="true"></span>Outside the lab’s range
-            </li>
-            <li v-if="series.bands.length" class="flex items-center gap-2">
-              <span class="h-3 w-5 border-y border-band-edge bg-band" aria-hidden="true"></span>Lab reference range
-              — steps where the lab changes
-            </li>
-            <li v-else-if="series.bandedRange">Banded range: see the table</li>
-          </ul>
-          <ChartOptions />
-        </div>
+        <ul class="flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-ink-2" aria-label="Legend">
+          <li class="flex items-center gap-2">
+            <span class="size-2.5 rounded-full bg-series" aria-hidden="true"></span>Result
+          </li>
+          <li v-if="hasBounds" class="flex items-center gap-2">
+            <span class="size-2.5 rounded-full border-2 border-series bg-surface" aria-hidden="true"></span>Reported
+            as a bound, e.g. &lt; 5
+          </li>
+          <li v-if="hasFlags" class="flex items-center gap-2">
+            <span class="size-2.5 rounded-full bg-critical" aria-hidden="true"></span>Outside the lab’s range
+          </li>
+          <li v-if="series.bands.length" class="flex items-center gap-2">
+            <span class="h-3 w-5 border-y border-band-edge bg-band" aria-hidden="true"></span>Lab reference range
+            — steps where the lab changes
+          </li>
+          <li v-else-if="series.bandedRange">Banded range: see the table</li>
+        </ul>
 
         <TestChart v-if="series.domain" :series="series" :height="320" axes />
 
@@ -147,7 +201,12 @@ function closeOnBackdrop(event: MouseEvent) {
 
       <footer class="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-line px-8 py-3.5 text-xs text-muted">
         <span>{{ detail.notes.join(" · ") }}</span>
-        <span>Press Esc or click outside to close</span>
+        <span>
+          <template v-if="position && position.total > 1">
+            Test {{ position.index + 1 }} of {{ position.total }} · ← → for the previous or next ·
+          </template>
+          Press Esc or click outside to close
+        </span>
       </footer>
     </div>
   </dialog>
