@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useDropZone } from "@vueuse/core";
-import { computed, ref } from "vue";
+import { computed, useTemplateRef } from "vue";
 import ImportsPanel from "../components/ImportsPanel.vue";
 import PatientSummary from "../components/PatientSummary.vue";
 import SingleReportNotice from "../components/SingleReportNotice.vue";
@@ -36,7 +36,7 @@ function confirmRemove(reportId: number) {
 }
 
 // More reports can be dropped anywhere on the dashboard, as on the welcome screen.
-const page = ref<HTMLElement | null>(null);
+const page = useTemplateRef("page");
 const { isOverDropZone } = useDropZone(page, {
   onDrop: (files) => files && addFiles(files),
   preventDefaultForUnhandled: true,

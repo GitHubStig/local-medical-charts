@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { useTemplateRef } from "vue";
 import { ACCEPT } from "../lib/uploads.ts";
 
 // A button that opens the webview's file picker for reports: PDFs, photos or JSON. The input is a
@@ -8,7 +8,7 @@ defineOptions({ inheritAttrs: false });
 defineProps<{ disabled?: boolean }>();
 const emit = defineEmits<{ files: [files: File[]] }>();
 
-const input = ref<HTMLInputElement | null>(null);
+const input = useTemplateRef("input");
 
 function onChange() {
   const files = [...(input.value?.files ?? [])];
