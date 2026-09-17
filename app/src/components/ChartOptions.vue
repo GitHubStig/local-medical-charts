@@ -50,7 +50,7 @@ watchEffect(async () => {
   }));
 });
 
-// Ids are unique per copy: the options appear in the top bar and in the zoomed view.
+// Ids are unique per copy, should the options appear in more than one place.
 const ids = { library: useId(), curve: useId(), theme: useId() };
 
 const fields = computed(() => {

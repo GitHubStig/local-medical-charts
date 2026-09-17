@@ -8,6 +8,12 @@
     "frozen": true
   },
   "minimumDependencyAge": "P7D",
+  "desktop": {
+    "app": {
+      "name": "Local Medical Charts",
+      "icons": { "macos": "./desktop/icon.png" }
+    }
+  },
   "tasks": {
     "dev": "cd app && deno run -A node_modules/vite/bin/vite.js",
     "build": "cd app && deno run -A node_modules/vite/bin/vite.js build",
