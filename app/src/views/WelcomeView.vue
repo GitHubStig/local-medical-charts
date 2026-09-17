@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useDropZone } from "@vueuse/core";
-import { computed, ref } from "vue";
+import { computed, useTemplateRef } from "vue";
 import AppLogo from "../components/AppLogo.vue";
 import FilePickerButton from "../components/FilePickerButton.vue";
 import Icon from "../components/Icon.vue";
@@ -17,7 +17,7 @@ const { addFiles, starting } = useImports();
 const { model } = useOcrSettings();
 
 const working = computed(() => busy.value || starting.value);
-const page = ref<HTMLElement | null>(null);
+const page = useTemplateRef("page");
 
 // The whole screen accepts drops; the card shows the drop state. Unhandled drops
 // are cancelled so the window never navigates to a dropped file.

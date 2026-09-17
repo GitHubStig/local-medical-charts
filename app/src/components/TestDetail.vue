@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, useId, watch } from "vue";
+import { computed, nextTick, onMounted, useId, useTemplateRef, watch } from "vue";
 import { FLAGS } from "../lib/flags.ts";
 import type { Series } from "../lib/series.ts";
 import type { TestDetail } from "../lib/test-detail.ts";
@@ -15,10 +15,10 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ close: []; step: [by: -1 | 1] }>();
 
-const dialog = ref<HTMLDialogElement | null>(null);
-const body = ref<HTMLElement | null>(null);
-const previous = ref<HTMLButtonElement | null>(null);
-const next = ref<HTMLButtonElement | null>(null);
+const dialog = useTemplateRef("dialog");
+const body = useTemplateRef("body");
+const previous = useTemplateRef("previous");
+const next = useTemplateRef("next");
 const titleId = useId();
 
 // Legend entries only for what this chart actually draws.

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onClickOutside } from "@vueuse/core";
-import { computed, nextTick, ref, useId } from "vue";
+import { computed, nextTick, ref, useId, useTemplateRef } from "vue";
 import type { PatientSummary } from "../../../desktop/contract.ts";
 import { displayName, initials, monthSpan, plural } from "../lib/format.ts";
 import Icon from "./Icon.vue";
@@ -14,9 +14,9 @@ const emit = defineEmits<{ select: [id: number] }>();
 const open = ref(false);
 /** Index of the option keyboard focus is on while the list is open. */
 const active = ref(0);
-const root = ref<HTMLElement | null>(null);
-const trigger = ref<HTMLButtonElement | null>(null);
-const list = ref<HTMLElement | null>(null);
+const root = useTemplateRef("root");
+const trigger = useTemplateRef("trigger");
+const list = useTemplateRef("list");
 const listId = useId();
 
 const selected = computed(() =>
