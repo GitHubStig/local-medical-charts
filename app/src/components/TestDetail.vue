@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, useId, useTemplateRef, watch } from "vue";
+import { closeOnEscape } from "../lib/dialog-keys.ts";
 import { FLAGS } from "../lib/flags.ts";
 import type { Series } from "../lib/series.ts";
 import type { TestDetail } from "../lib/test-detail.ts";
@@ -25,15 +26,16 @@ const titleId = useId();
 const hasBounds = computed(() => props.series.points.some((p) => p.op));
 const hasFlags = computed(() => props.series.points.some((p) => p.flag));
 
-// A native modal dialog: the page behind becomes inert, focus stays inside,
-// Esc closes it, and focus returns to the card afterwards.
+// A native modal dialog: the page behind becomes inert, focus stays inside, and
+// focus returns to the card afterwards. Esc closes it from onKeydown below.
 onMounted(() => dialog.value?.showModal());
 
 // Stepping to another test starts it from the top, like opening it would.
 watch(() => props.series, () => body.value?.scrollTo({ top: 0 }));
 
-/** Left and right step to the previous or next test. */
-function stepOnArrow(event: KeyboardEvent) {
+/** Esc closes; left and right step to the previous or next test. */
+function onKeydown(event: KeyboardEvent) {
+  if (closeOnEscape(event, dialog.value)) return;
   const by = event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : 0;
   if (!by || !props.position) return;
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
@@ -65,10 +67,21 @@ function closeOnBackdrop(event: MouseEvent) {
     :aria-labelledby="titleId"
     class="mx-auto mt-16 mb-auto max-h-[calc(100dvh-5rem)] w-[min(72rem,calc(100vw-2rem))] max-w-none overflow-hidden rounded-[14px] bg-surface text-ink shadow-[0_24px_64px_rgb(28_25_23/0.3)] backdrop:bg-[rgb(28_25_23/0.5)] dark:border dark:border-line-strong dark:backdrop:bg-black/70"
     @click="closeOnBackdrop"
-    @keydown="stepOnArrow"
+    @keydown="onKeydown"
     @close="emit('close')"
   >
-    <div ref="body" class="flex max-h-[calc(100dvh-5rem)] flex-col overflow-y-auto">
+    <!--
+      The dialog opens with its panel focused, not a button: a ring drawn around
+      Close the moment the chart appears reads as a prompt to press it. Keyboard
+      focus is still inside the dialog, so Esc and the arrows work and Tab goes
+      to the controls, each with its own ring; a panel doesn't need one.
+    -->
+    <div
+      ref="body"
+      tabindex="-1"
+      autofocus
+      class="flex max-h-[calc(100dvh-5rem)] flex-col overflow-y-auto focus:outline-none"
+    >
       <header class="flex items-start justify-between gap-6 px-8 pt-6 pb-4.5">
         <div class="flex min-w-0 flex-col gap-2">
           <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -113,7 +126,6 @@ function closeOnBackdrop(event: MouseEvent) {
           </template>
           <button
             type="button"
-            autofocus
             aria-label="Close"
             class="flex h-11 items-center gap-2 rounded-lg border border-line pr-2.5 pl-3 text-ink-2 hover:text-ink"
             @click="dialog?.close()"
