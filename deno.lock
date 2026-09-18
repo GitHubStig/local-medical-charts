@@ -19,11 +19,11 @@
     "jsr:@std/path@^1.1.5": "1.1.6",
     "jsr:@std/path@^1.1.6": "1.1.6",
     "jsr:@std/streams@^1.1.2": "1.1.2",
-    "jsr:@zod/zod@4.6.2": "4.6.2",
+    "jsr:@zod/zod@4.6.5": "4.6.5",
     "npm:@fontsource/ibm-plex-mono@5.3.0": "5.3.0",
     "npm:@fontsource/ibm-plex-sans@5.3.0": "5.3.0",
     "npm:@tailwindcss/vite@4.3.3": "4.3.3_vite@8.3.0",
-    "npm:@vitejs/plugin-vue@6.0.8": "6.0.8_vite@8.3.0_vue@3.5.42",
+    "npm:@vitejs/plugin-vue@6.0.9": "6.0.9_vite@8.3.0_vue@3.5.42",
     "npm:@vueuse/core@14.4.0": "14.4.0_vue@3.5.42",
     "npm:chart.js@4.5.1": "4.5.1",
     "npm:echarts@6.1.0": "6.1.0",
@@ -35,7 +35,7 @@
     "npm:vega@6.4.0": "6.4.0",
     "npm:vite@8.3.0": "8.3.0",
     "npm:vue@3.5.42": "3.5.42",
-    "npm:zod@4.6.2": "4.6.2"
+    "npm:zod@4.6.5": "4.6.5"
   },
   "jsr": {
     "@std/assert@1.0.19": {
@@ -99,8 +99,8 @@
     "@std/streams@1.1.2": {
       "integrity": "0249bf9b78a999f57032ca4d8e7ccaa57579090242640b35ddc948fbb745d3af"
     },
-    "@zod/zod@4.6.2": {
-      "integrity": "22afdf3dabb5e8e38e3448e7669d81ad1b2d754c31fa0bb9aa356f41fc66c0e7"
+    "@zod/zod@4.6.5": {
+      "integrity": "de9ee54513b84efecbdf2988f5a01eca0e2883be4b5625cf320bc0d6dbbade3e"
     }
   },
   "npm": {
@@ -347,8 +347,8 @@
     "@types/web-bluetooth@0.0.21": {
       "integrity": "sha512-oIQLCGWtcFZy2JW77j9k8nHzAOpqMHLQejDA48XXMWH6tjCQHz5RCFz1bzsmROyL6PUm+LLnUiI4BCn221inxA=="
     },
-    "@vitejs/plugin-vue@6.0.8_vite@8.3.0_vue@3.5.42": {
-      "integrity": "sha512-0ZjgOg7oO6farnNGup7yvoM/YXZV84OZxHAwtflItNa/6zzQyVb5LNxyea3FEKEX2XlagIKzrlH7wwxkKgtiew==",
+    "@vitejs/plugin-vue@6.0.9_vite@8.3.0_vue@3.5.42": {
+      "integrity": "sha512-rD/MORlhaZMlXWW0rEn4FB4wMinWC0z/D7Ye160S5+Rs1mC8ZDAdcDp4SjKfUhG5t8q1ktcPVw4xuTkPRlzrSA==",
       "dependencies": [
         "@rolldown/pluginutils",
         "vite",
@@ -1279,8 +1279,8 @@
         "yargs-parser"
       ]
     },
-    "zod@4.6.2": {
-      "integrity": "sha512-lh5RCAGFa1Cm2hjtNwLQhSs/AsqdWnTQaBER9fEwN/88pSh7KOtJavtBx/0VlkN/uFd61SwYmljLMDAsHlvzBQ=="
+    "zod@4.6.5": {
+      "integrity": "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="
     },
     "zrender@6.1.0": {
       "integrity": "sha512-oEGMDB6pOP2S6OwRR4PdVv610zrjnA3Bh+JnSG12fYJlBKjtNAoEb5fSUoCOOINlH96I2fU38/A2UpRKs67xYQ==",
@@ -1297,7 +1297,7 @@
       "jsr:@std/fs@1.0.24",
       "jsr:@std/http@1.1.3",
       "jsr:@std/path@1.1.6",
-      "jsr:@zod/zod@4.6.2",
+      "jsr:@zod/zod@4.6.5",
       "npm:mupdf@1.28.1"
     ],
     "members": {
@@ -1307,7 +1307,7 @@
             "npm:@fontsource/ibm-plex-mono@5.3.0",
             "npm:@fontsource/ibm-plex-sans@5.3.0",
             "npm:@tailwindcss/vite@4.3.3",
-            "npm:@vitejs/plugin-vue@6.0.8",
+            "npm:@vitejs/plugin-vue@6.0.9",
             "npm:@vueuse/core@14.4.0",
             "npm:chart.js@4.5.1",
             "npm:echarts@6.1.0",
@@ -1318,7 +1318,7 @@
             "npm:vega@6.4.0",
             "npm:vite@8.3.0",
             "npm:vue@3.5.42",
-            "npm:zod@4.6.2"
+            "npm:zod@4.6.5"
           ]
         }
       }
