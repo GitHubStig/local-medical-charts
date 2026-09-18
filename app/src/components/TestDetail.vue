@@ -70,7 +70,18 @@ function closeOnBackdrop(event: MouseEvent) {
     @keydown="onKeydown"
     @close="emit('close')"
   >
-    <div ref="body" class="flex max-h-[calc(100dvh-5rem)] flex-col overflow-y-auto">
+    <!--
+      The dialog opens with its panel focused, not a button: a ring drawn around
+      Close the moment the chart appears reads as a prompt to press it. Keyboard
+      focus is still inside the dialog, so Esc and the arrows work and Tab goes
+      to the controls, each with its own ring; a panel doesn't need one.
+    -->
+    <div
+      ref="body"
+      tabindex="-1"
+      autofocus
+      class="flex max-h-[calc(100dvh-5rem)] flex-col overflow-y-auto focus:outline-none"
+    >
       <header class="flex items-start justify-between gap-6 px-8 pt-6 pb-4.5">
         <div class="flex min-w-0 flex-col gap-2">
           <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -115,7 +126,6 @@ function closeOnBackdrop(event: MouseEvent) {
           </template>
           <button
             type="button"
-            autofocus
             aria-label="Close"
             class="flex h-11 items-center gap-2 rounded-lg border border-line pr-2.5 pl-3 text-ink-2 hover:text-ink"
             @click="dialog?.close()"
