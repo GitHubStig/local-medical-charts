@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useId, useTemplateRef } from "vue";
+import { closeOnEscape } from "../lib/dialog-keys.ts";
 import { plural } from "../lib/format.ts";
 import { moveItem } from "../lib/uploads.ts";
 import Icon from "./Icon.vue";
@@ -31,6 +32,10 @@ function read() {
   emit("confirm", [...order.value], separate.value);
   dialog.value?.close();
 }
+/** Esc closes, as the dialog would on its own. */
+function onKeydown(event: KeyboardEvent) {
+  closeOnEscape(event, dialog.value);
+}
 function onClose() {
   if (!confirmed) emit("cancel");
 }
@@ -50,6 +55,7 @@ const iconButton =
     ref="dialog"
     :aria-labelledby="titleId"
     class="mx-auto mt-16 mb-auto max-h-[calc(100dvh-5rem)] w-[min(36rem,calc(100vw-2rem))] max-w-none overflow-hidden rounded-[14px] bg-surface text-ink shadow-[0_24px_64px_rgb(28_25_23/0.3)] backdrop:bg-[rgb(28_25_23/0.5)] dark:border dark:border-line-strong dark:backdrop:bg-black/70"
+    @keydown="onKeydown"
     @close="onClose"
   >
     <div class="flex max-h-[calc(100dvh-5rem)] flex-col">
