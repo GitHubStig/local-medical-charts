@@ -185,7 +185,7 @@ convention; the owner chose to keep this layout.
     versions. Provide these as fixed files rather than let each model invent
     them.
   - **Include:** the design mockups, so every model has the same target. They're
-    no longer in the repo; restore them with `git checkout 962927c -- design`.
+    no longer in the repo; restore them with `git checkout 30253b8 -- design`.
   - **Keep back:** the screenshots (they're the answer), stored with the grading
     pack.
   - **Grading:** unit tests can't be reused as they are. Turn their behaviour
