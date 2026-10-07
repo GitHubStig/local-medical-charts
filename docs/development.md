@@ -43,6 +43,29 @@ deno task classes
 `suggestCanonicalClasses` warning over every `.vue` file (see
 [Styling](#styling)); `deno task classes --write` rewrites what it finds.
 
+### Type checking
+
+`vue-tsc` doesn't run under Deno. Type-check TypeScript modules with `tsc`
+against `app/tsconfig.json` where it matters; `.vue` files are checked by the VS
+Code Vue extension.
+
+### Checking the UI
+
+- **In a browser:** run `deno task dev` and look at the change. A headless
+  Chromium or Edge driven over the DevTools protocol works well for scripted
+  checks. The fake bindings behave like the real ones, because the same contract
+  tests run against both (`desktop/contract_suite.ts`).
+- **In the desktop window:** the window is WebKit and can't be driven over
+  DevTools. To check the real bindings, run a small desktop app from inside the
+  repo tree that uses `createBindings` with an in-memory store.
+
+### Where tests live
+
+`deno task test` runs the tests in `src/` and `desktop/`. Tests for the app's
+plain TypeScript modules (`app/src/lib/*`) live in `desktop/*_test.ts` so they
+run with the rest. Deno's convention is `name_test.ts` beside the code; this
+layout was kept on purpose.
+
 ## Styling
 
 The app uses Tailwind 4 ([ADR 0006](adr/0006-vue-with-vite-under-deno.md)).
@@ -215,6 +238,31 @@ In `deno task dev`, for each theme in each library that supports it:
   rather than in a narrow window.
 
 ## Known workarounds
+
+### Bytes across the bindings
+
+A `Uint8Array` crosses the desktop bindings intact only as an argument of its
+own, or as a result. Nested inside an object it arrives as a plain object of
+numbered keys. That's why uploads are sent as `startImport(files, bytes)`, with
+the bytes beside the file details rather than inside them.
+
+### Webview storage
+
+The desktop window's address gets a new port every launch, so `localStorage`
+doesn't persist between launches. Settings live in SQLite instead.
+
+### Ollama replies
+
+The client in `src/ollama.ts` guards against several things Ollama and some
+models do:
+
+- MLX models don't stop at `num_ctx`, and some models repeat rows forever.
+  Replies are streamed, capped, and stopped when they start repeating.
+- Ollama can leave a finished reply's stream open. A reply that has started but
+  sends nothing for 3 minutes is given up, not retried.
+- Some models put the formatted reply in `thinking` instead of `content`, or
+  think even when told not to. The client falls back to `thinking`, and Test
+  connection in Settings reads its test page through the same client.
 
 ### npm `zod` for the app's editor types
 

@@ -10,6 +10,9 @@ is charted across reports and labs. **Nothing leaves your computer.**
 > things wrong, so check each reading against the report, and talk to a doctor
 > about your results.
 
+**Status:** a proof of concept, feature complete but not yet released. It runs
+from a clone of this repo; there's no installer yet.
+
 ![The dashboard for a fictional patient: reports from two labs, and a chart for every test](docs/images/dashboard.png)
 
 ## Try it without Ollama

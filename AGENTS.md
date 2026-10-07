@@ -1,14 +1,8 @@
 # Local Medical Charts: notes for AI agents
 
 Read this first. It's the shortest path to working on this repo without undoing
-decisions that were made on purpose. Longer explanations live in `docs/`.
-
-## What this is
-
-A local-first desktop app that turns printed lab reports into charts of every
-result over time, across labs. Pages are read by a vision model running in
-Ollama on the same machine, a person reviews each reading, and reports are
-stored in SQLite. Nothing leaves the computer.
+decisions that were made on purpose. What the app is, and how to install and run
+it, is in [README.md](README.md); longer explanations live in `docs/`.
 
 - **Why it exists:** [docs/product.md](docs/product.md)
 - **How it fits together:**
@@ -19,27 +13,11 @@ stored in SQLite. Nothing leaves the computer.
   [docs/development.md](docs/development.md)
 - **Vision models tried:** [docs/ocr-models.md](docs/ocr-models.md)
 
-**Status (September 2026):** feature complete, not yet released. Everything is
-still version 1 (see the rules). Open threads are listed at the end.
+**Status:** feature complete, not yet released, so everything is still version 1
+(see the rules). Open threads are in [docs/proposals/](docs/proposals/).
 
-## Commands
-
-Deno 2.9 is the only thing to install. Never use npm or Node.
-
-```sh
-deno install        # from deno.lock; never npm install
-deno task dev       # the app in a browser, on fictional sample data (fake bindings)
-deno task desktop   # build, then open the desktop window (database in .data/)
-deno task test      # all tests (Deno, no browser)
-deno task build     # production build of the Vue app into app/dist
-deno task classes   # Tailwind classes in canonical form; --write fixes them
-deno fmt && deno lint
-```
-
-Pipeline commands: `deno task extract` (PDF to page images), `deno task ocr`
-(page images to JSON), `deno task map` (suggest catalog matches),
-`deno task upgrade` (upgrade stored JSON), `deno task samples` (regenerate the
-fictional samples).
+Deno 2.9 is the only tool: `deno install`, never npm or Node. The README lists
+every `deno task`; `deno task dev` runs on the fake bindings and fictional data.
 
 ## Repo map
 
@@ -52,9 +30,8 @@ fictional samples).
 | `docs/`    | Product, architecture, ADRs, feature specs, model notes                                                                              |
 | `.data/`   | **Real personal health data: the development database, and the pipeline's reports, images and readings. Gitignored. See the rules.** |
 
-Tests for `app/src/lib/*` live in `desktop/*_test.ts`, because `deno task test`
-runs `src/` and `desktop/`. Deno's `name_test.ts` beside the code is the
-convention; the owner chose to keep this layout.
+Tests for `app/src/lib/*` live in `desktop/*_test.ts`, on purpose
+([where tests live](docs/development.md#where-tests-live)).
 
 ## Rules
 
@@ -72,6 +49,9 @@ convention; the owner chose to keep this layout.
 - Uploaded PDFs and photos are never written to disk; imports live in memory
   until a person saves or discards them.
   ([ADR 0012](docs/adr/0012-review-before-saving-imports-in-memory.md))
+- The git history was audited before publishing. Old commits hold a report file
+  name and a sample version whose results matched real ones, but no personal
+  names; the owner chose to keep the history as it is.
 
 ### Dependencies ([ADR 0009](docs/adr/0009-supply-chain-safety.md))
 
@@ -93,6 +73,12 @@ convention; the owner chose to keep this layout.
   format, regenerate reports.
 - Real migrations start only once the owner says the app is released.
 
+### Chart features come from Flint ([ADR 0017](docs/adr/0017-chart-features-from-flint.md))
+
+- New chart types and options arrive through Flint and the chart libraries as
+  they are (progressive enhancement), the way chart themes do. Don't add overlay
+  code for a new feature; the existing overlays only cover what ADR 0010 lists.
+
 ### How work is done here ([ADR 0015](docs/adr/0015-small-reviewed-steps.md))
 
 - **One step at a time.** Finish a step, verify it, then stop and summarise what
@@ -109,112 +95,40 @@ convention; the owner chose to keep this layout.
   `deno task classes` finds the rest, as the Tailwind VS Code extension's
   `suggestCanonicalClasses` warning does, and `--write` fixes them. See
   [docs/development.md](docs/development.md#styling).
+- **Run model comparisons one at a time**, never in parallel.
 - Match the surrounding code: its naming, comment density and idioms. Comments
   explain why, in plain words.
 
 ## Verifying changes
 
+Details are in [docs/development.md](docs/development.md#checks).
+
 - `deno fmt`, `deno lint`, `deno task test`, `deno task build` and
   `deno task classes` must pass.
-- `vue-tsc` doesn't run under Deno. Type-check TypeScript modules with `tsc`
-  against `app/tsconfig.json` where it matters; `.vue` files are checked by the
-  VS Code Vue extension.
-- **UI:** run `deno task dev` and check in a browser (headless Chromium/Edge
-  over the DevTools protocol works well). The fake bindings behave like the real
-  ones: the same contract tests run against both (`desktop/contract_suite.ts`).
-- **Desktop-only behaviour:** the desktop window (WebKit) can't be driven over
-  DevTools. To check the real bindings, run a small desktop app from inside the
-  repo tree that uses `createBindings` with an in-memory store.
+- `vue-tsc` doesn't run under Deno; type-check modules with `tsc` against
+  `app/tsconfig.json` where it matters.
+- **UI:** check in `deno task dev` with a headless browser over DevTools.
+- **Desktop-only behaviour:** the WebKit window can't be driven over DevTools;
+  run a small desktop app using `createBindings` with an in-memory store.
 
 ## Things that will bite you
 
-- **Bytes across bindings:** a `Uint8Array` crosses intact only as an argument
-  of its own (or in a result). Nested inside an object it arrives as a plain
-  object of numbered keys. Uploads are sent as `startImport(files, bytes)`.
-- **Webview storage:** the window's address gets a new port every launch, so
-  `localStorage` doesn't persist. Settings live in SQLite.
-- **Ollama quirks:** MLX models don't stop at `num_ctx`, and some models repeat
-  rows forever; replies are streamed, capped and stopped when they repeat
-  (`src/ollama.ts`). Ollama can also leave a finished reply's stream open, so a
-  started reply that sends nothing for 3 minutes is given up (not retried). Some
-  models put the formatted reply in `thinking` instead of `content`, or think
-  even when told not to; the client falls back to `thinking`, and Test
-  connection reads its test page through the same client.
+Details are in [docs/development.md](docs/development.md#known-workarounds).
+
+- **Bytes across bindings:** a `Uint8Array` nested inside an object arrives as a
+  plain object of numbered keys; pass bytes as an argument of their own.
+- **Webview storage:** `localStorage` doesn't persist in the desktop window;
+  settings live in SQLite.
+- **Ollama replies:** `src/ollama.ts` caps and stops repeating replies, gives up
+  on silent streams, and falls back to `thinking`. Keep those guards.
 - **Chart themes and overlays:** an overlay that restyles Flint's output hides a
-  Flint theme. Where a theme applies, the overlay keeps Flint's styling and adds
-  only the app's rules. `desktop/chart-themes_test.ts` fails when Flint's theme
-  support changes (see `docs/development.md`, "Chart themes").
-- **Vite runs under Deno** (`deno task dev`/`build`). npm `zod` in
-  `app/package.json` is for editor types only (see
-  [docs/development.md](docs/development.md)).
+  Flint theme; keep Flint's styling and add only the app's rules
+  ([chart themes](docs/development.md#chart-themes)).
+- **Vite runs under Deno**, and npm `zod` in `app/package.json` is for editor
+  types only.
 
 ## Open threads
 
-- Packaging the desktop app for release ("phase 6"): parked by the owner. The
-  project is a proof of concept, run by cloning the repo (`deno install`,
-  `deno task desktop`). A shareable build would need Apple and Windows code
-  signing to avoid install warnings, and still needs Ollama and a large model.
-  Ask before starting.
-- Per-model prompts: proposed, not built. Any prompt change is compared on the
-  fictional pages and the real scans first (see `docs/ocr-models.md`).
-- Small models: `qwen3-vl:4b` is the app's default, and the owner has run it on
-  an Apple silicon Mac and a 12 GB NVIDIA card; 8 GB Macs are untried (see
-  `docs/ocr-models.md`). Run model comparisons one at a time, never in parallel.
-- More chart types, so the four libraries show more than line charts: proposed,
-  not built. In order of value: a ranged dot plot of each latest result within
-  its range (one-sided ranges and word results left out); a stacked bar of the
-  white cell breakdown per report (samples would need the other four cell
-  types). Flint 0.5.1 has the ranged dot plot for Vega-Lite, ECharts and Plotly
-  but not Chart.js, and the stacked bar for all four. A heatmap of every test
-  against every report isn't needed: the Tests table shows the same. Avoid
-  radar, rose, pie and dual-axis charts.
-- **Chart features come from Flint, not overlays:** the owner wants new chart
-  types and options to arrive through Flint and the chart libraries as they are
-  (progressive enhancement), the way chart themes do
-  ([ADR 0017](docs/adr/0017-chart-features-from-flint.md)). Don't add overlay
-  code for a new feature; the existing overlays only cover what ADR 0010 lists.
-- Parked by the owner, because each needs overlay code in all four libraries:
-  - **"Distance from range" lollipop:** a stem from the lab range's edge to each
-    result outside it.
-  - **Median line:** an optional dashed "Your median" line in the large view,
-    never replacing the reference band.
-- Rebuild benchmark: parked by the owner. The idea is to hand a new AI model
-  `docs/` in an empty repo and compare what it builds against this repo.
-  - **Missing from `docs/` today:** the report JSON format, the analyte catalog,
-    the reading prompt, the full bindings contract, the samples and exact
-    versions. Provide these as fixed files rather than let each model invent
-    them.
-  - **Include:** the design mockups, so every model has the same target. They're
-    no longer in the repo; restore them with `git checkout 30253b8 -- design`.
-  - **Keep back:** the screenshots (they're the answer), stored with the grading
-    pack.
-  - **Grading:** unit tests can't be reused as they are. Turn their behaviour
-    into hidden outside-in tests: merged report JSON on fictional pages, and the
-    contract suite against a fixed `DesktopBindings`. Add a scorecard from each
-    spec's acceptance criteria.
-  - **Watch:** a public repo can leak into training data; the docs hint at
-    solutions (plans name files); `AGENTS.md` gotchas are hints too; grade
-    without a live Ollama.
-  - **First step when resumed:** a gap audit of what a rebuild needs that
-    `docs/` doesn't pin down.
-- Swappable page reading (a provider other than Ollama): parked by the owner
-  until a second provider is actually chosen.
-  - **Already provider-neutral:** everything after a page is read takes a
-    `PageExtraction`, and the import queue only uses the `PageReader` interface
-    (`desktop/imports/reader.ts`), which `desktop/main.ts` passes into the
-    bindings.
-  - **Ollama-specific today:** the `ollamaHost` and `ocrModel` settings, the
-    Settings page's model list and connection test (`desktop/ocr/ollama.ts`,
-    `listOcrModels` and `testOcr` in the contract), the reader's error wording,
-    and the command-line pipeline (`src/ocr-reports.ts`, `src/map-analytes.ts`
-    through `src/ollama.ts`).
-  - **When it's picked up:** add an adapter implementing `PageReader`, a
-    provider choice in Settings with each provider's own fields and connection
-    test, and provider-neutral names for those settings and contract calls. A
-    cloud provider needs ADR 0001 revisited first.
-- Flint feature request for reference bands: drafted in
-  `docs/proposals/flint-reference-bands.md`, not posted; parked by the owner.
-  The owner posts it from their own GitHub account.
-- Publishing: the history was audited. Old commits hold a report file name and a
-  sample version whose results matched real ones, but no personal names; the
-  owner chose to keep the history as it is.
+Ideas not built yet, and what was parked, are in
+[docs/proposals/](docs/proposals/) and listed in
+[docs/README.md](docs/README.md#proposals). Ask before picking one up.

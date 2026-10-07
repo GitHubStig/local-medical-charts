@@ -51,6 +51,21 @@ each feature's spec, plan and tasks.
 | 010 | [Reading notifications](features/010-reading-notifications/spec.md)      | Done   |
 | 011 | [Chart themes](features/011-chart-themes/spec.md)                        | Done   |
 
+## Proposals
+
+Ideas and open questions not built yet. Ask the owner before picking one up.
+
+| Proposal                                                                     | Status          |
+| ---------------------------------------------------------------------------- | --------------- |
+| [Packaging the desktop app](proposals/packaging.md)                          | Parked          |
+| [Per-model prompts](proposals/per-model-prompts.md)                          | Proposed        |
+| [Small models](proposals/small-models.md)                                    | Open            |
+| [More chart types](proposals/more-chart-types.md)                            | Proposed        |
+| [Lollipop and median line](proposals/lollipop-and-median-line.md)            | Parked          |
+| [Rebuild benchmark](proposals/rebuild-benchmark.md)                          | Parked          |
+| [Swappable page reading](proposals/swappable-page-reading.md)                | Parked          |
+| [Flint feature request: reference bands](proposals/flint-reference-bands.md) | Drafted, parked |
+
 ## Writing new docs
 
 - **A new feature:** add `features/NNN-name/` with `spec.md` (what and why),
@@ -58,4 +73,6 @@ each feature's spec, plan and tasks.
   Write the spec before code.
 - **A decision someone could reasonably have made differently:** add an ADR.
   Never edit an accepted ADR's decision; supersede it with a new one.
+- **An idea not built yet:** add `proposals/name.md` with a status line, and
+  list it above.
 - Keep examples fictional ([ADR 0013](adr/0013-fictional-data-only.md)).

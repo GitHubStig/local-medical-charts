@@ -1,5 +1,7 @@
 # Flint feature request: reference bands
 
+- **Status:** Drafted, not posted; parked by the owner.
+
 A draft issue for
 [microsoft/flint-chart](https://github.com/microsoft/flint-chart/issues), not
 yet posted. If Flint adds this, the band part of each chart library's overlay in
