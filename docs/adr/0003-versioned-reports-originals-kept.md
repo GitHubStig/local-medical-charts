@@ -1,6 +1,8 @@
 # 0003. Versioned report JSON, originals kept
 
-- **Status:** Accepted
+- **Status:** Superseded in part by
+  [0019](0019-re-merge-saved-reports-on-every-launch.md) (when saved reports are
+  re-merged)
 - **Date:** 2026-09-13
 - **Decided by:** Owner (requirement), assistant (design)
 

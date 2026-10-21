@@ -91,11 +91,12 @@ every report, so a catalog change triggers a re-merge.
 | `results`  | One row per result, rebuilt from the upgraded report, so charts query without parsing JSON             |
 | `settings` | Theme, selected patient, chart library, curve and chart theme, Ollama address and model, notifications |
 
-On launch, any report whose format or catalog is out of date is upgraded again
-**from its original**. A report that fails is kept and marked failed, never
-deleted. The database lives in the OS app-data folder
-(`~/Library/Application Support/Local Medical Charts` on macOS), or `.data/` in
-development.
+On launch, every report is upgraded again **from its original** and written back
+if the result changed, so format, catalog and merge-rule changes all reach it
+([ADR 0019](../adr/0019-re-merge-saved-reports-on-every-launch.md)). A report
+that fails is kept and marked failed, never deleted. The database lives in the
+OS app-data folder (`~/Library/Application Support/Local Medical Charts` on
+macOS), or `.data/` in development.
 
 ### Reading PDFs and photos
 

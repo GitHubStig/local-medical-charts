@@ -21,7 +21,8 @@ benefit from the improvements, without reading the pages again.
 3. Migrations upgrade old JSON one version at a time; each is a pure function
    with a test.
 4. `upgradeReport` migrates, then re-merges when a migration ran, the catalog
-   hash changed, the stored report no longer validates, or a re-merge is forced.
+   hash changed, the merge rules now give a different result, the stored report
+   no longer validates, or a re-merge is forced.
 5. JSON from a newer version than the app knows is refused with a clear message.
 6. `deno task upgrade` upgrades report files on disk the same way.
 7. While in development, the format stays at version 1

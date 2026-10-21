@@ -201,7 +201,63 @@ Deno.test("upgradeAll re-merges out-of-date reports from their originals", () =>
       "ferritin",
     );
     assertEquals(store.getReport(reportId)!.unmapped, []);
+
+    // The original is still on catalog v1; what's stored already matches.
+    assertEquals(store.upgradeAll(catalogV2, now).upgraded, 0);
   });
+});
+
+Deno.test("a change to the merge rules reaches a saved report on the next launch", () => {
+  const dir = Deno.makeTempDirSync();
+  const path = join(dir, "store.db");
+  try {
+    let store = ReportStore.open(path);
+    const { reportId, patientId } = store.addReport(
+      syntheticReport(),
+      "jan.json",
+      catalogV1,
+      now,
+    );
+    store.close();
+
+    // As if saved by older merge rules: same pages and catalog, another date.
+    const raw = new DatabaseSync(path);
+    const stored = JSON.parse(String(
+      (raw.prepare("SELECT report_json FROM reports WHERE id = ?").get(
+        reportId,
+      ) as { report_json: string }).report_json,
+    ));
+    raw.prepare(
+      "UPDATE reports SET report_json = ?, collected_at = ? WHERE id = ?",
+    ).run(
+      JSON.stringify({ ...stored, collectedAt: "2099-01-01T00:00:00" }),
+      "2099-01-01T00:00:00",
+      reportId,
+    );
+    raw.close();
+
+    store = ReportStore.open(path);
+    assertEquals(store.upgradeAll(catalogV1, now), {
+      checked: 1,
+      upgraded: 1,
+      failed: [],
+    });
+    assertEquals(store.getReport(reportId)!.collectedAt, "2025-01-14T08:30:00");
+    assertEquals(
+      store.listPatients()[0].lastCollectedAt,
+      "2025-01-14T08:30:00",
+    );
+    assert(
+      store.resultsForPatient(patientId).every((r) =>
+        r.collectedAt === "2025-01-14T08:30:00"
+      ),
+    );
+    // Written once: the next launch finds nothing to change.
+    assertEquals(store.upgradeAll(catalogV1, now).upgraded, 0);
+    store.close();
+  } finally {
+    Deno.removeSync(dir, { recursive: true });
+  }
 });
 
 Deno.test("a report that fails to upgrade is kept, marked failed, and retried later", () => {

@@ -15,26 +15,27 @@ each feature's spec, plan and tasks.
 
 ## Architecture decision records
 
-| #    | Decision                                                                                           |
-| ---- | -------------------------------------------------------------------------------------------------- |
-| 0001 | [Everything runs locally; no cloud models](adr/0001-local-only-processing.md)                      |
-| 0002 | [The model transcribes, code interprets](adr/0002-model-transcribes-code-interprets.md)            |
-| 0003 | [Versioned report JSON, originals kept](adr/0003-versioned-reports-originals-kept.md)              |
-| 0004 | [Versions stay at 1 until release](adr/0004-versions-stay-at-1-until-release.md)                   |
-| 0005 | [Deno Desktop instead of Electron](adr/0005-deno-desktop.md)                                       |
-| 0006 | [Vue 3 single-file components, built with Vite under Deno](adr/0006-vue-with-vite-under-deno.md)   |
-| 0007 | [SQLite through node:sqlite](adr/0007-sqlite-storage.md)                                           |
-| 0008 | [Desktop bindings, one contract, a fake for the browser](adr/0008-bindings-contract-and-fake.md)   |
-| 0009 | [Supply-chain safety for dependencies](adr/0009-supply-chain-safety.md) (superseded by 0018)       |
-| 0010 | [Flint as the chart spec, four renderers](adr/0010-flint-chart-spec.md)                            |
-| 0011 | [A small Ollama client instead of provider SDKs](adr/0011-own-ollama-client.md)                    |
-| 0012 | [Review before saving; imports held in memory](adr/0012-review-before-saving-imports-in-memory.md) |
-| 0013 | [Fictional data only in the repo](adr/0013-fictional-data-only.md)                                 |
-| 0014 | [Prefer platform APIs](adr/0014-prefer-platform-apis.md)                                           |
-| 0015 | [Build in small, reviewed steps](adr/0015-small-reviewed-steps.md)                                 |
-| 0016 | [Flint's chart themes, with the app's rules kept](adr/0016-flint-chart-themes.md)                  |
-| 0017 | [New chart features come from Flint, not overlays](adr/0017-chart-features-from-flint.md)          |
-| 0018 | [Supply-chain safety without a minimum age](adr/0018-supply-chain-safety-without-minimum-age.md)   |
+| #    | Decision                                                                                                          |
+| ---- | ----------------------------------------------------------------------------------------------------------------- |
+| 0001 | [Everything runs locally; no cloud models](adr/0001-local-only-processing.md)                                     |
+| 0002 | [The model transcribes, code interprets](adr/0002-model-transcribes-code-interprets.md)                           |
+| 0003 | [Versioned report JSON, originals kept](adr/0003-versioned-reports-originals-kept.md) (partly superseded by 0019) |
+| 0004 | [Versions stay at 1 until release](adr/0004-versions-stay-at-1-until-release.md)                                  |
+| 0005 | [Deno Desktop instead of Electron](adr/0005-deno-desktop.md)                                                      |
+| 0006 | [Vue 3 single-file components, built with Vite under Deno](adr/0006-vue-with-vite-under-deno.md)                  |
+| 0007 | [SQLite through node:sqlite](adr/0007-sqlite-storage.md)                                                          |
+| 0008 | [Desktop bindings, one contract, a fake for the browser](adr/0008-bindings-contract-and-fake.md)                  |
+| 0009 | [Supply-chain safety for dependencies](adr/0009-supply-chain-safety.md) (superseded by 0018)                      |
+| 0010 | [Flint as the chart spec, four renderers](adr/0010-flint-chart-spec.md)                                           |
+| 0011 | [A small Ollama client instead of provider SDKs](adr/0011-own-ollama-client.md)                                   |
+| 0012 | [Review before saving; imports held in memory](adr/0012-review-before-saving-imports-in-memory.md)                |
+| 0013 | [Fictional data only in the repo](adr/0013-fictional-data-only.md)                                                |
+| 0014 | [Prefer platform APIs](adr/0014-prefer-platform-apis.md)                                                          |
+| 0015 | [Build in small, reviewed steps](adr/0015-small-reviewed-steps.md)                                                |
+| 0016 | [Flint's chart themes, with the app's rules kept](adr/0016-flint-chart-themes.md)                                 |
+| 0017 | [New chart features come from Flint, not overlays](adr/0017-chart-features-from-flint.md)                         |
+| 0018 | [Supply-chain safety without a minimum age](adr/0018-supply-chain-safety-without-minimum-age.md)                  |
+| 0019 | [Re-merge saved reports on every launch](adr/0019-re-merge-saved-reports-on-every-launch.md)                      |
 
 ## Features
 

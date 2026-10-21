@@ -3,8 +3,9 @@
  *
  *   1. migrate its JSON to the current schemaVersion (src/migrations/);
  *   2. re-merge it from its embedded page transcriptions when a migration ran,
- *      the catalog changed since it was merged, the stored report no longer
- *      validates, or a re-merge is forced.
+ *      the catalog changed since it was merged, the merge rules now give a
+ *      different result, the stored report no longer validates, or a re-merge
+ *      is forced (ADR 0019).
  *
  * Re-merging never calls the model: the pages already hold what was read off
  * the scan. Only a prompt change needs a fresh OCR, and that can't happen here.
@@ -15,6 +16,7 @@ import { migrate, type Migration } from "./migrations/mod.ts";
 import { buildReport } from "./normalize.ts";
 import {
   type Report,
+  type ReportPage,
   ReportPageSchema,
   ReportSchema,
   SCHEMA_VERSION,
@@ -23,6 +25,7 @@ import {
 export type UpgradeReason =
   | "migrated"
   | "catalog changed"
+  | "merge changed"
   | "repaired"
   | "forced";
 
@@ -47,6 +50,13 @@ const MergeableSchema = z.object({
   source: z.object({ report: z.string() }),
   pages: z.array(ReportPageSchema).min(1),
 });
+
+/** Whether two reports say the same thing, whenever each was merged. */
+export function sameReport(a: Report, b: Report): boolean {
+  const content = (report: Report) =>
+    JSON.stringify({ ...report, source: { ...report.source, mergedAt: "" } });
+  return content(a) === content(b);
+}
 
 function describe(error: z.ZodError): string {
   return error.issues
@@ -81,11 +91,30 @@ export function upgradeReport(
     migrations: migrated.applied.map((m) => m.description),
   };
 
+  const mergeable = MergeableSchema.safeParse(migrated.json);
+  const merge = (pages: ReportPage[], report: string, mergedAt: string) =>
+    ReportSchema.parse(
+      buildReport(
+        pages,
+        { report, catalogHash: catalog.hash, mergedAt },
+        catalog,
+      ),
+    );
+
   if (reasons.length === 0 && full.success) {
-    return { ...base, report: full.data, reasons, changed: false };
+    // Otherwise current: re-merged as of its own merge time, so the rules are
+    // all that could differ.
+    const unchanged = { ...base, report: full.data, reasons, changed: false };
+    if (!mergeable.success) return unchanged;
+    const again = merge(
+      mergeable.data.pages,
+      mergeable.data.source.report,
+      full.data.source.mergedAt,
+    );
+    if (sameReport(again, full.data)) return unchanged;
+    reasons.push("merge changed");
   }
 
-  const mergeable = MergeableSchema.safeParse(migrated.json);
   if (!mergeable.success) {
     throw new UpgradeError(
       `cannot re-merge: ${describe(mergeable.error)}${
@@ -94,18 +123,13 @@ export function upgradeReport(
     );
   }
 
-  const report = buildReport(
-    mergeable.data.pages,
-    {
-      report: mergeable.data.source.report,
-      catalogHash: catalog.hash,
-      mergedAt: (options.now ?? new Date()).toISOString(),
-    },
-    catalog,
-  );
   return {
     ...base,
-    report: ReportSchema.parse(report),
+    report: merge(
+      mergeable.data.pages,
+      mergeable.data.source.report,
+      (options.now ?? new Date()).toISOString(),
+    ),
     reasons,
     changed: true,
   };

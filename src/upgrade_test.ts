@@ -9,7 +9,7 @@ import {
 import { buildReport } from "./normalize.ts";
 import type { PageExtraction, Report } from "./schema.ts";
 import { SCHEMA_VERSION } from "./schema.ts";
-import { UpgradeError, upgradeReport } from "./upgrade.ts";
+import { sameReport, UpgradeError, upgradeReport } from "./upgrade.ts";
 
 // All fixtures below are synthetic.
 
@@ -202,6 +202,23 @@ Deno.test("upgradeReport re-merges against a newer catalog without OCR", () => {
   assertEquals(result.report.source.catalogHash, "catalog-new");
   assertEquals(result.report.source.mergedAt, now.toISOString());
   assertEquals(result.report.pages, stored.pages, "pages carried over as-is");
+});
+
+Deno.test("upgradeReport re-merges a report the merge rules now read differently", () => {
+  // As if merged by older rules: the same pages, a different result.
+  const stale = { ...storedReport(), collectedAt: "2099-01-01T00:00:00" };
+  const result = upgradeReport(stale, oldCatalog, { now });
+  assertEquals(result.reasons, ["merge changed"]);
+  assertEquals(result.changed, true);
+  assertEquals(result.report.collectedAt, storedReport().collectedAt);
+  assertEquals(result.report.source.mergedAt, now.toISOString());
+});
+
+Deno.test("sameReport ignores only when a report was merged", () => {
+  const report = storedReport();
+  const later = { ...report, source: { ...report.source, mergedAt: "later" } };
+  assertEquals(sameReport(report, later), true);
+  assertEquals(sameReport(report, { ...report, collectedAt: null }), false);
 });
 
 Deno.test("upgradeReport re-merges when forced or when derived data is broken", () => {

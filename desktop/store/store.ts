@@ -14,7 +14,7 @@ import { dirname } from "@std/path";
 import type { CatalogIndex } from "../../src/catalog.ts";
 import type { Report } from "../../src/schema.ts";
 import { SCHEMA_VERSION } from "../../src/schema.ts";
-import { upgradeReport } from "../../src/upgrade.ts";
+import { sameReport, upgradeReport } from "../../src/upgrade.ts";
 import { patientIdentity, resultsFromReport } from "../report-data.ts";
 import { normalizeSettings, type Settings } from "../settings.ts";
 import {
@@ -308,14 +308,15 @@ export class ReportStore {
   }
 
   /**
-   * Re-upgrades every report whose stored format or catalog is out of date, or
-   * whose last upgrade failed — from its original upload each time. Meant to
-   * run on launch. A report that fails is marked failed and kept, not deleted.
+   * Upgrades every report again from its original upload, so changes to the
+   * format, the catalog or the merge rules all reach it (ADR 0019). A report is
+   * only written back when the result differs from what's stored. Meant to run
+   * on launch. A report that fails is marked failed and kept, not deleted.
    */
   upgradeAll(catalog: CatalogIndex, now = new Date()): UpgradeSummary {
     const rows = this.#db
       .prepare(
-        "SELECT id, patient_id, file_name, original_json, schema_version, catalog_hash, status FROM reports ORDER BY id",
+        "SELECT id, patient_id, file_name, original_json, report_json, schema_version, catalog_hash, status FROM reports ORDER BY id",
       )
       .all() as Row[];
     const at = now.toISOString();
@@ -328,7 +329,6 @@ export class ReportStore {
     for (const row of rows) {
       const current = row.schema_version === SCHEMA_VERSION &&
         row.catalog_hash === catalog.hash && row.status === "ok";
-      if (current) continue;
 
       const reportId = Number(row.id), patientId = Number(row.patient_id);
       try {
@@ -337,6 +337,11 @@ export class ReportStore {
           catalog,
           { now },
         );
+        // The original may be older than what's stored, so compare with that.
+        if (
+          current &&
+          sameReport(report, JSON.parse(String(row.report_json)) as Report)
+        ) continue;
         this.#transaction(() => {
           this.#db
             .prepare(

@@ -23,8 +23,9 @@ upgradeable. Charts need fast access to every result of a test across reports.
 4. The upload is stored exactly as received, next to the upgraded report;
    re-imports of identical content are reported as duplicates.
 5. One row per result for chart queries, rebuilt whenever a report is upgraded.
-6. On launch, reports with an older format or catalog are upgraded from their
-   originals; failures are kept and marked.
+6. On launch, every report is upgraded from its original and written back when
+   the result changed (an older format or catalog, or new merge rules); failures
+   are kept and marked.
 7. Common wrong files (a page file, a suggestions file, a newer format) are
    refused with an explanation.
 8. Settings are stored too (theme, selected patient, chart library, later the
