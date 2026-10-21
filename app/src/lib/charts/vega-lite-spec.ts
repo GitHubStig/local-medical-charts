@@ -63,13 +63,19 @@ export function vegaLiteSpec(
       unknown
     >,
   );
+  // A theme that adds marks of its own (a zero baseline) puts Flint's line in a
+  // layer; without its mark the line would lose its curve and colour.
+  const flintLine =
+    (flint.layer as Record<string, unknown>[] | undefined)?.find(
+      (layer) => (layer.mark as { type?: string } | undefined)?.type === "line",
+    ) ?? flint;
   const config = (flint.config ?? {}) as Record<string, unknown>;
   // Themed, the overlay's own colours come from Flint's output and the theme.
   const palette = themed
     ? themePalette(theme, appPalette, {
       surface: flint.background ?? config.background,
       font: config.font,
-      series: (flint.mark as { color?: unknown } | undefined)?.color,
+      series: (flintLine.mark as { color?: unknown } | undefined)?.color,
     })
     : appPalette;
   const [bottom, top] = frame?.y.domain ?? domain.y;
@@ -223,7 +229,7 @@ export function vegaLiteSpec(
       // Flint's line, keeping its curve, in the app's style or Flint's theme.
       {
         mark: {
-          ...(flint.mark as object),
+          ...(flintLine.mark as object),
           type: "line",
           point: false,
           color: palette.series,
@@ -234,7 +240,7 @@ export function vegaLiteSpec(
             strokeJoin: "round",
           }),
         },
-        encoding: { ...(flint.encoding as object), ...window },
+        encoding: { ...(flintLine.encoding as object), ...window },
       },
       {
         transform: [{ filter: "!datum.bound" }],

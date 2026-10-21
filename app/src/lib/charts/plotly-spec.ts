@@ -191,6 +191,9 @@ export function plotlyFigure(
     ],
     layout: {
       ...flint.layout,
+      // A theme titles the chart with the field and unit ("value (U/L)"); the
+      // card already names the test.
+      title: { text: "" },
       width: size.width,
       height: size.height,
       font: themed ? flint.layout.font : { family: palette.font },

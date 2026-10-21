@@ -135,6 +135,25 @@ Deno.test("a themed Vega-Lite chart takes Flint's styling and keeps the app's fl
   assertNotEquals(bands.mark.color, PALETTE.band);
 });
 
+// Some themes add a zero baseline, which puts Flint's line in a layer.
+Deno.test("every theme keeps the chosen curve and Flint's line colour in Vega-Lite", async () => {
+  const alt = await alexSeries("alt");
+  const curves = [
+    ["straight", "linear"],
+    ["smooth", "monotone"],
+    ["steps", "step-after"],
+  ] as const;
+  for (const { id } of chartThemes()) {
+    for (const [curve, interpolate] of curves) {
+      const spec = vegaLiteSpec(alt, PALETTE, LARGE, true, curve, id) as Loose;
+      const line = spec.layer[2];
+      assertEquals(line.mark.interpolate, interpolate, `${id}, ${curve}`);
+    }
+  }
+  const apple = vegaLiteSpec(alt, PALETTE, LARGE, true, "smooth", "apple");
+  assertEquals((apple as Loose).layer[2].mark.color, "#007aff");
+});
+
 Deno.test("a themed Plotly chart takes Flint's styling and keeps the app's flags, bounds and bands", async () => {
   const alt = await alexSeries("alt");
   const figure = plotlyFigure(
@@ -156,6 +175,8 @@ Deno.test("a themed Plotly chart takes Flint's styling and keeps the app's flags
   assertEquals(hollow.marker.color, "#ffffff");
   assertEquals(figure.layout.shapes.length, app.layout.shapes.length);
   assertNotEquals(figure.layout.shapes[0].fillcolor, PALETTE.band);
+  // The card names the test; the theme's title ("value (U/L)") isn't drawn.
+  assertEquals(figure.layout.title.text, "");
 });
 
 Deno.test("ECharts and Chart.js keep the app's look when Flint doesn't theme them", async () => {
