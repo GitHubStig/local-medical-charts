@@ -37,6 +37,42 @@ Deno.test("parseResult drops a unit repeated after the value", () => {
   });
 });
 
+Deno.test("parseResult reads thousands commas and a leading decimal point", () => {
+  assertEquals(parseResult("1,250"), { kind: "numeric", value: 1250 });
+  assertEquals(parseResult("12,500.5"), { kind: "numeric", value: 12500.5 });
+  assertEquals(parseResult("1,234,567"), { kind: "numeric", value: 1234567 });
+  assertEquals(parseResult(".5"), { kind: "numeric", value: 0.5 });
+  assertEquals(parseResult("> 2,000"), {
+    kind: "comparator",
+    op: ">",
+    value: 2000,
+  });
+  assertEquals(parseResult("1,050 pg/mL", "pg/mL"), {
+    kind: "numeric",
+    value: 1050,
+  });
+});
+
+Deno.test("parseResult leaves a possible decimal comma as text", () => {
+  assertEquals(parseResult("1,25"), { kind: "text", text: "1,25" });
+  assertEquals(parseResult("1,2500"), { kind: "text", text: "1,2500" });
+  assertEquals(parseResult("12,50,000"), { kind: "text", text: "12,50,000" });
+});
+
+Deno.test("parseRange reads thousands commas", () => {
+  assertEquals(parseRange("1,000 - 5,000"), {
+    kind: "between",
+    min: 1000,
+    max: 5000,
+  });
+  assertEquals(parseRange("(< 1,500)"), {
+    kind: "below",
+    limit: 1500,
+    inclusive: false,
+  });
+  assertEquals(parseRange("0,5 - 1,2"), { kind: "text", text: "0,5 - 1,2" });
+});
+
 Deno.test("parseRange reads plain and bracketed min-max", () => {
   assertEquals(parseRange("4.0 - 11.0"), { kind: "between", min: 4, max: 11 });
   assertEquals(parseRange("(120-150)"), {

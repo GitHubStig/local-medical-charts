@@ -24,8 +24,20 @@ import type {
 import { SCHEMA_VERSION } from "./schema.ts";
 import { normalizeUnit } from "./units.ts";
 
-const NUMBER = String.raw`-?\d+(?:\.\d+)?`;
+/**
+ * `5`, `2.61`, `.5`, and thousands grouped by commas (`1,250`, `12,500.5`). A
+ * comma before anything but three digits (`1,25`) may be a decimal comma, so
+ * it isn't a number here and the value stays text.
+ */
+const GROUPED = String.raw`\d{1,3}(?:,\d{3})+(?:\.\d+)?`;
+const PLAIN = String.raw`\d+(?:\.\d+)?|\.\d+`;
+const NUMBER = `-?(?:${GROUPED}|${PLAIN})`;
 const COMPARATOR = String.raw`<=|>=|≤|≥|<|>`;
+
+/** A string matched by NUMBER, as a number. */
+function toNumber(text: string): number {
+  return Number(text.replaceAll(",", ""));
+}
 
 function toComparator(symbol: string): Comparator {
   if (symbol === "≤") return "<=";
@@ -76,11 +88,11 @@ export function parseResult(raw: string, unit: string | null = null): Result {
     return {
       kind: "comparator",
       op: toComparator(comparator[1]),
-      value: Number(comparator[2]),
+      value: toNumber(comparator[2]),
     };
   }
   if (new RegExp(`^${NUMBER}$`).test(text)) {
-    return { kind: "numeric", value: Number(text) };
+    return { kind: "numeric", value: toNumber(text) };
   }
   return { kind: "text", text };
 }
@@ -102,15 +114,15 @@ export function parseRange(
   if (between) {
     return {
       kind: "between",
-      min: Number(between[1]),
-      max: Number(between[2]),
+      min: toNumber(between[1]),
+      max: toNumber(between[2]),
     };
   }
 
   const bounded = s.match(new RegExp(`^(${COMPARATOR})\\s*(${NUMBER})$`));
   if (bounded) {
     const op = toComparator(bounded[1]);
-    const limit = Number(bounded[2]);
+    const limit = toNumber(bounded[2]);
     const inclusive = op.endsWith("=");
     return op.startsWith("<")
       ? { kind: "below", limit, inclusive }
