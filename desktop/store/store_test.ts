@@ -297,6 +297,78 @@ Deno.test("clearAll removes everything", () => {
   });
 });
 
+/** Whether the database file or its write-ahead log still holds the text anywhere. */
+function onDisk(path: string, text: string): boolean {
+  const needle = new TextEncoder().encode(text);
+  return [path, `${path}-wal`].some((file) => {
+    let bytes: Uint8Array;
+    try {
+      bytes = Deno.readFileSync(file);
+    } catch {
+      return false;
+    }
+    outer: for (let i = 0; i <= bytes.length - needle.length; i++) {
+      for (let j = 0; j < needle.length; j++) {
+        if (bytes[i + j] !== needle[j]) continue outer;
+      }
+      return true;
+    }
+    return false;
+  });
+}
+
+Deno.test("a deleted report leaves nothing behind in the database files", () => {
+  const dir = Deno.makeTempDirSync();
+  const path = join(dir, "store.db");
+  try {
+    const store = ReportStore.open(path);
+    const kept = store.addReport(
+      syntheticReport({ label: "kept-report" }),
+      "kept.json",
+      catalogV1,
+      now,
+    );
+    const gone = store.addReport(
+      syntheticReport({ label: "deleted-report", haemoglobin: "12.8" }),
+      "deleted.json",
+      catalogV1,
+      now,
+    );
+    assert(onDisk(path, "deleted-report"));
+
+    store.deleteReport(gone.reportId, now);
+    // Checked while the database is still open, as it is while the app runs.
+    assertEquals(onDisk(path, "deleted-report"), false);
+    assert(onDisk(path, "kept-report"));
+    assert(store.getReport(kept.reportId));
+    store.close();
+  } finally {
+    Deno.removeSync(dir, { recursive: true });
+  }
+});
+
+Deno.test("clearAll leaves nothing behind in the database files", () => {
+  const dir = Deno.makeTempDirSync();
+  const path = join(dir, "store.db");
+  try {
+    const store = ReportStore.open(path);
+    store.addReport(
+      syntheticReport({ label: "cleared-report" }),
+      "cleared.json",
+      catalogV1,
+      now,
+    );
+    assert(onDisk(path, "cleared-report"));
+
+    store.clearAll();
+    assertEquals(onDisk(path, "cleared-report"), false);
+    assertEquals(onDisk(path, "ALEX EXAMPLE"), false);
+    store.close();
+  } finally {
+    Deno.removeSync(dir, { recursive: true });
+  }
+});
+
 Deno.test("settings default, persist across reopening, and survive clearAll", () => {
   const dir = Deno.makeTempDirSync();
   const path = join(dir, "store.db");

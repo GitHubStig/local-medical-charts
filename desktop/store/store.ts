@@ -68,6 +68,9 @@ export class ReportStore {
     if (path !== ":memory:") Deno.mkdirSync(dirname(path), { recursive: true });
     const db = new DatabaseSync(path);
     db.exec("PRAGMA foreign_keys = ON");
+    // Deleted reports are overwritten with zeros, not just marked free, so a
+    // removed report can't be read back out of the file.
+    db.exec("PRAGMA secure_delete = ON");
     if (path !== ":memory:") db.exec("PRAGMA journal_mode = WAL");
     try {
       migrateDatabase(db);
@@ -464,7 +467,7 @@ export class ReportStore {
 
   /** Deletes a report and its results; a patient left with no reports is removed too. */
   deleteReport(reportId: number, now = new Date()): boolean {
-    return this.#transaction(() => {
+    const deleted = this.#transaction(() => {
       const row = this.#db
         .prepare("SELECT patient_id FROM reports WHERE id = ?")
         .get(reportId) as Row | undefined;
@@ -473,6 +476,16 @@ export class ReportStore {
       this.#refreshPatient(Number(row.patient_id), now.toISOString());
       return true;
     });
+    if (deleted) this.#emptyLog();
+    return deleted;
+  }
+
+  /**
+   * Copies the write-ahead log into the database and empties it. The log still
+   * holds every page as it was written, deleted reports included, until then.
+   */
+  #emptyLog(): void {
+    this.#db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
   }
 
   /** The app's settings, with defaults for anything never set. */
@@ -509,6 +522,7 @@ export class ReportStore {
         "DELETE FROM results; DELETE FROM reports; DELETE FROM patients;",
       );
     });
+    this.#emptyLog();
   }
 
   #writeResults(reportId: number, patientId: number, report: Report): void {
