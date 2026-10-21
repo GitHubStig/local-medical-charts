@@ -65,7 +65,12 @@ export class ReportStore {
 
   /** Opens (creating if needed) a database file, or `":memory:"` for tests. */
   static open(path: string): ReportStore {
-    if (path !== ":memory:") Deno.mkdirSync(dirname(path), { recursive: true });
+    // Only this user may open a new folder: it holds medical reports. A folder
+    // that already exists keeps its permissions, as MEDICAL_CHARTS_DATA_DIR
+    // may name one the person chose. Ignored on Windows.
+    if (path !== ":memory:") {
+      Deno.mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
+    }
     const db = new DatabaseSync(path);
     db.exec("PRAGMA foreign_keys = ON");
     // Deleted reports are overwritten with zeros, not just marked free, so a

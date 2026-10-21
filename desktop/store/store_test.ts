@@ -260,6 +260,29 @@ Deno.test("data persists across reopening the database", () => {
   }
 });
 
+Deno.test({
+  name: "a new database folder is private to this user",
+  ignore: Deno.build.os === "windows",
+  fn() {
+    const dir = Deno.makeTempDirSync();
+    const path = join(dir, "app-data", "nested", "store.db");
+    try {
+      ReportStore.open(path).close();
+      for (const folder of ["app-data", join("app-data", "nested")]) {
+        const mode = Deno.statSync(join(dir, folder)).mode! & 0o777;
+        assertEquals(mode.toString(8), "700", folder);
+      }
+      // A folder that already existed keeps its own permissions.
+      assertEquals(Deno.statSync(dir).mode! & 0o777, 0o700);
+      Deno.chmodSync(dir, 0o755);
+      ReportStore.open(join(dir, "other.db")).close();
+      assertEquals((Deno.statSync(dir).mode! & 0o777).toString(8), "755");
+    } finally {
+      Deno.removeSync(dir, { recursive: true });
+    }
+  },
+});
+
 Deno.test("deleting a patient's last report removes the patient", () => {
   withStore((store) => {
     const a = store.addReport(syntheticReport(), "a.json", catalogV1, now);
