@@ -10,6 +10,7 @@
 import { assert, assertEquals, assertRejects } from "@std/assert";
 import type { DesktopBindings, ImportJob } from "./contract.ts";
 import { type NamedBytes, packFiles } from "./imports/packed-files.ts";
+import { DEFAULT_SETTINGS } from "./settings.ts";
 import { syntheticReport } from "./store/testing.ts";
 
 export type ContractHarness = {
@@ -335,15 +336,24 @@ export function defineContractTests(
     assertEquals(await b.getDashboard(patient.id + 1000), null);
   });
 
-  test("deleting a patient's last report removes the patient", async (b) => {
-    const [first] = await b.importReports([{
-      name: "a.json",
-      text: syntheticReport(),
-    }]);
-    assert(first.status === "added");
-    assertEquals(await b.deleteReport(first.reportId), true);
+  test("deleting a report keeps its patient until their last one goes", async (b) => {
+    const [jan, jun] = await b.importReports([
+      { name: "a.json", text: syntheticReport() },
+      {
+        name: "b.json",
+        text: syntheticReport({ collected: "20/06/25 09:00" }),
+      },
+    ]);
+    assert(jan.status === "added" && jun.status === "added");
+
+    assertEquals(await b.deleteReport(jan.reportId), true);
+    assertEquals((await b.listPatients()).map((p) => p.reportCount), [1]);
+    const { results } = (await b.getDashboard(jun.patientId))!;
+    assert(results.every((r) => r.reportId === jun.reportId));
+
+    assertEquals(await b.deleteReport(jun.reportId), true);
     assertEquals(await b.listPatients(), []);
-    assertEquals(await b.deleteReport(first.reportId), false);
+    assertEquals(await b.deleteReport(jun.reportId), false);
   });
 
   test("clearAll removes reports but keeps settings", async (b) => {
@@ -363,60 +373,31 @@ export function defineContractTests(
     });
   });
 
-  test("the selected patient is remembered in settings", async (b) => {
-    assertEquals((await b.getSettings()).selectedPatientId, null);
+  test("settings round-trip and invalid values reject", async (b) => {
+    assertEquals(await b.getSettings(), DEFAULT_SETTINGS);
+    assertEquals(await b.updateSettings({ theme: "light" }), {
+      ...DEFAULT_SETTINGS,
+      theme: "light",
+    });
     await b.updateSettings({ selectedPatientId: 7 });
     assertEquals(await b.getSettings(), {
-      theme: "system",
+      ...DEFAULT_SETTINGS,
+      theme: "light",
       selectedPatientId: 7,
-      chartLibrary: "vega-lite",
-      chartCurve: "smooth",
-      chartTheme: "app",
-      ollamaHost: "http://localhost:11434",
-      ocrModel: "qwen3-vl:4b",
-      notifyWhenRead: true,
     });
     await b.updateSettings({ selectedPatientId: null });
     assertEquals((await b.getSettings()).selectedPatientId, null);
-    await assertRejects(() =>
-      b.updateSettings({ selectedPatientId: -2 } as never)
-    );
-  });
 
-  test("settings round-trip and invalid values reject", async (b) => {
-    assertEquals(await b.getSettings(), {
-      theme: "system",
-      selectedPatientId: null,
-      chartLibrary: "vega-lite",
-      chartCurve: "smooth",
-      chartTheme: "app",
-      ollamaHost: "http://localhost:11434",
-      ocrModel: "qwen3-vl:4b",
-      notifyWhenRead: true,
-    });
-    assertEquals(await b.updateSettings({ theme: "light" }), {
-      theme: "light",
-      selectedPatientId: null,
-      chartLibrary: "vega-lite",
-      chartCurve: "smooth",
-      chartTheme: "app",
-      ollamaHost: "http://localhost:11434",
-      ocrModel: "qwen3-vl:4b",
-      notifyWhenRead: true,
-    });
     await assertRejects(() => b.updateSettings({ theme: "sepia" } as never));
     await assertRejects(() =>
       b.updateSettings({ chartLibrary: "d3" } as never)
     );
+    await assertRejects(() =>
+      b.updateSettings({ selectedPatientId: -2 } as never)
+    );
     assertEquals(await b.getSettings(), {
+      ...DEFAULT_SETTINGS,
       theme: "light",
-      selectedPatientId: null,
-      chartLibrary: "vega-lite",
-      chartCurve: "smooth",
-      chartTheme: "app",
-      ollamaHost: "http://localhost:11434",
-      ocrModel: "qwen3-vl:4b",
-      notifyWhenRead: true,
     });
   });
 }

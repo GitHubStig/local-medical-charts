@@ -76,10 +76,22 @@ Deno.test("invalid settings from the page are refused", () => {
   );
 });
 
+// Spelled out once here; other tests compare against DEFAULT_SETTINGS.
+Deno.test("the defaults are the system theme, Vega-Lite, a smooth line and the small local model", () => {
+  assertEquals(DEFAULT_SETTINGS, {
+    theme: "system",
+    selectedPatientId: null,
+    chartLibrary: "vega-lite",
+    chartCurve: "smooth",
+    chartTheme: "app",
+    ollamaHost: "http://localhost:11434",
+    ocrModel: "qwen3-vl:4b",
+    notifyWhenRead: true,
+  });
+});
+
 Deno.test("stored settings fall back to defaults for anything unknown or invalid", () => {
   assertEquals(normalizeSettings({}), DEFAULT_SETTINGS);
-  assertEquals(DEFAULT_SETTINGS.chartCurve, "smooth");
-  assertEquals(DEFAULT_SETTINGS.chartTheme, "app");
   assertEquals(
     normalizeSettings({
       theme: "light",

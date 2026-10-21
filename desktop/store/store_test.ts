@@ -68,47 +68,6 @@ Deno.test("the same report uploaded twice is stored once", () => {
   });
 });
 
-Deno.test("reports group by ID number, ignoring spacing and case", () => {
-  withStore((store) => {
-    const a = store.addReport(
-      syntheticReport({ idNumber: "X1234567" }),
-      "a.json",
-      catalogV1,
-      now,
-    );
-    const b = store.addReport(
-      syntheticReport({
-        idNumber: "x-1234 567",
-        collected: "20/06/25 09:00",
-        haemoglobin: "12.8",
-      }),
-      "b.json",
-      catalogV1,
-      now,
-    );
-    const c = store.addReport(
-      syntheticReport({ idNumber: "Y7654321", patientName: "SAM EXAMPLE" }),
-      "c.json",
-      catalogV1,
-      now,
-    );
-
-    assertEquals(a.patientId, b.patientId);
-    assert(a.patientId !== c.patientId);
-    assertEquals(store.listPatients().map((p) => [p.name, p.reportCount]), [
-      ["ALEX EXAMPLE", 2],
-      ["SAM EXAMPLE", 1],
-    ]);
-    const hb = store.resultsForPatient(a.patientId).filter((r) =>
-      r.analyte === "haemoglobin"
-    );
-    assertEquals(hb.map((r) => [r.collectedAt, r.value]), [
-      ["2025-01-14T08:30:00", 13.1],
-      ["2025-06-20T09:00:00", 12.8],
-    ]);
-  });
-});
-
 Deno.test("without an ID number, name and date of birth identify the patient", () => {
   assertEquals(
     patientIdentity(
@@ -131,31 +90,6 @@ Deno.test("without an ID number, name and date of birth identify the patient", (
         ),
       StoreError,
       "no patient ID number",
-    );
-    assertEquals(store.listPatients(), []);
-  });
-});
-
-Deno.test("invalid uploads throw and store nothing", () => {
-  withStore((store) => {
-    assertThrows(
-      () => store.addReport("{ not json", "bad.json", catalogV1, now),
-      StoreError,
-      "not valid JSON",
-    );
-    assertThrows(
-      () => store.addReport('{"hello": 1}', "other.json", catalogV1, now),
-      StoreError,
-      "no schemaVersion",
-    );
-    const future = JSON.stringify({
-      ...JSON.parse(syntheticReport()),
-      schemaVersion: SCHEMA_VERSION + 1,
-    });
-    assertThrows(
-      () => store.addReport(future, "future.json", catalogV1, now),
-      StoreError,
-      "newer version of the app",
     );
     assertEquals(store.listPatients(), []);
   });
@@ -337,43 +271,6 @@ Deno.test({
       Deno.removeSync(dir, { recursive: true });
     }
   },
-});
-
-Deno.test("deleting a patient's last report removes the patient", () => {
-  withStore((store) => {
-    const a = store.addReport(syntheticReport(), "a.json", catalogV1, now);
-    const b = store.addReport(
-      syntheticReport({ collected: "20/06/25 09:00", haemoglobin: "12.8" }),
-      "b.json",
-      catalogV1,
-      now,
-    );
-    assert(store.deleteReport(a.reportId, now));
-    assertEquals(store.listPatients().map((p) => p.reportCount), [1]);
-    assertEquals(
-      store.resultsForPatient(b.patientId).every((r) =>
-        r.reportId === b.reportId
-      ),
-      true,
-    );
-    assert(store.deleteReport(b.reportId, now));
-    assertEquals(store.listPatients(), []);
-    assertEquals(store.deleteReport(b.reportId, now), false);
-  });
-});
-
-Deno.test("clearAll removes everything", () => {
-  withStore((store) => {
-    const { patientId } = store.addReport(
-      syntheticReport(),
-      "a.json",
-      catalogV1,
-      now,
-    );
-    store.clearAll();
-    assertEquals(store.listPatients(), []);
-    assertEquals(store.resultsForPatient(patientId), []);
-  });
 });
 
 /** Whether the database file or its write-ahead log still holds the text anywhere. */

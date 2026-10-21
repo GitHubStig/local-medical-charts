@@ -92,13 +92,15 @@ Deno.test("Flint's line sits between the reference bands and the markers, on the
   assertEquals(targets.encoding.tooltip, { field: "tooltip" });
 });
 
-Deno.test("every sample chart compiles without Vega-Lite warnings", async () => {
+Deno.test("every sample chart compiles without Vega-Lite warnings, small and large", async () => {
   const b = createFakeBindings({ reports: SAMPLE_REPORTS });
   for (const patient of await b.listPatients()) {
     const series = buildSeries((await b.getDashboard(patient.id))!);
     for (const s of series.values()) {
-      const { warnings } = compileVegaLite(vegaLiteSpec(s, PALETTE, SIZE));
-      assertEquals(warnings, [], s.key);
+      for (const large of [false, true]) {
+        const spec = vegaLiteSpec(s, PALETTE, large ? LARGE : SIZE, large);
+        assertEquals(compileVegaLite(spec).warnings, [], s.key);
+      }
     }
   }
 });
@@ -133,19 +135,6 @@ Deno.test("the large chart gets value and date axes, and names the latest range"
   const svg = await vegaLiteSvg(spec);
   for (const text of ["12 Nov 2024", "Northside Pathology", "60", "&lt; 35"]) {
     assert(svg.includes(text), `the chart shows ${text}`);
-  }
-});
-
-Deno.test("every sample's large chart compiles without Vega-Lite warnings", async () => {
-  const b = createFakeBindings({ reports: SAMPLE_REPORTS });
-  for (const patient of await b.listPatients()) {
-    const series = buildSeries((await b.getDashboard(patient.id))!);
-    for (const s of series.values()) {
-      const { warnings } = compileVegaLite(
-        vegaLiteSpec(s, PALETTE, LARGE, true),
-      );
-      assertEquals(warnings, [], s.key);
-    }
   }
 });
 
