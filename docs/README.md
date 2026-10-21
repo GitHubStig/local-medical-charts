@@ -65,6 +65,7 @@ Ideas and open questions not built yet. Ask the owner before picking one up.
 | [Lollipop and median line](proposals/lollipop-and-median-line.md)                  | Parked           |
 | [Rebuild benchmark](proposals/rebuild-benchmark.md)                                | Parked           |
 | [Swappable page reading](proposals/swappable-page-reading.md)                      | Parked           |
+| [Large PDF imports](proposals/large-pdf-imports.md)                                | Parked           |
 | [Flint feature request: reference bands](proposals/flint-reference-bands.md)       | Drafted, parked  |
 | [Chart interactivity from Flint](proposals/chart-interactivity.md)                 | Waiting on Flint |
 | [Flint bug report: straight Plotly line](proposals/flint-plotly-straight-curve.md) | Posted (#149)    |
