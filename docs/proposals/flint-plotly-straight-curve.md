@@ -1,17 +1,16 @@
 # Flint bug report: a theme overrides a straight Plotly line
 
-- **Status:** Drafted, not posted.
+- **Status:** Posted 2026-10-21 as
+  [microsoft/flint-chart#149](https://github.com/microsoft/flint-chart/issues/149).
 
-A draft issue for
-[microsoft/flint-chart](https://github.com/microsoft/flint-chart/issues), not
-yet posted. Nothing like it was reported as of 2026-10-21 (issues, pull requests
-and discussions searched). In the app, it shows as the Straight curve drawing a
+The issue as posted to
+[microsoft/flint-chart](https://github.com/microsoft/flint-chart/issues).
+Nothing like it was reported as of 2026-10-21 (issues, pull requests and
+discussions searched). In the app, it shows as the Straight curve drawing a
 spline under the Cartoon theme and steps under De Stijl, in Plotly only.
 
-Before posting:
-
-- Post it from the owner's GitHub account.
-- Rerun the reproduction against the latest flint-chart.
+Once Flint fixes it, update flint-chart and check Straight under Cartoon and De
+Stijl in Plotly.
 
 ---
 
