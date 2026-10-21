@@ -142,13 +142,16 @@ export function parseDate(
   const [, d, m, y, hh, mm, ss] = match;
   const day = Number(d);
   const month = Number(m);
-  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  if (month < 1 || month > 12) return null;
 
   let year = Number(y);
   if (y.length === 2) {
     const pivot = (today.getFullYear() % 100) + 1;
     year += year <= pivot ? 2000 : 1900;
   }
+  // A misread 31/02 would otherwise roll over to 3 March wherever it's parsed.
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  if (day < 1 || day > daysInMonth) return null;
 
   const date = `${year}-${String(month).padStart(2, "0")}-${
     String(day).padStart(2, "0")

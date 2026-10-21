@@ -93,6 +93,16 @@ Deno.test("parseDate reads day-first dates with 2- or 4-digit years", () => {
   assertEquals(parseDate("14/01/25 08:30", today), "2025-01-14T08:30:00");
   assertEquals(parseDate("31/13/2020", today), null);
   assertEquals(parseDate("Last Page", today), null);
+});
+
+Deno.test("parseDate refuses a day the month doesn't have", () => {
+  const today = new Date("2026-06-01");
+  assertEquals(parseDate("31/02/2025", today), null);
+  assertEquals(parseDate("31/04/2025", today), null);
+  assertEquals(parseDate("29/02/2025", today), null);
+  assertEquals(parseDate("29/02/2024", today), "2024-02-29");
+  assertEquals(parseDate("31/12/25", today), "2025-12-31");
+  assertEquals(parseDate("00/01/2025", today), null);
   assertEquals(parseDate(null, today), null);
 });
 
