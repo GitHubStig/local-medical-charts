@@ -112,10 +112,11 @@ export function parseRange(
     new RegExp(`^(${NUMBER})\\s*(?:-|–|—|to)\\s*(${NUMBER})$`, "i"),
   );
   if (between) {
-    return {
-      kind: "between",
-      min: toNumber(between[1]),
-      max: toNumber(between[2]),
+    const min = toNumber(between[1]), max = toNumber(between[2]);
+    // A reversed range is a misreading; as bounds it would flag every result.
+    return min <= max ? { kind: "between", min, max } : {
+      kind: "text",
+      text: printed,
     };
   }
 
@@ -242,9 +243,11 @@ export function classify(
 }
 
 /**
- * A printed H/L always wins. Other markers (`*`, underlining) say "abnormal"
- * without a direction, which the range supplies when it can. With no marker, a
- * result outside a structured range is still flagged, as "derived".
+ * A printed H/L always wins, as do arrows and the words High and Low. "N" or
+ * "Normal" in the flag column counts as no marker. Other markers (`*`,
+ * underlining) say "abnormal" without a direction, which the range supplies
+ * when it can. With no marker, a result outside a structured range is still
+ * flagged, as "derived".
  */
 export function deriveFlag(
   marker: string | null,
@@ -255,11 +258,12 @@ export function deriveFlag(
   source: "printed" | "derived" | null;
   warning: string | null;
 } {
-  const printed = marker?.trim().toUpperCase() ?? "";
-  if (/^H+$/.test(printed)) {
+  const trimmed = marker?.trim().toUpperCase() ?? "";
+  const printed = /^N(?:ORMAL)?$/.test(trimmed) ? "" : trimmed;
+  if (/^(?:H+|↑+|HIGH)$/.test(printed)) {
     return { flag: "H", source: "printed", warning: null };
   }
-  if (/^L+$/.test(printed)) {
+  if (/^(?:L+|↓+|LOW)$/.test(printed)) {
     return { flag: "L", source: "printed", warning: null };
   }
 

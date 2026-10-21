@@ -87,6 +87,15 @@ Deno.test("parseRange reads plain and bracketed min-max", () => {
   });
 });
 
+Deno.test("parseRange keeps a reversed range as text", () => {
+  assertEquals(parseRange("10 - 2"), { kind: "text", text: "10 - 2" });
+  assertEquals(parseRange("(5-5)"), { kind: "between", min: 5, max: 5 });
+  assertEquals(
+    deriveFlag(null, parseResult("7"), parseRange("10 - 2")).flag,
+    null,
+  );
+});
+
 Deno.test("parseRange reads one-sided bounds in any wrapping", () => {
   assertEquals(parseRange("(< 5.2)"), {
     kind: "below",
@@ -156,6 +165,32 @@ Deno.test("deriveFlag trusts a printed H or L", () => {
   const range = parseRange("55 - 62");
   assertEquals(deriveFlag("L", parseResult("52"), range).flag, "L");
   assertEquals(deriveFlag("H", parseResult("58"), range).source, "printed");
+});
+
+Deno.test("deriveFlag reads arrows and the words High and Low as printed flags", () => {
+  const range = parseRange("55 - 62");
+  for (const marker of ["↑", "↑↑", "High", "HIGH"]) {
+    const { flag, source } = deriveFlag(marker, parseResult("70"), range);
+    assertEquals([flag, source], ["H", "printed"], marker);
+  }
+  for (const marker of ["↓", "low"]) {
+    const { flag, source } = deriveFlag(marker, parseResult("50"), range);
+    assertEquals([flag, source], ["L", "printed"], marker);
+  }
+});
+
+Deno.test("deriveFlag treats an N or Normal marker as no marker", () => {
+  const range = parseRange("(3.5-5.1)");
+  for (const marker of ["N", " n ", "Normal"]) {
+    assertEquals(deriveFlag(marker, parseResult("4.0"), range), {
+      flag: null,
+      source: null,
+      warning: null,
+    });
+  }
+  // The range still flags a result outside it.
+  const high = deriveFlag("N", parseResult("5.4"), range);
+  assertEquals([high.flag, high.source], ["H", "derived"]);
 });
 
 Deno.test("deriveFlag gives a * marker its direction from the range", () => {
