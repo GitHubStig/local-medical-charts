@@ -18,8 +18,9 @@ reviews the lockfile diff.
 
 ## Decision
 
-- **Drop the minimum dependency age.** `minimumDependencyAge` is removed from
-  `deno.json`.
+- **Drop the minimum dependency age.** `deno.json` sets
+  `"minimumDependencyAge": 0`; leaving it out isn't enough, because Deno 2.9
+  then refuses versions younger than 24 hours by default.
 - Keep the rest of ADR 0009 as it is:
   - **Exact versions** in `deno.json` and `app/package.json`; no ranges.
   - **Frozen lockfile:** any install that would change `deno.lock` fails until

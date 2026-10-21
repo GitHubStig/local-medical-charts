@@ -176,7 +176,7 @@ these steps yourself:
 
 The Chart theme dropdown lists App and every theme the installed Flint ships. A
 theme shows in a chart library only where Flint styles that library's charts for
-it ([ADR 0016](adr/0016-flint-chart-themes.md)). With flint-chart 0.5.1 that's
+it ([ADR 0016](adr/0016-flint-chart-themes.md)). With flint-chart 1.0.0 that's
 Vega-Lite and Plotly; ECharts and Chart.js keep the App look.
 
 ### After updating Flint or a chart library

@@ -22,7 +22,7 @@ Before posting:
 
 A local app that charts lab results over time. Every chart is a Flint
 `Line Chart`, compiled for Vega-Lite, ECharts, Chart.js and Plotly (switchable
-at runtime), using flint-chart 0.5.1. Behind each line, the chart shades the
+at runtime), using flint-chart 1.0.0. Behind each line, the chart shades the
 lab's reference range, so a reading outside it stands out.
 
 **What I can't express in Flint today**
