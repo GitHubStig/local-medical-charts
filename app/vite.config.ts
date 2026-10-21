@@ -5,8 +5,12 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
   server: {
-    // The app imports shared code from desktop/ and sample reports from samples/.
-    fs: { allow: [".."] },
+    // The app imports shared code from desktop/ and src/, sample reports from
+    // samples/, and packages that Deno links into the root node_modules/.
+    // Nothing wider: the repo root holds .data/, the owner's real reports.
+    fs: {
+      allow: [".", "../desktop", "../src", "../samples", "../node_modules"],
+    },
   },
   build: {
     // The desktop app serves this folder; nothing is fetched from a CDN.
