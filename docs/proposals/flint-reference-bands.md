@@ -5,7 +5,9 @@
 A draft issue for
 [microsoft/flint-chart](https://github.com/microsoft/flint-chart/issues), not
 yet posted. If Flint adds this, the band part of each chart library's overlay in
-`app/src/lib/charts/` can go ([ADR 0010](../adr/0010-flint-chart-spec.md)).
+`app/src/lib/charts/` can go ([ADR 0010](../adr/0010-flint-chart-spec.md)). The
+draft also asks for a hook that would make Flint's interactions usable
+([chart interactivity](chart-interactivity.md)).
 
 Before posting:
 
@@ -43,6 +45,10 @@ in Vega-Lite, `markArea` and `markLine` in ECharts, layout `shapes` in Plotly,
 and a plugin in Chart.js. They work, but they're four implementations of one
 idea, and each needs to know its library's scales and layout, which is what
 Flint otherwise hides.
+
+They also keep me from using 1.0's interactions: `mountChart` assembles and
+draws in one go, so there's nowhere to add the bands. A hook to change the
+assembled spec before it's drawn would be a smaller step that also helps.
 
 **A possible shape (just a sketch)**
 
