@@ -363,11 +363,15 @@ export class ReportStore {
         });
         summary.upgraded++;
       } catch (err) {
-        this.#db
-          .prepare(
-            "UPDATE reports SET status = 'failed', error = ?, upgraded_at = ? WHERE id = ?",
-          )
-          .run(message(err), at, reportId);
+        this.#transaction(() => {
+          this.#db
+            .prepare(
+              "UPDATE reports SET status = 'failed', error = ?, upgraded_at = ? WHERE id = ?",
+            )
+            .run(message(err), at, reportId);
+          // The patient's details may have come from this report.
+          this.#refreshPatient(patientId, at);
+        });
         summary.failed.push({
           reportId,
           fileName: String(row.file_name),

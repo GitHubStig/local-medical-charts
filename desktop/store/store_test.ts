@@ -235,6 +235,44 @@ Deno.test("a report that fails to upgrade is kept, marked failed, and retried la
   }
 });
 
+Deno.test("when the latest report fails to upgrade, the patient's details come from the others", () => {
+  const dir = Deno.makeTempDirSync();
+  const path = join(dir, "store.db");
+  try {
+    let store = ReportStore.open(path);
+    store.addReport(syntheticReport(), "jan.json", catalogV1, now);
+    const jun = store.addReport(
+      syntheticReport({
+        patientName: "ALEX B EXAMPLE",
+        collected: "20/06/25 09:00",
+      }),
+      "jun.json",
+      catalogV1,
+      now,
+    );
+    assertEquals(store.listPatients()[0].name, "ALEX B EXAMPLE");
+    store.close();
+
+    const raw = new DatabaseSync(path);
+    raw.prepare("UPDATE reports SET original_json = ? WHERE id = ?").run(
+      '{"schemaVersion": 99}',
+      jun.reportId,
+    );
+    raw.close();
+
+    store = ReportStore.open(path);
+    assertEquals(store.upgradeAll(catalogV1, now).failed.length, 1);
+    const [patient] = store.listPatients();
+    assertEquals(
+      [patient.name, patient.reportCount, patient.failedReportCount],
+      ["ALEX EXAMPLE", 1, 1],
+    );
+    store.close();
+  } finally {
+    Deno.removeSync(dir, { recursive: true });
+  }
+});
+
 Deno.test("data persists across reopening the database", () => {
   const dir = Deno.makeTempDirSync();
   const path = join(dir, "nested", "store.db");
