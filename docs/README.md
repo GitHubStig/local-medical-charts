@@ -56,17 +56,18 @@ each feature's spec, plan and tasks.
 
 Ideas and open questions not built yet. Ask the owner before picking one up.
 
-| Proposal                                                                     | Status           |
-| ---------------------------------------------------------------------------- | ---------------- |
-| [Packaging the desktop app](proposals/packaging.md)                          | Parked           |
-| [Per-model prompts](proposals/per-model-prompts.md)                          | Proposed         |
-| [Small models](proposals/small-models.md)                                    | Open             |
-| [More chart types](proposals/more-chart-types.md)                            | Proposed         |
-| [Lollipop and median line](proposals/lollipop-and-median-line.md)            | Parked           |
-| [Rebuild benchmark](proposals/rebuild-benchmark.md)                          | Parked           |
-| [Swappable page reading](proposals/swappable-page-reading.md)                | Parked           |
-| [Flint feature request: reference bands](proposals/flint-reference-bands.md) | Drafted, parked  |
-| [Chart interactivity from Flint](proposals/chart-interactivity.md)           | Waiting on Flint |
+| Proposal                                                                           | Status           |
+| ---------------------------------------------------------------------------------- | ---------------- |
+| [Packaging the desktop app](proposals/packaging.md)                                | Parked           |
+| [Per-model prompts](proposals/per-model-prompts.md)                                | Proposed         |
+| [Small models](proposals/small-models.md)                                          | Open             |
+| [More chart types](proposals/more-chart-types.md)                                  | Proposed         |
+| [Lollipop and median line](proposals/lollipop-and-median-line.md)                  | Parked           |
+| [Rebuild benchmark](proposals/rebuild-benchmark.md)                                | Parked           |
+| [Swappable page reading](proposals/swappable-page-reading.md)                      | Parked           |
+| [Flint feature request: reference bands](proposals/flint-reference-bands.md)       | Drafted, parked  |
+| [Chart interactivity from Flint](proposals/chart-interactivity.md)                 | Waiting on Flint |
+| [Flint bug report: straight Plotly line](proposals/flint-plotly-straight-curve.md) | Drafted          |
 
 ## Writing new docs
 
