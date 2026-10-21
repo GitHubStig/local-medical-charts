@@ -2,6 +2,7 @@ import { assert, assertEquals } from "@std/assert";
 import { createFakeBindings } from "../app/src/api/fake-bindings.ts";
 import { SAMPLE_REPORTS } from "../app/src/api/samples.ts";
 import { defineContractTests } from "./contract_suite.ts";
+import { DEFAULT_SETTINGS } from "./settings.ts";
 
 defineContractTests(
   "fake bindings",
@@ -37,14 +38,8 @@ Deno.test("fake bindings: settings persist in the storage they're given", async 
   };
   await createFakeBindings({ storage }).updateSettings({ theme: "dark" });
   assertEquals(await createFakeBindings({ storage }).getSettings(), {
+    ...DEFAULT_SETTINGS,
     theme: "dark",
-    selectedPatientId: null,
-    chartLibrary: "vega-lite",
-    chartCurve: "smooth",
-    chartTheme: "app",
-    ollamaHost: "http://localhost:11434",
-    ocrModel: "qwen3-vl:4b",
-    notifyWhenRead: true,
   });
 });
 

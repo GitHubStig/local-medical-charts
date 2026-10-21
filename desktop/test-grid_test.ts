@@ -7,20 +7,15 @@ import {
   filterTestGrid,
 } from "../app/src/lib/test-grid.ts";
 import type { Dashboard } from "./contract.ts";
+import { sampleDashboard } from "./samples-testing.ts";
 
 // Uses the fictional sample reports (samples/).
-
-async function alexDashboard(): Promise<Dashboard> {
-  const b = createFakeBindings({ reports: SAMPLE_REPORTS });
-  const alex = (await b.listPatients()).find((p) => p.name === "ALEX TAN")!;
-  return (await b.getDashboard(alex.id))!;
-}
 
 const card = (grid: ReturnType<typeof buildTestGrid>, key: string) =>
   grid.groups.flatMap((g) => g.cards).find((c) => c.key === key)!;
 
 Deno.test("tests are grouped in catalog order, with word-only results left out", async () => {
-  const grid = buildTestGrid(await alexDashboard());
+  const grid = buildTestGrid(await sampleDashboard("ALEX TAN"));
   assertEquals(
     grid.groups.map((g) => [g.name, g.cards.map((c) => c.key)]),
     [
@@ -42,7 +37,7 @@ Deno.test("tests are grouped in catalog order, with word-only results left out",
 });
 
 Deno.test("cards show catalog names and values in standard units, with the lab range converted", async () => {
-  const grid = buildTestGrid(await alexDashboard());
+  const grid = buildTestGrid(await sampleDashboard("ALEX TAN"));
   const hb = card(grid, "haemoglobin");
   // The latest Harbour report printed 122 g/L with a (120-155) range.
   assertEquals([hb.name, hb.unit, hb.latest.display, hb.range], [
@@ -62,7 +57,7 @@ Deno.test("cards show catalog names and values in standard units, with the lab r
 });
 
 Deno.test("flags come from the latest reading; comparators don't produce a change", async () => {
-  const grid = buildTestGrid(await alexDashboard());
+  const grid = buildTestGrid(await sampleDashboard("ALEX TAN"));
   const alt = card(grid, "alt");
   assertEquals([alt.latest.display, alt.latest.flag, alt.change, alt.range], [
     "48",
@@ -75,7 +70,7 @@ Deno.test("flags come from the latest reading; comparators don't produce a chang
 });
 
 Deno.test("search matches names, printed names and groups; flagged-only keeps flagged cards", async () => {
-  const { groups } = buildTestGrid(await alexDashboard());
+  const { groups } = buildTestGrid(await sampleDashboard("ALEX TAN"));
   const keys = (query: string, flaggedOnly = false) =>
     filterTestGrid(groups, { query, flaggedOnly }).flatMap((g) =>
       g.cards.map((c) => c.key)
@@ -141,7 +136,10 @@ Deno.test("with a single report, cards say a trend needs another report and show
   ]);
 
   // With several reports, the note is the change.
-  const alex = card(buildTestGrid(await alexDashboard()), "haemoglobin");
+  const alex = card(
+    buildTestGrid(await sampleDashboard("ALEX TAN")),
+    "haemoglobin",
+  );
   assertEquals(alex.note, "+0.8 since Oct 2025");
 });
 

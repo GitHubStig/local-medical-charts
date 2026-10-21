@@ -2,31 +2,11 @@ import { assert, assertEquals } from "@std/assert";
 import { createFakeBindings } from "../app/src/api/fake-bindings.ts";
 import { SAMPLE_REPORTS } from "../app/src/api/samples.ts";
 import { plotlyFigure } from "../app/src/lib/charts/plotly-spec.ts";
-import { buildSeries, dateMs, type Series } from "../app/src/lib/series.ts";
+import { buildSeries, dateMs } from "../app/src/lib/series.ts";
+import { alexSeries, LARGE, PALETTE, SIZE } from "./charts-testing.ts";
 
 // Uses the fictional sample reports (samples/). Plotly needs a browser to draw,
 // so these check the figure rather than the rendered chart.
-
-const PALETTE = {
-  series: "#2a78d6",
-  band: "#eceae4",
-  bandEdge: "#d3cfc6",
-  critical: "#d03b3b",
-  surface: "#ffffff",
-  muted: "#77706b",
-  grid: "#eeece7",
-  axis: "#d6d2ca",
-  font: "IBM Plex Sans, sans-serif",
-};
-/** The zoomed view's chart, with axes. */
-const LARGE = { width: 1088, height: 320 };
-const SIZE = { width: 294, height: 64 };
-
-async function alexSeries(key: string): Promise<Series> {
-  const b = createFakeBindings({ reports: SAMPLE_REPORTS });
-  const alex = (await b.listPatients()).find((p) => p.name === "ALEX TAN")!;
-  return buildSeries((await b.getDashboard(alex.id))!).get(key)!;
-}
 
 // deno-lint-ignore no-explicit-any
 type Loose = any;

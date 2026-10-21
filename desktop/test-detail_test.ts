@@ -1,16 +1,13 @@
 import { assertEquals } from "@std/assert";
-import { createFakeBindings } from "../app/src/api/fake-bindings.ts";
-import { SAMPLE_REPORTS } from "../app/src/api/samples.ts";
 import { buildSeries } from "../app/src/lib/series.ts";
 import { testDetail } from "../app/src/lib/test-detail.ts";
 import type { Dashboard, StoredResult } from "./contract.ts";
+import { sampleDashboard } from "./samples-testing.ts";
 
 // Uses the fictional sample reports (samples/).
 
 async function alexDetail(key: string) {
-  const b = createFakeBindings({ reports: SAMPLE_REPORTS });
-  const alex = (await b.listPatients()).find((p) => p.name === "ALEX TAN")!;
-  const dashboard = (await b.getDashboard(alex.id))!;
+  const dashboard = await sampleDashboard("ALEX TAN");
   return testDetail(buildSeries(dashboard).get(key)!, dashboard.reports);
 }
 

@@ -1,20 +1,13 @@
 import { assertEquals } from "@std/assert";
-import { createFakeBindings } from "../app/src/api/fake-bindings.ts";
-import { SAMPLE_REPORTS } from "../app/src/api/samples.ts";
 import {
   patientOverview,
   reportDetails,
   reportRow,
 } from "../app/src/lib/dashboard.ts";
 import type { DashboardReport } from "./contract.ts";
+import { sampleDashboard } from "./samples-testing.ts";
 
 // Uses the fictional sample reports (samples/).
-
-async function sampleDashboard(name: string) {
-  const b = createFakeBindings({ reports: SAMPLE_REPORTS });
-  const patient = (await b.listPatients()).find((p) => p.name === name)!;
-  return (await b.getDashboard(patient.id))!;
-}
 
 Deno.test("the patient overview summarises every report", async () => {
   const overview = patientOverview(

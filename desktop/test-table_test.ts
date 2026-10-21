@@ -1,17 +1,9 @@
 import { assert, assertEquals } from "@std/assert";
-import { createFakeBindings } from "../app/src/api/fake-bindings.ts";
-import { SAMPLE_REPORTS } from "../app/src/api/samples.ts";
 import { buildTestGrid, filterTestGrid } from "../app/src/lib/test-grid.ts";
 import { buildTestTable } from "../app/src/lib/test-table.ts";
-import type { Dashboard } from "./contract.ts";
+import { sampleDashboard } from "./samples-testing.ts";
 
 // Uses the fictional sample reports (samples/).
-
-async function sampleDashboard(name: string): Promise<Dashboard> {
-  const b = createFakeBindings({ reports: SAMPLE_REPORTS });
-  const patient = (await b.listPatients()).find((p) => p.name === name)!;
-  return (await b.getDashboard(patient.id))!;
-}
 
 Deno.test("the table has a column per report, oldest first, and the grid's groups and tests", async () => {
   const dashboard = await sampleDashboard("ALEX TAN");

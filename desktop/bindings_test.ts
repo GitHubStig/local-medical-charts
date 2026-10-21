@@ -4,15 +4,16 @@ import {
   createBindings,
   unavailableBindings,
 } from "./bindings.ts";
-import type { DesktopBindings, ImportJob, StartupStatus } from "./contract.ts";
+import type { StartupStatus } from "./contract.ts";
 import type { ReadingNotice } from "./imports/notice.ts";
 import type { PageReader } from "./imports/reader.ts";
 import type { OllamaService } from "./ocr/ollama.ts";
 import { packFiles } from "./imports/packed-files.ts";
 import { simplePdf } from "./ocr/simple-pdf.ts";
-import { defineContractTests } from "./contract_suite.ts";
+import { defineContractTests, settledImports } from "./contract_suite.ts";
 import { ReportStore } from "./store/store.ts";
 import { catalogV1, syntheticExtraction } from "./store/testing.ts";
+import { DEFAULT_SETTINGS } from "./settings.ts";
 
 // All reports here are synthetic (see store/testing.ts).
 
@@ -107,16 +108,7 @@ Deno.test("with the database unavailable, status explains, settings default, the
   });
   const status = await b.getStartupStatus();
   assert(!status.ok && status.error.includes("newer than this app"));
-  assertEquals(await b.getSettings(), {
-    theme: "system",
-    selectedPatientId: null,
-    chartLibrary: "vega-lite",
-    chartCurve: "smooth",
-    chartTheme: "app",
-    ollamaHost: "http://localhost:11434",
-    ocrModel: "qwen3-vl:4b",
-    notifyWhenRead: true,
-  });
+  assertEquals(await b.getSettings(), DEFAULT_SETTINGS);
   await assertRejects(
     () => b.listPatients(),
     BindingError,
@@ -151,18 +143,6 @@ Deno.test("real bindings: OCR checks use the saved Ollama address and model", as
     close();
   }
 });
-
-/** Imports once none is waiting or reading. */
-async function settledImports(b: DesktopBindings): Promise<ImportJob[]> {
-  for (let i = 0; i < 500; i++) {
-    const jobs = await b.listImports();
-    if (!jobs.some((j) => j.status === "waiting" || j.status === "reading")) {
-      return jobs;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 2));
-  }
-  throw new Error("imports didn't settle");
-}
 
 const examplePdf = () =>
   simplePdf([

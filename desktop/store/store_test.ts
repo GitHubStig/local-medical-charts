@@ -4,6 +4,7 @@ import { DatabaseSync } from "node:sqlite";
 import { SCHEMA_VERSION } from "../../src/schema.ts";
 import { patientIdentity, ReportStore, StoreError } from "./store.ts";
 import { catalogV1, catalogV2, syntheticReport } from "./testing.ts";
+import { DEFAULT_SETTINGS } from "../settings.ts";
 
 // All reports here are synthetic (see testing.ts).
 
@@ -350,41 +351,17 @@ Deno.test("settings default, persist across reopening, and survive clearAll", ()
   const path = join(dir, "store.db");
   try {
     let store = ReportStore.open(path);
-    assertEquals(store.getSettings(), {
-      theme: "system",
-      selectedPatientId: null,
-      chartLibrary: "vega-lite",
-      chartCurve: "smooth",
-      chartTheme: "app",
-      ollamaHost: "http://localhost:11434",
-      ocrModel: "qwen3-vl:4b",
-      notifyWhenRead: true,
-    });
+    assertEquals(store.getSettings(), DEFAULT_SETTINGS);
     assertEquals(store.updateSettings({ theme: "dark" }, now), {
+      ...DEFAULT_SETTINGS,
       theme: "dark",
-      selectedPatientId: null,
-      chartLibrary: "vega-lite",
-      chartCurve: "smooth",
-      chartTheme: "app",
-      ollamaHost: "http://localhost:11434",
-      ocrModel: "qwen3-vl:4b",
-      notifyWhenRead: true,
     });
     store.addReport(syntheticReport(), "a.json", catalogV1, now);
     store.clearAll();
     store.close();
 
     store = ReportStore.open(path);
-    assertEquals(store.getSettings(), {
-      theme: "dark",
-      selectedPatientId: null,
-      chartLibrary: "vega-lite",
-      chartCurve: "smooth",
-      chartTheme: "app",
-      ollamaHost: "http://localhost:11434",
-      ocrModel: "qwen3-vl:4b",
-      notifyWhenRead: true,
-    });
+    assertEquals(store.getSettings(), { ...DEFAULT_SETTINGS, theme: "dark" });
     assertEquals(store.listPatients(), []);
     store.close();
   } finally {

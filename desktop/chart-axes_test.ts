@@ -1,16 +1,9 @@
 import { assertEquals } from "@std/assert";
-import { createFakeBindings } from "../app/src/api/fake-bindings.ts";
-import { SAMPLE_REPORTS } from "../app/src/api/samples.ts";
 import { chartAxes } from "../app/src/lib/charts/axes.ts";
-import { buildSeries, dateMs, type Series } from "../app/src/lib/series.ts";
+import { dateMs } from "../app/src/lib/series.ts";
+import { sampleSeries } from "./samples-testing.ts";
 
 // Uses the fictional sample reports (samples/).
-
-async function sampleSeries(patient: string, key: string): Promise<Series> {
-  const b = createFakeBindings({ reports: SAMPLE_REPORTS });
-  const found = (await b.listPatients()).find((p) => p.name === patient)!;
-  return buildSeries((await b.getDashboard(found.id))!).get(key)!;
-}
 
 const WIDE = 968;
 

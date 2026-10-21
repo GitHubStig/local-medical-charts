@@ -361,16 +361,7 @@ export function defineContractTests(
     await b.importReports([{ name: "a.json", text: syntheticReport() }]);
     await b.clearAll();
     assertEquals(await b.listPatients(), []);
-    assertEquals(await b.getSettings(), {
-      theme: "dark",
-      selectedPatientId: null,
-      chartLibrary: "vega-lite",
-      chartCurve: "smooth",
-      chartTheme: "app",
-      ollamaHost: "http://localhost:11434",
-      ocrModel: "qwen3-vl:4b",
-      notifyWhenRead: true,
-    });
+    assertEquals(await b.getSettings(), { ...DEFAULT_SETTINGS, theme: "dark" });
   });
 
   test("settings round-trip and invalid values reject", async (b) => {

@@ -1,19 +1,12 @@
 import { assertEquals } from "@std/assert";
-import { createFakeBindings } from "../app/src/api/fake-bindings.ts";
-import { SAMPLE_REPORTS } from "../app/src/api/samples.ts";
 import {
   buildTextResults,
   filterTextRows,
 } from "../app/src/lib/text-results.ts";
 import type { Dashboard, DashboardReport, StoredResult } from "./contract.ts";
+import { sampleDashboard } from "./samples-testing.ts";
 
 // Uses the fictional sample reports (samples/).
-
-async function sampleDashboard(name: string): Promise<Dashboard> {
-  const b = createFakeBindings({ reports: SAMPLE_REPORTS });
-  const patient = (await b.listPatients()).find((p) => p.name === name)!;
-  return (await b.getDashboard(patient.id))!;
-}
 
 Deno.test("text results have a column per report, oldest first, and a row per word-only test", async () => {
   const { columns, rows } = buildTextResults(await sampleDashboard("ALEX TAN"));
