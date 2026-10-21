@@ -25,7 +25,7 @@ each feature's spec, plan and tasks.
 | 0006 | [Vue 3 single-file components, built with Vite under Deno](adr/0006-vue-with-vite-under-deno.md)   |
 | 0007 | [SQLite through node:sqlite](adr/0007-sqlite-storage.md)                                           |
 | 0008 | [Desktop bindings, one contract, a fake for the browser](adr/0008-bindings-contract-and-fake.md)   |
-| 0009 | [Supply-chain safety for dependencies](adr/0009-supply-chain-safety.md)                            |
+| 0009 | [Supply-chain safety for dependencies](adr/0009-supply-chain-safety.md) (superseded by 0018)       |
 | 0010 | [Flint as the chart spec, four renderers](adr/0010-flint-chart-spec.md)                            |
 | 0011 | [A small Ollama client instead of provider SDKs](adr/0011-own-ollama-client.md)                    |
 | 0012 | [Review before saving; imports held in memory](adr/0012-review-before-saving-imports-in-memory.md) |
@@ -34,6 +34,7 @@ each feature's spec, plan and tasks.
 | 0015 | [Build in small, reviewed steps](adr/0015-small-reviewed-steps.md)                                 |
 | 0016 | [Flint's chart themes, with the app's rules kept](adr/0016-flint-chart-themes.md)                  |
 | 0017 | [New chart features come from Flint, not overlays](adr/0017-chart-features-from-flint.md)          |
+| 0018 | [Supply-chain safety without a minimum age](adr/0018-supply-chain-safety-without-minimum-age.md)   |
 
 ## Features
 

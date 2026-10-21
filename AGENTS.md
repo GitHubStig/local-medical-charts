@@ -53,13 +53,13 @@ Tests for `app/src/lib/*` live in `desktop/*_test.ts`, on purpose
   name and a sample version whose results matched real ones, but no personal
   names; the owner chose to keep the history as it is.
 
-### Dependencies ([ADR 0009](docs/adr/0009-supply-chain-safety.md))
+### Dependencies ([ADR 0018](docs/adr/0018-supply-chain-safety-without-minimum-age.md))
 
 - Exact versions only (no `^` or `~`) in `deno.json` and `app/package.json`.
 - `deno.lock` is frozen; a change needs `--frozen=false`, and the lockfile diff
   is reviewed and committed with the manifest.
-- Versions younger than 7 days are refused (`minimumDependencyAge`). Don't
-  bypass it without a reason written in the commit message.
+- There's no minimum package age; read the changelog of a fresh release before
+  taking it.
 - Never pass `--allow-scripts`. Prefer platform APIs and small modules over new
   packages; provider SDKs were rejected for that reason.
 

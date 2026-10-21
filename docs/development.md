@@ -124,16 +124,15 @@ Migrations start from version 2, after release.
 Malicious package versions (for example the Shai-Hulud npm worm) usually spread
 through a freshly published patch release that installs automatically and runs
 an install script. This repo is set up so that can't happen silently
-([ADR 0009](adr/0009-supply-chain-safety.md)):
+([ADR 0018](adr/0018-supply-chain-safety-without-minimum-age.md)):
 
-| Protection          | Where                                       | What it does                                                                                                      |
-| ------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Exact versions      | `deno.json` `imports`, `app/package.json`   | No `^` or `~` ranges, so a direct dependency never moves on its own                                               |
-| Lockfile            | `deno.lock`                                 | Pins every package, including indirect ones, with an integrity hash                                               |
-| Frozen lockfile     | `deno.json` `"lock": { "frozen": true }`    | An install that would change `deno.lock` fails instead of updating it                                             |
-| Minimum package age | `deno.json` `"minimumDependencyAge": "P7D"` | Refuses any version published less than 7 days ago; bad releases are usually caught and pulled within that window |
-| No install scripts  | Deno default                                | Deno never runs npm `postinstall` scripts unless `--allow-scripts` is passed. Don't pass it                       |
-| npm fallback        | `app/.npmrc`                                | If someone runs npm anyway: no install scripts, no saved ranges                                                   |
+| Protection         | Where                                     | What it does                                                                                |
+| ------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Exact versions     | `deno.json` `imports`, `app/package.json` | No `^` or `~` ranges, so a direct dependency never moves on its own                         |
+| Lockfile           | `deno.lock`                               | Pins every package, including indirect ones, with an integrity hash                         |
+| Frozen lockfile    | `deno.json` `"lock": { "frozen": true }`  | An install that would change `deno.lock` fails instead of updating it                       |
+| No install scripts | Deno default                              | Deno never runs npm `postinstall` scripts unless `--allow-scripts` is passed. Don't pass it |
+| npm fallback       | `app/.npmrc`                              | If someone runs npm anyway: no install scripts, no saved ranges                             |
 
 **Always install with `deno install`.** npm ignores `deno.lock`, so
 `npm install` would resolve every indirect dependency afresh.
@@ -159,33 +158,19 @@ these steps yourself:
    If you forget `--frozen=false`, the command fails _after_ already writing the
    new version into `deno.json` or `app/package.json`, leaving them out of step
    with `deno.lock`. Rerun it with `--frozen=false`, or `git checkout` the file.
-3. **If a version is refused as too new**, it was published less than 7 days
-   ago. Wait and try again. That refusal is the protection working.
-4. **Review the lockfile diff** before committing. It shows every package that
+3. **Review the lockfile diff** before committing. It shows every package that
    changed, including indirect ones you never chose.
    ```sh
    git diff deno.lock
    ```
    Be suspicious of unexpected new packages, and read the changelog of anything
-   with a major version bump.
-5. **Check nothing broke.**
+   with a major version bump or published in the last few days.
+4. **Check nothing broke.**
    ```sh
    deno task test
    deno task build
    ```
-6. **Commit** `deno.json`, `app/package.json` and `deno.lock` together.
-
-### Taking a version younger than 7 days
-
-Only for an urgent fix, such as a security patch you actually need. Override the
-age rule for that one command:
-
-```sh
-deno update --latest --frozen=false --minimum-dependency-age=0 npm:some-package
-```
-
-Later installs use `deno.lock` as normal; the 7-day rule applies again to the
-next update. Say in the commit message why you took a version that young.
+5. **Commit** `deno.json`, `app/package.json` and `deno.lock` together.
 
 ## Chart themes
 

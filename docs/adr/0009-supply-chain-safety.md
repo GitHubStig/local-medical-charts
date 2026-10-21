@@ -1,6 +1,7 @@
 # 0009. Supply-chain safety for dependencies
 
-- **Status:** Accepted
+- **Status:** Superseded by
+  [0018](0018-supply-chain-safety-without-minimum-age.md)
 - **Date:** 2026-09-13
 - **Decided by:** Owner
 

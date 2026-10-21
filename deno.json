@@ -7,7 +7,6 @@
   "lock": {
     "frozen": true
   },
-  "minimumDependencyAge": "P7D",
   "desktop": {
     "app": {
       "name": "Local Medical Charts",
