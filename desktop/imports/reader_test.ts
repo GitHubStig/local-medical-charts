@@ -37,11 +37,8 @@ async function withStandIn(
   }
 }
 
-/** Answers well after the reader has given up waiting. */
-const hang = () =>
-  new Promise<Response>((resolve) =>
-    setTimeout(() => resolve(new Response("too late")), 200)
-  );
+/** Sends no reply and leaves the stream open until the reader cancels it. */
+const hang = () => new Response(new ReadableStream<Uint8Array>());
 
 const reply = (content: string) => Response.json({ message: { content } });
 
@@ -117,14 +114,10 @@ Deno.test("a model that isn't installed says how to install it", async () => {
 });
 
 Deno.test("an address with nothing listening explains itself", async () => {
-  const server = Deno.serve(
-    { hostname: "127.0.0.1", port: 0, onListen() {} },
-    () => new Response(),
-  );
-  const host = `http://127.0.0.1:${server.addr.port}`;
-  await server.shutdown();
-
-  const reader = await ollamaPageReader(host, "vision:27b");
+  const host = "http://ollama.test";
+  const reader = await ollamaPageReader(host, "vision:27b", {
+    fetch: () => Promise.reject(new TypeError("connection refused")),
+  });
   await assertRejects(
     () => reader.read(image, 1, 1, notCancelled()),
     ImportError,
@@ -193,7 +186,7 @@ Deno.test("a reply that goes silent partway is named, with what to do", async ()
       ),
     async (host, bodies) => {
       const quick = await ollamaPageReader(host, "vision:27b", {
-        idleSeconds: 0.2,
+        idleSeconds: 0.05,
       });
       await quietly(async () => {
         await assertRejects(

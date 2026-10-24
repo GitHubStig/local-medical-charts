@@ -18,6 +18,7 @@ import { z } from "@zod/zod";
 export type OllamaConfig = {
   host: string;
   model: string;
+  fetch?: typeof fetch;
   /** Context window, in tokens. */
   context: number;
   /** Extra attempts after a reply that fails validation. */
@@ -93,6 +94,7 @@ type Reply = {
 /** One streamed /api/chat request, watched for a reply that repeats itself or goes silent. */
 async function streamReply(
   host: string,
+  fetchFn: typeof fetch,
   body: Record<string, unknown>,
   signal: AbortSignal | undefined,
   idleMs: number,
@@ -102,7 +104,7 @@ async function streamReply(
   const stop = new AbortController();
   let response: Response;
   try {
-    response = await fetch(`${host}/api/chat`, {
+    response = await fetchFn(`${host}/api/chat`, {
       method: "POST",
       signal: signal ? AbortSignal.any([signal, stop.signal]) : stop.signal,
       headers: { "content-type": "application/json" },
@@ -189,7 +191,7 @@ export async function assertModelAvailable(
 ): Promise<void> {
   let response: Response;
   try {
-    response = await fetch(`${config.host}/api/tags`);
+    response = await (config.fetch ?? fetch)(`${config.host}/api/tags`);
   } catch (cause) {
     throw new Error(
       `cannot reach Ollama at ${config.host} — is it running? (${
@@ -233,6 +235,7 @@ export async function chatJson<T>(
   for (let attempt = 1; attempt <= config.retries + 1; attempt++) {
     const reply = await streamReply(
       config.host,
+      config.fetch ?? fetch,
       {
         model: config.model,
         stream: true,

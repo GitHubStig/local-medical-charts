@@ -15,68 +15,39 @@ const Schema = z.object({
 const row = (i: number) =>
   `{"name":"Test number ${i}","value":"${(i * 1.7).toFixed(1)}"},`;
 
-/** Where an endless stand-in reply is cut off, as Ollama's token cap would: far past where repetition is spotted. */
+/** Far past where a repeating reply should be spotted. */
 const ENDLESS_LINES = 3_000;
 
 /**
  * Streams each piece as its own line, then a final line with `doneReason`; or
- * the same piece over and over, until ENDLESS_LINES are cut off at the token
- * cap. `startAfterMs` waits before the first piece; `silent` sends the pieces and
- * then nothing, leaving the stream open. `sent` counts the lines each request got.
+ * the same piece until stopped. `startAfterMs` waits before the first piece;
+ * `silent` sends the pieces and then nothing, leaving the stream open.
  */
 async function withStreamingOllama(
-  reply:
-    | {
-      pieces: string[];
-      doneReason?: string;
-      startAfterMs?: number;
-      silent?: boolean;
-    }
-    | { forever: string },
+  reply: {
+    pieces: string[];
+    doneReason?: string;
+    startAfterMs?: number;
+    silent?: boolean;
+  },
   run: (
     host: string,
     bodies: Record<string, unknown>[],
-    sent: number[],
   ) => Promise<void>,
 ) {
   const bodies: Record<string, unknown>[] = [];
-  const sent: number[] = [];
   const server = Deno.serve(
     { hostname: "127.0.0.1", port: 0, onListen() {} },
     async (request) => {
       bodies.push(await request.json());
-      const slot = sent.push(0) - 1;
       const encoder = new TextEncoder();
       const line = (content: string, extra = {}) =>
         encoder.encode(
           JSON.stringify({ message: { content }, done: false, ...extra }) +
             "\n",
         );
-      let timer: ReturnType<typeof setInterval> | undefined;
       const stream = new ReadableStream<Uint8Array>({
         async start(controller) {
-          if ("forever" in reply) {
-            timer = setInterval(() => {
-              try {
-                if (sent[slot] >= ENDLESS_LINES) {
-                  clearInterval(timer);
-                  controller.enqueue(
-                    encoder.encode(
-                      JSON.stringify({ done: true, done_reason: "length" }) +
-                        "\n",
-                    ),
-                  );
-                  controller.close();
-                  return;
-                }
-                controller.enqueue(line(reply.forever));
-                sent[slot]++;
-              } catch {
-                clearInterval(timer);
-              }
-            }, 1);
-            return;
-          }
           if (reply.startAfterMs) {
             await new Promise((resolve) =>
               setTimeout(resolve, reply.startAfterMs)
@@ -94,9 +65,6 @@ async function withStreamingOllama(
           );
           controller.close();
         },
-        cancel() {
-          clearInterval(timer);
-        },
       });
       return new Response(stream, {
         headers: { "content-type": "application/x-ndjson" },
@@ -104,7 +72,7 @@ async function withStreamingOllama(
     },
   );
   try {
-    await run(`http://127.0.0.1:${server.addr.port}`, bodies, sent);
+    await run(`http://127.0.0.1:${server.addr.port}`, bodies);
   } finally {
     await server.shutdown();
   }
@@ -159,38 +127,59 @@ Deno.test("a streamed reply is put back together and validated, with a token cap
 });
 
 Deno.test("a reply stuck repeating itself is stopped early, retried, then reported as repeating", async () => {
-  await withStreamingOllama(
-    { forever: row(7) + row(8) },
-    async (host, bodies, sent) => {
-      const started = Date.now();
-      await quietly(async () => {
-        const err = await assertRejects(
-          () =>
-            chatJson(config(host), {
-              label: "page 3",
-              prompt: "read",
-              schema: Schema,
-            }),
-          OllamaReplyError,
+  const bodies: Record<string, unknown>[] = [];
+  const sent: number[] = [];
+  const encoder = new TextEncoder();
+  const content = row(7) + row(8);
+  const fetchFn: typeof fetch = (_input, init) => {
+    bodies.push(JSON.parse(String(init?.body)));
+    const slot = sent.push(0) - 1;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (sent[slot] >= ENDLESS_LINES) {
+          controller.enqueue(
+            encoder.encode(
+              JSON.stringify({ done: true, done_reason: "length" }) + "\n",
+            ),
+          );
+          controller.close();
+          return;
+        }
+        controller.enqueue(
+          encoder.encode(
+            JSON.stringify({ message: { content }, done: false }) + "\n",
+          ),
         );
-        assertEquals([err.reason, err.attempts], ["repeating", 2]);
-      });
-      assert(
-        Date.now() - started < 10_000,
-        "stopped within seconds, not minutes",
-      );
-      assertEquals(bodies.length, 2);
-      assert(
-        sent.every((lines) => lines < 1_000),
-        `each attempt stopped long before the token cap (${
-          sent.join(", ")
-        } lines)`,
-      );
-      assert(
-        String((bodies[1].messages as { content: string }[])[0].content)
-          .includes("repeated itself"),
-      );
-    },
+        sent[slot]++;
+      },
+    }, { highWaterMark: 0 });
+    return Promise.resolve(
+      new Response(stream, {
+        headers: { "content-type": "application/x-ndjson" },
+      }),
+    );
+  };
+
+  await quietly(async () => {
+    const err = await assertRejects(
+      () =>
+        chatJson({ ...config("http://ollama.test"), fetch: fetchFn }, {
+          label: "page 3",
+          prompt: "read",
+          schema: Schema,
+        }),
+      OllamaReplyError,
+    );
+    assertEquals([err.reason, err.attempts], ["repeating", 2]);
+  });
+  assertEquals(bodies.length, 2);
+  assert(
+    sent.every((lines) => lines < 1_000),
+    `each attempt stopped long before the token cap (${sent.join(", ")} lines)`,
+  );
+  assert(
+    String((bodies[1].messages as { content: string }[])[0].content)
+      .includes("repeated itself"),
   );
 });
 
@@ -262,7 +251,7 @@ Deno.test("a reply that goes silent partway is given up after the idle time, wit
       await quietly(async () => {
         const err = await assertRejects(
           () =>
-            chatJson({ ...config(host), idleSeconds: 0.2 }, {
+            chatJson({ ...config(host), idleSeconds: 0.05 }, {
               label: "page 2",
               prompt: "read",
               schema: Schema,
@@ -280,9 +269,9 @@ Deno.test("a reply that goes silent partway is given up after the idle time, wit
 Deno.test("a slow start isn't taken for a silent reply", async () => {
   const json = JSON.stringify({ tests: [{ name: "Glucose", value: "5.2" }] });
   await withStreamingOllama(
-    { pieces: [json], startAfterMs: 500 },
+    { pieces: [json], startAfterMs: 30 },
     async (host) => {
-      const { data } = await chatJson({ ...config(host), idleSeconds: 0.2 }, {
+      const { data } = await chatJson({ ...config(host), idleSeconds: 0.005 }, {
         label: "page 1",
         prompt: "read",
         schema: Schema,

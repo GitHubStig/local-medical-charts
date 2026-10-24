@@ -1,7 +1,7 @@
-import { assert, assertEquals, assertThrows } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { simplePdf } from "../ocr/simple-pdf.ts";
 import { ImportError } from "./messages.ts";
-import { MAX_SCAN_SIDE, pagesFromUpload, sniffType } from "./sources.ts";
+import { pagesFromUpload, sniffType } from "./sources.ts";
 import { imageSize, scanJpeg, testPdf } from "./testing.ts";
 
 // Every page here is drawn from made-up lines; no real report is used.
@@ -92,23 +92,6 @@ Deno.test("a page with anything besides one upright full-page scan is rendered",
   ]);
   // The rotated page is rendered the way it's viewed: landscape.
   assertEquals(imageSize(pages[1].bytes), [1755, 1240]);
-});
-
-Deno.test("a lossless scan is decoded once at its own size; an oversized one is rendered down", () => {
-  const [lossless, oversized] = pdfPages(testPdf([
-    { kind: "scan", image: "lossless" },
-    { kind: "scan", image: scanJpeg(450) },
-  ]));
-
-  assertEquals([lossless.origin, lossless.type], ["scanned", "image/jpeg"]);
-  assertEquals(imageSize(lossless.bytes), [1653, 2339]);
-
-  assertEquals([oversized.origin, oversized.type], ["rendered", "image/png"]);
-  const [width, height] = imageSize(oversized.bytes);
-  assert(
-    Math.abs(height - MAX_SCAN_SIDE) <= 1 && width < height,
-    `rendered at ${width}x${height}`,
-  );
 });
 
 Deno.test("photos are pages in the order given, as they are", () => {

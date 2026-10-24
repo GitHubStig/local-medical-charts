@@ -38,7 +38,11 @@ const RETRIES = 2;
 export async function ollamaPageReader(
   host: string,
   model: string,
-  options: { pageMinutes?: number; idleSeconds?: number } = {},
+  options: {
+    pageMinutes?: number;
+    idleSeconds?: number;
+    fetch?: typeof fetch;
+  } = {},
 ): Promise<PageReader> {
   const hash = await promptHash();
   const minutes = options.pageMinutes ?? PAGE_MINUTES;
@@ -51,7 +55,14 @@ export async function ollamaPageReader(
       const limit = AbortSignal.timeout(minutes * 60_000);
       try {
         const { data } = await chatJson(
-          { host, model, context: CONTEXT, retries: RETRIES, idleSeconds },
+          {
+            host,
+            model,
+            context: CONTEXT,
+            retries: RETRIES,
+            idleSeconds,
+            fetch: options.fetch,
+          },
           {
             label: `page ${page} of ${pageCount}`,
             prompt: pagePrompt(page, pageCount),

@@ -17,11 +17,17 @@ class StandInReader {
   hold = false;
   failure: Error | null = null;
   #held: (() => void)[] = [];
+  #callWaiters: { count: number; resolve: () => void }[] = [];
 
   constructor(public model = "reader-a:7b", public promptHash = "prompt-1") {}
 
   release() {
     for (const resume of this.#held.splice(0)) resume();
+  }
+
+  waitForCalls(count: number): Promise<void> {
+    if (this.calls.length >= count) return Promise.resolve();
+    return new Promise((resolve) => this.#callWaiters.push({ count, resolve }));
   }
 
   open = (): Promise<PageReader> =>
@@ -30,6 +36,13 @@ class StandInReader {
       promptHash: this.promptHash,
       read: async (image, page, pageCount, signal) => {
         this.calls.push(`${this.model} ${image.name} ${page}/${pageCount}`);
+        for (let i = 0; i < this.#callWaiters.length;) {
+          if (this.calls.length >= this.#callWaiters[i].count) {
+            this.#callWaiters.splice(i, 1)[0].resolve();
+          } else {
+            i++;
+          }
+        }
         if (this.hold) {
           await new Promise<void>((resolve, reject) => {
             this.#held.push(resolve);
@@ -55,14 +68,6 @@ function queueFor(
     catalog: catalogV1,
     now: () => new Date("2026-05-11T09:00:00.000Z"),
   });
-}
-
-async function until(check: () => boolean) {
-  for (let i = 0; i < 500; i++) {
-    if (check()) return;
-    await new Promise((resolve) => setTimeout(resolve, 2));
-  }
-  throw new Error("timed out waiting");
 }
 
 const statuses = (queue: ImportQueue) =>
@@ -112,9 +117,9 @@ Deno.test("cancelling stops the page being read; a retry carries on from there",
   const queue = queueFor(reader);
   queue.add(photos("p1.png", "p2.png", "p3.png"));
 
-  await until(() => reader.calls.length === 1);
+  await reader.waitForCalls(1);
   reader.release();
-  await until(() => reader.calls.length === 2);
+  await reader.waitForCalls(2);
   assertEquals(queue.cancel(1)?.status, "cancelled");
   await queue.idle();
   assertEquals(queue.list()[0].pagesRead, 1);
@@ -138,9 +143,9 @@ Deno.test("a retry with another model reads every page again", async () => {
   const queue = queueFor(reader);
   queue.add(photos("p1.png", "p2.png"));
 
-  await until(() => reader.calls.length === 1);
+  await reader.waitForCalls(1);
   reader.release();
-  await until(() => reader.calls.length === 2);
+  await reader.waitForCalls(2);
   queue.cancel(1);
   await queue.idle();
 
@@ -222,9 +227,9 @@ Deno.test("discarding forgets an import, even mid-read, and the next one starts"
   queue.add(photos("a.png"));
   queue.add(photos("b.png"));
 
-  await until(() => reader.calls.length === 1);
+  await reader.waitForCalls(1);
   assertEquals(queue.discard(1), true);
-  await until(() => reader.calls.length === 2);
+  await reader.waitForCalls(2);
   assertEquals(statuses(queue), [[2, "reading"]]);
   reader.release();
   await queue.idle();
@@ -264,7 +269,7 @@ Deno.test("clearing forgets every import and stops the one reading", async () =>
   const queue = queueFor(reader);
   queue.add(photos("a.png"));
   queue.add(photos("b.png"));
-  await until(() => reader.calls.length === 1);
+  await reader.waitForCalls(1);
 
   queue.clear();
   assertEquals(queue.list(), []);
@@ -291,7 +296,7 @@ Deno.test("the queue announces imports that become ready or fail, not cancelled 
   reader.failure = null;
   reader.hold = true;
   queue.add(photos("c.png"));
-  await until(() => reader.calls.length === 3);
+  await reader.waitForCalls(3);
   queue.cancel(3);
   await queue.idle();
 
