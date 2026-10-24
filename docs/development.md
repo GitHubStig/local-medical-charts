@@ -64,7 +64,9 @@ Code Vue extension.
 `deno task test` runs the tests in `src/` and `desktop/`. Tests for the app's
 plain TypeScript modules (`app/src/lib/*`) live in `desktop/*_test.ts` so they
 run with the rest. Deno's convention is `name_test.ts` beside the code; this
-layout was kept on purpose.
+layout was kept on purpose. The task runs test modules in parallel; tests within
+one module still run sequentially. Keep independent suites in separate modules
+so Deno can run them concurrently.
 
 ## Styling
 

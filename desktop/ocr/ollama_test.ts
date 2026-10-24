@@ -139,17 +139,6 @@ async function withFakeOllama(
   }
 }
 
-/** An address nothing listens on: a server that has already stopped. */
-async function closedHost(): Promise<string> {
-  const server = Deno.serve(
-    { hostname: "127.0.0.1", port: 0, onListen() {} },
-    () => new Response(),
-  );
-  const host = `http://127.0.0.1:${server.addr.port}`;
-  await server.shutdown();
-  return host;
-}
-
 const tinyImage = () => new Uint8Array([137, 80, 78, 71]);
 
 Deno.test("models are listed with whether they read images; image generators are left out", async () => {
@@ -180,8 +169,11 @@ Deno.test("models are listed with whether they read images; image generators are
 });
 
 Deno.test("an address with nothing listening explains itself", async () => {
-  const host = await closedHost();
-  const service = createOllamaService({ testImage: tinyImage });
+  const host = "http://ollama.test";
+  const service = createOllamaService({
+    testImage: tinyImage,
+    fetch: () => Promise.reject(new TypeError("connection refused")),
+  });
   const list = await service.listModels(host);
   assertEquals(list.ok, false);
   assert(
