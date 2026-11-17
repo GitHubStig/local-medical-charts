@@ -27,7 +27,7 @@
     "npm:@vueuse/core@14.4.0": "14.4.0_vue@3.5.42",
     "npm:chart.js@4.5.1": "4.5.1",
     "npm:echarts@6.1.0": "6.1.0",
-    "npm:flint-chart@1.0.0": "1.0.0_chart.js@4.5.1_echarts@6.1.0_vega@6.4.0_vega-lite@6.4.3",
+    "npm:flint-chart@1.1.0": "1.1.0",
     "npm:mupdf@1.28.1": "1.28.1",
     "npm:plotly.js-basic-dist-min@3.7.0": "3.7.0",
     "npm:tailwindcss@4.3.3": "4.3.3",
@@ -642,22 +642,19 @@
         "picomatch"
       ]
     },
-    "flint-chart@1.0.0_chart.js@4.5.1_echarts@6.1.0_vega@6.4.0_vega-lite@6.4.3": {
-      "integrity": "sha512-pRcgq0IzSHDG+HpWX9dNRJqzqmLiviQtxhhqd6wxkc4SvhSKSsw6hhgCrBoKl+jRulMrBrIVlzVXaR2DjH2z7Q==",
+    "flint-chart@1.1.0": {
+      "integrity": "sha512-KQgstYiK7NHMBKcpmUcbDtZayv9NPfifNzeZPPrL36jJnduNyFPeeKf+rgfkQRSwnm2RQqfXhIxmqZDWfoZQ3Q==",
       "dependencies": [
         "@floating-ui/dom",
         "chart.js",
+        "d3-geo",
         "d3-time",
         "d3-time-format",
         "echarts",
+        "plotly.js-dist-min",
         "vega",
-        "vega-lite"
-      ],
-      "optionalPeers": [
-        "chart.js",
-        "echarts",
-        "vega",
-        "vega-lite"
+        "vega-lite",
+        "vega-tooltip"
       ]
     },
     "fsevents@2.3.3": {
@@ -859,6 +856,9 @@
     },
     "plotly.js-basic-dist-min@3.7.0": {
       "integrity": "sha512-84KPQhLTrO5IHu6DCte2KwA4bzSoVIdIs3uDPWid3sgeTX8L5RjpDARjCG3spgOwQ8MYE8PL+MeQ0DQRWA1Emw=="
+    },
+    "plotly.js-dist-min@2.35.3": {
+      "integrity": "sha512-sz2HLP8gkysLx/BanM2PtJTtZ1PLPwdHwMWNri2YxLBy3IOeuDsVQtlmWa4hoK3j/fi4naaD3uZJqH5ozM3zGg=="
     },
     "postcss@8.5.28": {
       "integrity": "sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==",
@@ -1156,6 +1156,12 @@
         "vega-util"
       ]
     },
+    "vega-tooltip@1.1.0": {
+      "integrity": "sha512-PP4CxC8gX//SBUtlcJkwffmvdZBvzAsqS0EANBKvImJ9PxV/KtJkcs7RCqp+A7nh2cjWdVzyOBWAvqKhXJStTQ==",
+      "dependencies": [
+        "vega-util"
+      ]
+    },
     "vega-transforms@5.2.2": {
       "integrity": "sha512-0vlu/36sBbHKw4dN/7BKCUPOzXc2oYObRxGMcROFLk+BwfjE/cqtfuXbLHzOinXtfLOhblmT0Agx+BSYXN8k/Q==",
       "dependencies": [
@@ -1330,7 +1336,7 @@
             "npm:@vueuse/core@14.4.0",
             "npm:chart.js@4.5.1",
             "npm:echarts@6.1.0",
-            "npm:flint-chart@1.0.0",
+            "npm:flint-chart@1.1.0",
             "npm:plotly.js-basic-dist-min@3.7.0",
             "npm:tailwindcss@4.3.3",
             "npm:vega-lite@6.4.3",

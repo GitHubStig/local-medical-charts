@@ -132,6 +132,30 @@ Deno.test("every theme keeps the chosen curve and Flint's line colour in Vega-Li
   assertEquals((apple as Loose).layer[2].mark.color, "#007aff");
 });
 
+// Until flint-chart 1.0.1, a theme with its own curve (Cartoon, De Stijl) drew
+// Straight as a spline or steps in Plotly (microsoft/flint-chart#149).
+Deno.test("every theme keeps the chosen curve in Plotly", async () => {
+  const alt = await alexSeries("alt");
+  const curves = [
+    ["straight", "linear"],
+    ["smooth", "spline"],
+    ["steps", "hv"],
+  ] as const;
+  for (const { id } of chartThemes()) {
+    for (const [curve, shape] of curves) {
+      const figure = plotlyFigure(
+        alt,
+        PALETTE,
+        LARGE,
+        true,
+        curve,
+        id,
+      ) as Loose;
+      assertEquals(figure.data[0].line.shape, shape, `${id}, ${curve}`);
+    }
+  }
+});
+
 Deno.test("a themed Plotly chart takes Flint's styling and keeps the app's flags, bounds and bands", async () => {
   const alt = await alexSeries("alt");
   const figure = plotlyFigure(

@@ -69,7 +69,7 @@ Ideas and open questions not built yet. Ask the owner before picking one up.
 | [Large PDF imports](proposals/large-pdf-imports.md)                                | Parked           |
 | [Flint feature request: reference bands](proposals/flint-reference-bands.md)       | Drafted, parked  |
 | [Chart interactivity from Flint](proposals/chart-interactivity.md)                 | Waiting on Flint |
-| [Flint bug report: straight Plotly line](proposals/flint-plotly-straight-curve.md) | Posted (#149)    |
+| [Flint bug report: straight Plotly line](proposals/flint-plotly-straight-curve.md) | Fixed (#149)     |
 
 ## Writing new docs
 
