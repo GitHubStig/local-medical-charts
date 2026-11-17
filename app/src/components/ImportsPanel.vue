@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useNow } from "@vueuse/core";
+import { useIntervalFn, useNow } from "@vueuse/core";
 import { computed } from "vue";
 import { useImports } from "../composables/useImports.ts";
 import { useOcrSettings } from "../composables/useOcrSettings.ts";
@@ -26,7 +26,7 @@ const {
   dismissNotices,
 } = useImports();
 const { model } = useOcrSettings();
-const now = useNow({ interval: 1000 });
+const now = useNow({ scheduler: (update) => useIntervalFn(update, 1000) });
 
 const activeCount = computed(() => jobs.value.filter(isActive).length);
 const readingModel = computed(() =>
