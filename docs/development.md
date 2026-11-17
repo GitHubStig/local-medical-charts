@@ -172,6 +172,9 @@ these steps yourself:
    deno task test
    deno task build
    ```
+   Before checking in `deno task dev`, delete `app/node_modules/.vite`, or the
+   dev server keeps the old versions
+   ([stale dev server](#stale-dev-server-after-an-update)).
 5. **Commit** `deno.json`, `app/package.json` and `deno.lock` together.
 
 ## Chart themes
@@ -237,6 +240,17 @@ the bytes beside the file details rather than inside them.
 
 The desktop window's address gets a new port every launch, so `localStorage`
 doesn't persist between launches. Settings live in SQLite instead.
+
+### Stale dev server after an update
+
+Vite prebundles the app's dependencies into `app/node_modules/.vite` and
+rebuilds them when a lockfile changes, but it only knows npm's, yarn's, pnpm's
+and bun's lockfiles, not `deno.lock`. After a dependency update, `deno task dev`
+can keep serving the old version for as long as its files are still on disk:
+comparing flint-chart 1.0.0 with 1.1.0 once compared 1.1.0 with itself. Delete
+`app/node_modules/.vite` after updating, and check which version the dev server
+picked up in `app/node_modules/.vite/deps/_metadata.json`. `deno task build`
+doesn't use this cache.
 
 ### Ollama replies
 

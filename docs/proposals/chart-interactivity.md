@@ -1,6 +1,12 @@
 # Chart interactivity from Flint
 
-- **Status:** Waiting on Flint; checked against flint-chart 1.0.0.
+- **Status:** Waiting on Flint; checked against flint-chart 1.1.0.
+
+In 1.1 each library's interactive renderer is exported
+(`createVegaInteractiveRenderer` and the others), and every chart gets a
+nearest-mark tooltip, legend dimming and zoom by default. Both still take the
+chart input and draw it themselves, and other libraries still ignore
+interactions, so the points below stand.
 
 Flint 1.0 adds interactions: click and hover highlight, brushing, zoom and pan,
 annotations, and linked charts. Under

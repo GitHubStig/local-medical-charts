@@ -132,6 +132,26 @@ Deno.test("every theme keeps the chosen curve and Flint's line colour in Vega-Li
   assertEquals((apple as Loose).layer[2].mark.color, "#007aff");
 });
 
+// Flint 1.1's canvas fit shrank Vega-Lite's labels (BBC's to 8px) to make room
+// for a title the app doesn't draw; Plotly's were never fitted.
+Deno.test("a theme's label size holds in the large Vega-Lite chart", async () => {
+  const alt = await alexSeries("alt");
+  const vegaLite = vegaLiteSpec(alt, PALETTE, LARGE, true, "straight", "bbc");
+  const plotly = plotlyFigure(alt, PALETTE, LARGE, true, "straight", "bbc");
+  assertEquals((vegaLite as Loose).config.axisY.labelFontSize, 14.5);
+  assertEquals((plotly as Loose).layout.yaxis.tickfont.size, 14.5);
+});
+
+// Flint 1.1 sets Economist's and Apple's Plotly values on the right, where the
+// app draws the range label.
+Deno.test("every theme keeps the values on the left in Plotly", async () => {
+  const alt = await alexSeries("alt");
+  for (const { id } of chartThemes()) {
+    const figure = plotlyFigure(alt, PALETTE, LARGE, true, "straight", id);
+    assertEquals((figure as Loose).layout.yaxis.side, "left", id);
+  }
+});
+
 // Until flint-chart 1.0.1, a theme with its own curve (Cartoon, De Stijl) drew
 // Straight as a spline or steps in Plotly (microsoft/flint-chart#149).
 Deno.test("every theme keeps the chosen curve in Plotly", async () => {

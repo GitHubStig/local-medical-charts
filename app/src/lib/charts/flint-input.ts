@@ -106,5 +106,9 @@ export function flintInput(
       chartProperties: { interpolate: INTERPOLATE[curve] },
     },
     field_display_names: { date: "Collected", value: series.name },
+    // The size given is the plot alone; the app draws the title, keys and axis
+    // margins around it. Flint's canvas fit would shrink a theme's labels to
+    // make room for a title it never draws (BBC's in Vega-Lite to 8px).
+    options: { canvasFit: "off" },
   };
 }

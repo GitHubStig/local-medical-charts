@@ -128,6 +128,9 @@ export function plotlyFigure(
     ? {
       ...axis,
       visible: true,
+      // A house that sets its values on the right (Economist, Apple) would put
+      // them over the range label; the app's margin keeps them on the left.
+      side: "left",
       tickmode: "array",
       tickvals: frame.y.ticks,
       ticktext: frame.y.ticks.map((value) => VALUE.format(value)),
